@@ -95,21 +95,49 @@ HKDF_INFO_SESSION = b"OTTO-PQ-SESSION-v1"
 _LIBOQS_AVAILABLE = False
 _oqs = None
 
-try:
-    import oqs as _oqs_module
-    _oqs = _oqs_module
-    _LIBOQS_AVAILABLE = True
-    logger.info("liboqs-python available: Post-quantum algorithms enabled")
-except ImportError:
-    logger.warning(
-        "liboqs-python not available. Post-quantum key exchange disabled. "
-        "Install with: pip install liboqs-python"
-    )
+
+def _check_liboqs() -> bool:
+    """
+    Check if liboqs is available without blocking.
+
+    The liboqs-python package may try to build native libraries on import,
+    which can hang or fail. We check for the shared library first.
+    """
+    global _LIBOQS_AVAILABLE, _oqs
+
+    if _LIBOQS_AVAILABLE:
+        return True
+
+    try:
+        # Try to import - this may fail or hang if native lib not built
+        import oqs as _oqs_module
+
+        # Verify it actually works by checking for algorithms
+        _oqs_module.get_enabled_kem_mechanisms()
+
+        _oqs = _oqs_module
+        _LIBOQS_AVAILABLE = True
+        logger.info("liboqs-python available: Post-quantum algorithms enabled")
+        return True
+
+    except (ImportError, RuntimeError, SystemExit, Exception) as e:
+        logger.warning(
+            f"liboqs not available ({type(e).__name__}). "
+            "Post-quantum key exchange disabled. Using X25519 only."
+        )
+        return False
+
+
+# Don't check on import - defer until first use to avoid blocking
+# _check_liboqs()
 
 
 def is_pq_available() -> bool:
     """Check if post-quantum algorithms are available."""
-    return _LIBOQS_AVAILABLE
+    if _LIBOQS_AVAILABLE:
+        return True
+    # Lazy check - only try once
+    return _check_liboqs()
 
 
 # =============================================================================
@@ -455,9 +483,10 @@ class MLKEM(KEMProvider):
         Args:
             variant: Which ML-KEM variant to use (default: ML-KEM-768)
         """
-        if not _LIBOQS_AVAILABLE:
+        if not is_pq_available():
             raise RuntimeError(
-                "ML-KEM requires liboqs-python. Install with: pip install liboqs-python"
+                "ML-KEM requires liboqs-python with native library. "
+                "Install with: pip install liboqs-python (requires cmake and C compiler)"
             )
 
         if variant not in _LIBOQS_ALGORITHM_MAP:
@@ -521,8 +550,15 @@ class HybridKEM:
         """Initialize hybrid KEM."""
         self._classical = X25519KEM()
         self._pq: Optional[MLKEM] = None
+        self._pq_checked = False
 
-        if _LIBOQS_AVAILABLE:
+    def _ensure_pq_checked(self) -> None:
+        """Lazily check for PQ availability."""
+        if self._pq_checked:
+            return
+        self._pq_checked = True
+
+        if is_pq_available():
             try:
                 self._pq = MLKEM(KEMAlgorithm.MLKEM768)
             except Exception as e:
@@ -531,6 +567,7 @@ class HybridKEM:
     @property
     def is_pq_enabled(self) -> bool:
         """Check if post-quantum algorithms are enabled."""
+        self._ensure_pq_checked()
         return self._pq is not None
 
     @property
@@ -546,6 +583,7 @@ class HybridKEM:
 
     def generate_keypair(self) -> HybridKeyPair:
         """Generate hybrid key pair."""
+        self._ensure_pq_checked()
         classical_kp = self._classical.generate_keypair()
 
         pq_kp = None
@@ -569,6 +607,8 @@ class HybridKEM:
 
         Combines secrets from both classical and PQ KEMs using HKDF.
         """
+        self._ensure_pq_checked()
+
         # Classical encapsulation (always)
         classical_ct, classical_ss = self._classical.encapsulate(public_key.classical)
 
