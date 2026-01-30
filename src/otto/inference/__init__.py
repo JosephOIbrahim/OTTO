@@ -2,7 +2,7 @@
 Deterministic Inference Layer
 =============================
 
-Tier 1 & 2 implementation of [He2025]-inspired deterministic inference.
+Tier 1, 2 & 3 implementation of [He2025]-inspired deterministic inference.
 
 This module provides:
 
@@ -17,16 +17,21 @@ This module provides:
 - VerificationResult: Results with divergence analysis and confidence scores
 - VerifiedInferenceWrapper: Auto-verification based on criticality
 
+**Tier 3 - Kernel-Level Determinism:**
+- He2025KernelConfig: [He2025]-compliant kernel configuration
+- DeterministicEnvironment: CUDA environment management for determinism
+- ServerConfigValidator: Validates server determinism settings
+- DeterministicVLLMBackend: Local inference with kernel-level guarantees
+
 [He2025] Principles Applied:
 - Fixed evaluation order for cache key computation (sorted keys)
 - No dynamic algorithm switching based on load
 - Deterministic serialization throughout
 - Response caching for guaranteed reproducibility (after first call)
 - Multi-trial verification for probabilistic non-determinism detection
+- Batch size = 1 for kernel-level determinism (Tier 3)
+- CUDA deterministic operations enabled (Tier 3)
 
-Note: Tier 1 provides API-maximized determinism.
-      Tier 2 adds verification (detection of non-determinism).
-      Tier 3 (local deterministic inference) provides kernel-level compliance.
 See docs/HE2025_KERNEL_COMPLIANCE_STRATEGY.md for full strategy.
 """
 
@@ -58,6 +63,18 @@ from .verification import (
     DivergenceType,
     ConsensusStrategy,
 )
+from .kernel import (
+    He2025KernelConfig,
+    DeterminismMode,
+    DeterministicEnvironment,
+    ServerConfigValidator,
+    ServerValidationResult,
+    DeterministicVLLMBackend,
+    DeterministicLocalBackend,
+    HE2025_STRICT,
+    HE2025_WITH_FLASH_ATTENTION,
+    HE2025_INT8,
+)
 
 __all__ = [
     # Config
@@ -83,6 +100,17 @@ __all__ = [
     'DivergenceAnalysis',
     'DivergenceType',
     'ConsensusStrategy',
+    # Kernel-Level (Tier 3)
+    'He2025KernelConfig',
+    'DeterminismMode',
+    'DeterministicEnvironment',
+    'ServerConfigValidator',
+    'ServerValidationResult',
+    'DeterministicVLLMBackend',
+    'DeterministicLocalBackend',
+    'HE2025_STRICT',
+    'HE2025_WITH_FLASH_ATTENTION',
+    'HE2025_INT8',
 ]
 
-__version__ = '2.0.0'
+__version__ = '3.0.0'
