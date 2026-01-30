@@ -1,0 +1,85 @@
+/**
+ * CSS Variables - Orchestra Design System
+ * Maeda-inspired: Calm, muted, spacious
+ */
+
+:root {
+  /* Colors - Muted palette for cognitive calm */
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-border: #e8e8e8;
+  --color-text: #2d2d2d;
+  --color-text-muted: #8a8a8a;
+  --color-text-subtle: #b0b0b0;
+
+  /* Status colors - Soft, not aggressive */
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+  --color-primary: #6366f1;
+
+  /* Subtle variants for backgrounds */
+  --color-primary-subtle: rgba(99, 102, 241, 0.1);
+  --color-warning-subtle: rgba(251, 191, 36, 0.15);
+  --color-success-subtle: rgba(74, 222, 128, 0.15);
+  --color-error-subtle: rgba(248, 113, 113, 0.15);
+
+  /* Agent status */
+  --color-agent-ready: #4ade80;
+  --color-agent-busy: #60a5fa;
+  --color-agent-error: #f87171;
+  --color-agent-idle: #d1d5db;
+
+  /* Convergence */
+  --color-converged: #4ade80;
+  --color-stable: #60a5fa;
+  --color-converging: #fbbf24;
+  --color-unstable: #f87171;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 3rem;
+
+  /* Spacing - Generous for breathing room */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows - Subtle, not dramatic */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f0f0f;
+    --color-surface: #1a1a1a;
+    --color-border: #2d2d2d;
+    --color-text: #f0f0f0;
+    --color-text-muted: #8a8a8a;
+    --color-text-subtle: #5a5a5a;
+  }
+}

@@ -1,0 +1,220 @@
+#usda 1.0
+(
+    doc = """
+    Orchestra Cognitive Schema
+    ==========================
+
+    Defines the USD schema for cognitive state management.
+
+    This schema uses USD composition semantics (LIVRPS) to resolve
+    cognitive state priority. The key insight is that USD's scene
+    graph composition solves the same problem as cognitive state
+    management: multiple sources with opinions about the same
+    attributes, requiring deterministic priority resolution.
+
+    Layer Stack (LIVRPS order):
+    - L (Local/Session): Current session state - highest priority
+    - I (Inherits): Inherited context from parent agents
+    - V (Variants): Cognitive mode variants (focused/exploring/etc)
+    - R (References): Calibration data - learned preferences
+    - P (Payloads): Domain knowledge - loaded on demand
+    - S (Specializes): Constitutional base - safety floors (lowest)
+
+    Novel Contribution:
+    No existing system uses Pixar's USD scene graph composition
+    to resolve cognitive state priority. This is genuine technical novelty.
+    """
+    metersPerUnit = 1
+    upAxis = "Y"
+    subLayers = [
+        @./constitutional.usda@
+    ]
+)
+
+# ===========================================================================
+# Cognitive State Prim
+# ===========================================================================
+
+class "CognitiveStatePrim" (
+    doc = "Base class for cognitive state primitives"
+)
+{
+    # ---------------------------------------------------------------------------
+    # Burnout Tracking
+    # ---------------------------------------------------------------------------
+    string burnout_level = "green" (
+        doc = "Current burnout level: green, yellow, orange, red"
+        allowedTokens = ["green", "yellow", "orange", "red"]
+    )
+
+    # ---------------------------------------------------------------------------
+    # Momentum Tracking
+    # ---------------------------------------------------------------------------
+    string momentum_phase = "cold_start" (
+        doc = "Current momentum phase: cold_start, building, rolling, peak, crashed"
+        allowedTokens = ["cold_start", "building", "rolling", "peak", "crashed"]
+    )
+
+    # ---------------------------------------------------------------------------
+    # Energy Level
+    # ---------------------------------------------------------------------------
+    string energy_level = "medium" (
+        doc = "Current energy level: high, medium, low, depleted"
+        allowedTokens = ["high", "medium", "low", "depleted"]
+    )
+
+    # ---------------------------------------------------------------------------
+    # Cognitive Mode
+    # ---------------------------------------------------------------------------
+    string cognitive_mode = "focused" (
+        doc = "Current cognitive mode: focused, exploring, teaching, recovery"
+        allowedTokens = ["focused", "exploring", "teaching", "recovery"]
+    )
+
+    # ---------------------------------------------------------------------------
+    # Altitude
+    # ---------------------------------------------------------------------------
+    int altitude = 30000 (
+        doc = "Current cognitive altitude: 30000 (vision), 15000 (architecture), 5000 (components), 0 (ground)"
+    )
+
+    # ---------------------------------------------------------------------------
+    # Calibration
+    # ---------------------------------------------------------------------------
+    string focus_level = "moderate" (
+        doc = "Calibrated focus level: scattered, moderate, locked_in"
+        allowedTokens = ["scattered", "moderate", "locked_in"]
+    )
+
+    string urgency = "moderate" (
+        doc = "Calibrated urgency: relaxed, moderate, deadline"
+        allowedTokens = ["relaxed", "moderate", "deadline"]
+    )
+
+    # ---------------------------------------------------------------------------
+    # Session Metrics
+    # ---------------------------------------------------------------------------
+    int exchange_count = 0 (
+        doc = "Number of exchanges in current session"
+    )
+
+    int rapid_exchange_count = 0 (
+        doc = "Number of rapid exchanges (for body check timing)"
+    )
+
+    int tasks_completed = 0 (
+        doc = "Number of tasks completed this session"
+    )
+
+    int tangent_budget = 5 (
+        doc = "Remaining tangent allowance"
+    )
+
+    # ---------------------------------------------------------------------------
+    # Convergence Tracking (RC^+xi)
+    # ---------------------------------------------------------------------------
+    string convergence_attractor = "focused" (
+        doc = "Current attractor basin: focused, exploring, recovery, teaching"
+        allowedTokens = ["focused", "exploring", "recovery", "teaching"]
+    )
+
+    double epistemic_tension = 0.0 (
+        doc = "Current epistemic tension (xi_n): 0.0 to 1.0"
+    )
+
+    int stable_exchanges = 0 (
+        doc = "Exchanges at current attractor (for convergence detection)"
+    )
+
+    # ---------------------------------------------------------------------------
+    # Paradigm
+    # ---------------------------------------------------------------------------
+    string paradigm = "cortex" (
+        doc = "Active paradigm: cortex (hierarchical) or mycelium (emergent)"
+        allowedTokens = ["cortex", "mycelium"]
+    )
+}
+
+# ===========================================================================
+# Cognitive Root Definition
+# ===========================================================================
+
+def CognitiveStatePrim "CognitiveRoot" (
+    doc = "Root prim for cognitive state"
+    kind = "assembly"
+)
+{
+    # Session Layer (LOCAL) - highest priority, mutable
+    def CognitiveStatePrim "session" (
+        doc = "Session layer - current session state (highest priority)"
+    )
+    {
+    }
+
+    # Inherited Layer - from parent context
+    def CognitiveStatePrim "inherited" (
+        doc = "Inherited layer - context from parent agents"
+    )
+    {
+    }
+
+    # Calibration Layer (REFERENCES)
+    def CognitiveStatePrim "calibration" (
+        doc = "Calibration layer - learned preferences (cross-session)"
+    )
+    {
+    }
+
+    # Domain Layer (PAYLOADS)
+    def CognitiveStatePrim "domain" (
+        doc = "Domain layer - domain-specific knowledge"
+    )
+    {
+    }
+
+    # Constitutional Layer (SPECIALIZES) - safety floors
+    # Defined in constitutional.usda and composed via sublayer
+}
+
+# ===========================================================================
+# Variant Sets for Cognitive Modes
+# ===========================================================================
+
+def CognitiveStatePrim "CognitiveRoot" (
+    prepend variantSets = "cognitive_mode"
+)
+{
+    variantSet "cognitive_mode" = {
+        "focused" (
+            doc = "Focused mode - clear goal, direct execution"
+        ) {
+            double interruption_threshold = 0.7
+            int tangent_allowance = 2
+            string paradigm = "cortex"
+        }
+
+        "exploring" (
+            doc = "Exploring mode - discovery, what-if, tangents allowed"
+        ) {
+            double interruption_threshold = 0.3
+            int tangent_allowance = 5
+            string paradigm = "mycelium"
+        }
+
+        "teaching" (
+            doc = "Teaching mode - explanatory, educational"
+        ) {
+            double interruption_threshold = 0.5
+            int tangent_allowance = 3
+            string paradigm = "cortex"
+        }
+
+        "recovery" (
+            doc = "Recovery mode - rest, easy wins only"
+        ) {
+            double interruption_threshold = 0.9
+            int tangent_allowance = 0
+            string paradigm = "cortex"
+        }
+    }
+}

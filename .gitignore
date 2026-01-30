@@ -1,0 +1,42 @@
+# Runtime state (not version controlled)
+/state/
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.whl
+
+# Testing
+.coverage
+htmlcov/
+
+# Ralph state
+.ralph-state.json
+
+# Node.js (dashboard)
+node_modules/
+.npm/
+npm-debug.log*
+
+# Handoff files (session-specific)
+HANDOFF.md
+HANDOFF_QUICK.md
+.hypothesis/

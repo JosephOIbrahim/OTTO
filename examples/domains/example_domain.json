@@ -1,0 +1,32 @@
+{
+  "name": "Example Domain",
+  "description": "Template for creating custom domain configurations",
+  "version": "1.0.0",
+  "specialists": {
+    "analysis": {
+      "keywords": ["analyze", "review", "examine", "inspect"],
+      "analysis_focus": ["structure", "performance", "dependencies"]
+    },
+    "optimization": {
+      "keywords": ["optimize", "improve", "speed", "efficiency"],
+      "analysis_focus": ["bottlenecks", "caching", "algorithms"]
+    },
+    "debugging": {
+      "keywords": ["debug", "fix", "error", "issue", "bug"],
+      "analysis_focus": ["root_cause", "stack_trace", "reproduction"]
+    }
+  },
+  "routing_keywords": ["example", "template"],
+  "prism_perspectives": [
+    "causal",
+    "optimization",
+    "risk",
+    "stakeholder"
+  ],
+  "notes": {
+    "usage": "Copy this file and customize for your domain",
+    "keywords": "Add domain-specific keywords that trigger specialist routing",
+    "specialists": "Define specialists with their trigger keywords and analysis focus areas",
+    "routing_keywords": "Top-level keywords that activate this domain"
+  }
+}

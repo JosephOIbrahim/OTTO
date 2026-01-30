@@ -1,0 +1,49 @@
+name: Fuzz Testing
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Run weekly on Sundays at midnight
+    - cron: '0 0 * * 0'
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[dev]"
+          pip install atheris
+
+      - name: Run fuzz tests
+        run: |
+          python -m pytest tests/test_fuzz.py -v --tb=short
+        env:
+          ATHERIS_FUZZ_DURATION: 30  # seconds per target
+
+  # Summary job that branch protection can require
+  fuzz-status:
+    needs: fuzz
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check fuzz results
+        run: |
+          if [ "${{ needs.fuzz.result }}" != "success" ]; then
+            echo "Fuzz tests failed"
+            exit 1
+          fi
+          echo "Fuzz tests passed"

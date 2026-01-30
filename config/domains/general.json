@@ -1,0 +1,34 @@
+{
+  "name": "General",
+  "description": "General-purpose analysis - fallback domain when no specific domain matches",
+  "version": "1.0",
+  "specialists": {
+    "analysis": {
+      "keywords": ["analyze", "review", "examine", "investigate", "understand", "explore", "assess"],
+      "tools": ["General Analysis"],
+      "analysis_focus": ["structure", "dependencies", "quality", "patterns"]
+    },
+    "planning": {
+      "keywords": ["plan", "design", "architect", "strategy", "roadmap", "scope", "estimate"],
+      "tools": ["Planning Tools"],
+      "analysis_focus": ["feasibility", "dependencies", "risks", "milestones"]
+    },
+    "documentation": {
+      "keywords": ["document", "explain", "describe", "clarify", "summarize", "readme", "guide"],
+      "tools": ["Documentation"],
+      "analysis_focus": ["clarity", "completeness", "audience", "structure"]
+    },
+    "debugging": {
+      "keywords": ["debug", "fix", "error", "bug", "issue", "problem", "crash", "fail"],
+      "tools": ["Debugging Tools"],
+      "analysis_focus": ["root_cause", "reproduction", "isolation", "verification"]
+    },
+    "optimization": {
+      "keywords": ["optimize", "improve", "faster", "efficient", "performance", "speed", "memory"],
+      "tools": ["Profiling Tools"],
+      "analysis_focus": ["bottleneck", "complexity", "resource_usage", "tradeoffs"]
+    }
+  },
+  "routing_keywords": [],
+  "prism_perspectives": ["causal", "hierarchical", "risk", "opportunity"]
+}

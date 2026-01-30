@@ -1,0 +1,59 @@
+/**
+ * Orchestra Dashboard - Pentagram + Tendril Design System
+ *
+ * Minimal CSS - Component uses inline styles for systematic control
+ * This file provides global resets and animation definitions
+ *
+ * ThinkingMachines [He2025] compliant:
+ * - Fixed animation curves
+ * - Deterministic timing
+ */
+
+/* Fonts - Pentagram Rivian inspired typography */
+/* Space Grotesk: Similar to Söhne (used in actual Rivian branding by Pentagram) */
+/* JetBrains Mono: Clean monospace for data/numerals */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: #0a0a0a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for any overflow */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Selection */
+::selection {
+  background: rgba(168, 85, 247, 0.3);
+  color: white;
+}

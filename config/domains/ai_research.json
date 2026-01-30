@@ -1,0 +1,44 @@
+{
+  "name": "AI Research",
+  "description": "AI/ML development - models, agents, training, inference, cognitive architectures",
+  "version": "1.0",
+  "specialists": {
+    "training": {
+      "keywords": ["train", "model", "loss", "epoch", "gradient", "batch", "checkpoint", "finetune", "pretrain"],
+      "tools": ["PyTorch", "Transformers", "Weights & Biases", "DeepSpeed"],
+      "analysis_focus": ["convergence", "overfitting", "compute_efficiency", "memory_usage", "gradient_flow"]
+    },
+    "inference": {
+      "keywords": ["inference", "predict", "generate", "latency", "throughput", "quantize", "serve", "deploy"],
+      "tools": ["vLLM", "TensorRT", "ONNX", "Triton"],
+      "analysis_focus": ["tokens_per_second", "memory_footprint", "batch_optimization", "kv_cache"]
+    },
+    "agents": {
+      "keywords": ["agent", "ottotor", "routing", "moe", "expert", "tool_use", "chain", "workflow"],
+      "tools": ["LangChain", "Claude", "Custom Frameworks", "AutoGen"],
+      "analysis_focus": ["routing_accuracy", "determinism", "context_management", "tool_selection"]
+    },
+    "prompting": {
+      "keywords": ["prompt", "template", "few_shot", "chain", "reasoning", "cot", "system", "instruction"],
+      "tools": ["Prompt Engineering", "DSPy", "Guidance"],
+      "analysis_focus": ["clarity", "token_efficiency", "reliability", "format_compliance"]
+    },
+    "evaluation": {
+      "keywords": ["eval", "benchmark", "metric", "score", "accuracy", "perplexity", "human_eval", "mmlu"],
+      "tools": ["LM Evaluation Harness", "HELM", "Custom Evals"],
+      "analysis_focus": ["metric_selection", "dataset_contamination", "statistical_significance"]
+    },
+    "architecture": {
+      "keywords": ["transformer", "attention", "layer", "embedding", "tokenizer", "vocab", "head", "mlp"],
+      "tools": ["PyTorch", "JAX", "Custom Architectures"],
+      "analysis_focus": ["parameter_count", "flops", "memory_bandwidth", "attention_pattern"]
+    },
+    "cognitive": {
+      "keywords": ["cognitive", "memory", "reflection", "planning", "substrate", "framework", "resonance"],
+      "tools": ["Custom Cognitive Frameworks", "USD Substrate"],
+      "analysis_focus": ["state_management", "composition_semantics", "determinism", "routing_cascade"]
+    }
+  },
+  "routing_keywords": ["model", "train", "inference", "agent", "llm", "prompt", "ai", "ml", "cognitive", "framework", "neural", "transformer"],
+  "prism_perspectives": ["causal", "optimization", "hierarchical", "opportunity"]
+}

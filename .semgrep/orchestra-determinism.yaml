@@ -1,0 +1,218 @@
+rules:
+  # =============================================================================
+  # Orchestra Determinism Rules
+  # ThinkingMachines [He2025] Compliance Checks
+  # =============================================================================
+
+  - id: orchestra-unseeded-random
+    patterns:
+      - pattern-either:
+          - pattern: random.random()
+          - pattern: random.randint(...)
+          - pattern: random.choice(...)
+          - pattern: random.shuffle(...)
+      - pattern-not-inside: |
+          $RNG = random.Random($SEED)
+          ...
+    message: |
+      Unseeded random usage detected. This violates ThinkingMachines [He2025] batch-invariance.
+      Use a seeded Random instance: `self._rng = random.Random(seed)` and call `self._rng.random()`.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: determinism
+      technology: [orchestra]
+      references:
+        - https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+
+  - id: orchestra-dict-iteration-unsorted
+    patterns:
+      - pattern: |
+          for $KEY in $DICT:
+            ...
+      - pattern-not: |
+          for $KEY in sorted($DICT):
+            ...
+      - metavariable-regex:
+          metavariable: $DICT
+          regex: "^(self\\.)?_(state|updates|params|config)$"
+    message: |
+      Iterating over dict without sorting keys. While Python 3.7+ preserves insertion order,
+      JSON serialization or cross-session persistence may not. Use `sorted()` for determinism.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: determinism
+      technology: [orchestra]
+
+  - id: orchestra-json-dumps-no-sort-keys
+    patterns:
+      - pattern: json.dumps($X, ...)
+      - pattern-not: json.dumps($X, ..., sort_keys=True, ...)
+      - pattern-not: json.dumps($X, ..., sort_keys=$Y, ...)
+    message: |
+      json.dumps() without sort_keys=True. This can produce non-deterministic output.
+      Add sort_keys=True for reproducible serialization.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: determinism
+      technology: [orchestra]
+
+  - id: orchestra-time-in-routing
+    patterns:
+      - pattern-either:
+          - pattern: time.time()
+          - pattern: datetime.now()
+          - pattern: datetime.utcnow()
+      - pattern-inside: |
+          def route(...):
+            ...
+      - pattern-not-inside: |
+          # timestamp for logging only
+          ...
+    message: |
+      Time-based value used in routing logic. This violates batch-invariance.
+      Use timestamps only for logging/tracking, never for routing decisions.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: determinism
+      technology: [orchestra]
+
+  - id: orchestra-state-mutation-without-batch
+    patterns:
+      - pattern: self.$STATE.$FIELD = $VALUE
+      - metavariable-regex:
+          metavariable: $STATE
+          regex: "^_?state$"
+      - pattern-not-inside: |
+          def batch_update(...):
+            ...
+      - pattern-not-inside: |
+          def __init__(...):
+            ...
+      - pattern-not-inside: |
+          def reset_session(...):
+            ...
+      - pattern-not-inside: |
+          def _reset_session(...):
+            ...
+      - pattern-not-inside: |
+          def _initialize_state(...):
+            ...
+    message: |
+      Direct state mutation outside batch_update(). This violates ThinkingMachines [He2025].
+      Use self.state.batch_update({...}) for atomic state changes.
+      Exception: reset_session() and __init__() are allowed for full state initialization.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: determinism
+      technology: [orchestra]
+
+  - id: orchestra-set-iteration
+    patterns:
+      - pattern: |
+          for $ITEM in $SET:
+            ...
+      - metavariable-type:
+          metavariable: $SET
+          type: set
+    message: |
+      Iterating over set (inherently unordered). Convert to sorted list first:
+      `for item in sorted(my_set):` for deterministic iteration order.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: determinism
+      technology: [orchestra]
+
+  - id: orchestra-async-gather-unordered
+    patterns:
+      - pattern: asyncio.gather(..., return_exceptions=True)
+      - pattern-not-inside: |
+          # Order doesn't matter for this gather
+          ...
+    message: |
+      asyncio.gather() returns results in order of completion which may vary.
+      If order matters, use explicit ordering or document that order is irrelevant.
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: determinism
+      technology: [orchestra]
+
+  # =============================================================================
+  # Safety Gating Rules
+  # =============================================================================
+
+  - id: orchestra-thinking-depth-bypass
+    patterns:
+      - pattern-either:
+          - pattern: think_depth = "ultradeep"
+          - pattern: think_depth = "deep"
+      - pattern-not-inside: |
+          if $CONDITION:
+            ...
+    message: |
+      Unconditional deep/ultradeep thinking depth. This may bypass safety gating.
+      Always check `state.get_max_thinking_depth()` before setting depth.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: safety
+      technology: [orchestra]
+
+  - id: orchestra-burnout-override
+    patterns:
+      - pattern: burnout_level = BurnoutLevel.$LEVEL
+      - pattern-not-inside: |
+          def set_burnout(...):
+            ...
+      - pattern-not-inside: |
+          def recover_burnout(...):
+            ...
+      - pattern-not-inside: |
+          def escalate_burnout(...):
+            ...
+      - pattern-not-inside: |
+          def reset_session(...):
+            ...
+      - pattern-not-inside: |
+          def _reset_session(...):
+            ...
+      - pattern-not-inside: |
+          @dataclass
+          class $CLASS:
+            ...
+      - pattern-not-inside: |
+          class $CLASS:
+            burnout_level: BurnoutLevel = ...
+    message: |
+      Direct burnout level assignment. Use set_burnout(), escalate_burnout(), or recover_burnout()
+      to ensure proper state transitions.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: safety
+      technology: [orchestra]
+
+  # =============================================================================
+  # Expert Priority Rules
+  # =============================================================================
+
+  - id: orchestra-dynamic-expert-priority
+    patterns:
+      - pattern: EXPERT_PRIORITY = $VALUE
+      - pattern-not-inside: |
+          # FIXED priority - never change
+          EXPERT_PRIORITY = (...)
+    message: |
+      EXPERT_PRIORITY should be an immutable tuple, not reassigned.
+      ThinkingMachines [He2025] requires fixed evaluation order.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: determinism
+      technology: [orchestra]

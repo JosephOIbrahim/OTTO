@@ -1,0 +1,291 @@
+#usda 1.0
+(
+    doc = """
+    OTTO OS Knowledge Prims
+
+    Core knowledge about OTTO OS - the operating system for variable attention.
+    Enables answers about OTTO's architecture, commands, and philosophy.
+
+    ThinkingMachines [He2025] Compliance:
+    - FIXED prim count (deterministic)
+    - DETERMINISTIC trigger matching
+    - FIXED confidence values
+    """
+    customLayerData = {
+        string version = "1.0.0"
+        string created = "2026-01-29"
+        int prim_count = 20
+        float confidence = 0.95
+    }
+)
+
+def "Knowledge" (
+    kind = "assembly"
+)
+{
+    # ═══════════════════════════════════════════════════════════════════
+    # OTTO OS CORE CONCEPTS (20 prims)
+    # ═══════════════════════════════════════════════════════════════════
+
+    def "OTTO" {
+        def "WhatIsOTTO" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/WhatIsOTTO"
+            custom string content = """OTTO OS is an operating system for variable attention. It assumes what neuroscience knows: attention fluctuates, crashes, surges, and drifts - and that variation is feature, not failure. OTTO is not a productivity app (doesn't optimize for output), not a therapist (doesn't diagnose), not a tracker (doesn't surveil), not a nanny (doesn't moralize). It IS: a conductor for your cognitive orchestra, a membrane between you and AI systems, a guardian of sustainable engagement, a memory you don't have to maintain."""
+            custom string summary = "Operating system for variable attention - treats fluctuating attention as feature, not failure"
+            custom float confidence = 0.95
+            custom string provenance = "otto_blueprint"
+            custom string[] domains = ["otto", "core"]
+            custom string[] triggers = ["what is otto", "otto os", "otto operating system", "variable attention"]
+        }
+
+        def "CurbCutPrinciple" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/CurbCutPrinciple"
+            custom string content = """The curb cut principle: designs for accessibility benefit everyone. Curb cuts designed for wheelchairs are used by strollers, luggage, carts. OTTO's neurodivergent-native architecture benefits ALL humans who have off-days, crash cycles, or non-linear work patterns. The system never asks 'do you have ADHD?' - it simply works differently, in ways that happen to be exactly what neurodivergent users need and neurotypical users experience as 'finally, a computer that gets me.' Stealth accommodation."""
+            custom string summary = "Designs for neurodivergent users benefit everyone - stealth accommodation"
+            custom float confidence = 0.95
+            custom string provenance = "otto_philosophy"
+            custom string[] domains = ["otto", "philosophy"]
+            custom string[] triggers = ["curb cut", "stealth accommodation", "neurodivergent design", "universal design"]
+        }
+
+        def "ArchitectureLayers" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/ArchitectureLayers"
+            custom string content = """OTTO OS has 5 layers: Layer 4 (User Interface) - CLI/TUI/Future GUI, human-readable output. Layer 3 (Human Render) - natural language generation, state-aware verbosity, no clinical terms. Layer 2 (OTTO Core) - JSON-RPC protocol, cognitive engine, state management, protection. Layer 1 (Agent Kernel) - binary protocol (MessagePack), agent-to-agent communication. Layer 0 (Persistence) - USD state files, encrypted storage, session continuity. Each layer only talks to adjacent layers."""
+            custom string summary = "5 layers: L4 UI > L3 Human Render > L2 Core > L1 Agent Kernel > L0 Persistence"
+            custom float confidence = 0.95
+            custom string provenance = "otto_blueprint"
+            custom string[] domains = ["otto", "architecture"]
+            custom string[] triggers = ["otto layers", "architecture layers", "layer 0", "layer 1", "layer 2", "layer 3", "layer 4"]
+        }
+
+        def "CLICommands" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/CLICommands"
+            custom string content = """OTTO CLI commands: 'otto' - interactive mode. 'otto status' - show cognitive status (-s short, --json, --tmux, --prompt). 'otto set' - set cognitive state (burnout, mode, momentum, energy). 'otto tui' - launch dashboard. 'otto intake' - run personality intake. 'otto remember <text>' - store knowledge. 'otto forget <query>' - remove knowledge. 'otto protect on|off|status' - protection controls. 'otto config <key> [value]' - configuration. 'otto export' - export all data. 'otto wipe --confirm' - delete all data. 'otto sync status|now|setup' - cloud sync."""
+            custom string summary = "CLI commands: status, set, tui, intake, remember, forget, protect, config, export, wipe, sync"
+            custom float confidence = 0.95
+            custom string provenance = "otto_cli"
+            custom string[] domains = ["otto", "cli"]
+            custom string[] triggers = ["otto commands", "cli commands", "otto cli", "otto help"]
+        }
+
+        def "IntakeSystem" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/IntakeSystem"
+            custom string content = """OTTO intake is a game-based personality assessment. Instead of clinical questionnaires, it uses 8 scenarios that reveal how you work: Project Selection (new vs familiar), Energy Check (morning types), Deadline Response (pressure handling), Interruption Style (context switching), Collaboration Preference (solo vs team), Documentation Habits (when you write things down), Break Patterns (rest approaches), Achievement Recognition (what feels like winning). Results populate profile.usda without diagnostic labels."""
+            custom string summary = "Game-based personality assessment - 8 scenarios, no clinical labels"
+            custom float confidence = 0.95
+            custom string provenance = "otto_intake"
+            custom string[] domains = ["otto", "intake"]
+            custom string[] triggers = ["otto intake", "intake game", "personality assessment", "profile setup"]
+        }
+
+        def "ProtectionSystem" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/ProtectionSystem"
+            custom string content = """OTTO protection system detects overuse and suggests breaks. Five detection types: TIME_EXTENDED (session too long), RAPID_EXCHANGE (too many quick messages), OVERRIDE_PATTERN (ignoring suggestions), ENERGY_MISMATCH (low energy but pushing), HYPERFOCUS (deep focus without body check). Thresholds: 45 min yellow, 90 min orange, 150 min red. Actions: ALLOW, MENTION, SUGGEST_BREAK, REQUIRE_CONFIRM. Respects user override but tracks pattern. Firmness adjustable in profile."""
+            custom string summary = "Overuse detection: time, rapid exchange, override pattern, energy mismatch, hyperfocus"
+            custom float confidence = 0.95
+            custom string provenance = "otto_protection"
+            custom string[] domains = ["otto", "protection"]
+            custom string[] triggers = ["otto protection", "overuse detection", "break suggestion", "protection system"]
+        }
+
+        def "CloudSync" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/CloudSync"
+            custom string content = """OTTO cloud sync provides E2E encrypted synchronization. All data encrypted before leaving device using user passphrase. Supported backends: Local (testing), WebDAV (Nextcloud/ownCloud), S3 (AWS/MinIO). Configure via ~/.otto/config/sync.json with provider, credentials, passphrase. Commands: 'otto sync setup' shows options, 'otto sync now' performs sync, 'otto sync status' shows state. Uses vector clocks for conflict detection, deterministic resolution. ThinkingMachines compliant: fixed chunk size (5 MiB), fixed retry limits (3)."""
+            custom string summary = "E2E encrypted sync via WebDAV or S3 - all data encrypted before leaving device"
+            custom float confidence = 0.95
+            custom string provenance = "otto_sync"
+            custom string[] domains = ["otto", "sync"]
+            custom string[] triggers = ["otto sync", "cloud sync", "webdav sync", "s3 sync", "encrypted sync"]
+        }
+
+        def "KnowledgeStorage" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/KnowledgeStorage"
+            custom string content = """OTTO personal knowledge storage uses 'otto remember' and 'otto forget' commands. Knowledge stored in ~/.otto/knowledge/personal.json with id, content, tags, created timestamp. 'otto remember <text>' adds entry with auto-generated ID. 'otto remember <text> --tags work,important' adds with tags. 'otto forget <query>' removes by content match or ID. 'otto forget <query> --force' removes all matches. Knowledge persists across sessions and syncs via cloud sync when configured."""
+            custom string summary = "Personal knowledge: 'otto remember' to store, 'otto forget' to remove, syncs to cloud"
+            custom float confidence = 0.95
+            custom string provenance = "otto_knowledge"
+            custom string[] domains = ["otto", "knowledge"]
+            custom string[] triggers = ["otto remember", "otto forget", "personal knowledge", "knowledge storage"]
+        }
+
+        def "DignityFirstLanguage" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/DignityFirstLanguage"
+            custom string content = """OTTO uses dignity-first language - 48 words are forbidden: Clinical terms (adhd, disorder, symptom, dysfunction, deficit), Pathologizing words (manage, cope, struggle, suffer), Clinical function terms (executive function, working memory deficit), Othering terms (normal people, neurotypical). OTTO speaks about 'how you work' not 'what's wrong with you'. State-aware verbosity: depleted gets minimal words, high energy can get detailed explanations. No diagnostic labels in any output."""
+            custom string summary = "48 forbidden words - no clinical/pathologizing language, speaks about 'how you work'"
+            custom float confidence = 0.95
+            custom string provenance = "otto_render"
+            custom string[] domains = ["otto", "language"]
+            custom string[] triggers = ["dignity first", "forbidden words", "clinical language", "otto language"]
+        }
+
+        def "OTTORoles" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/OTTORoles"
+            custom string content = """OTTO has three behavioral roles: Guardian (protective, proactive suggestions, firm on safety), Companion (balanced, collaborative, adapts to user), Tool (minimal, responds only when asked, stays out of way). Role affects message style and intervention frequency. Set during intake or via 'otto config otto_role guardian|companion|tool'. Guardian is default for new users. User can switch roles anytime. Role influences protection firmness and verbosity."""
+            custom string summary = "Three roles: Guardian (protective), Companion (balanced), Tool (minimal)"
+            custom float confidence = 0.95
+            custom string provenance = "otto_profile"
+            custom string[] domains = ["otto", "profile"]
+            custom string[] triggers = ["otto role", "guardian companion tool", "otto behavior", "otto mode"]
+        }
+
+        def "DirectoryStructure" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/DirectoryStructure"
+            custom string content = """OTTO stores data in ~/.otto/ directory. Structure: config/ (otto.json, sync.json), knowledge/ (personal.json), state/ (protection.json), cache/, logs/. Profile stored in profile.usda. Calibration learned preferences in calibration.usda. All state files have graceful degradation (missing = use defaults), backup on write, schema validation. Export creates backup zip. Wipe requires --confirm flag and creates backup unless --no-backup."""
+            custom string summary = "Data in ~/.otto/: config/, knowledge/, state/, profile.usda, calibration.usda"
+            custom float confidence = 0.95
+            custom string provenance = "otto_storage"
+            custom string[] domains = ["otto", "storage"]
+            custom string[] triggers = ["otto directory", "otto storage", "otto files", "dot otto"]
+        }
+
+        def "ThinkingMachinesCompliance" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/ThinkingMachinesCompliance"
+            custom string content = """OTTO follows ThinkingMachines [He2025] compliance for determinism. Key constraints: FIXED parameters (chunk sizes, retry limits, thresholds), DETERMINISTIC serialization (sorted keys in JSON), BOUNDED operations (max files per sync, max items), FIXED evaluation order (signal > expert > action), REPRODUCIBLE checksums. No time-based routing, no unseeded random, no unordered iteration. All state mutations atomic. This ensures same inputs produce same outputs across sessions."""
+            custom string summary = "Determinism via fixed parameters, bounded operations, deterministic serialization"
+            custom float confidence = 0.95
+            custom string provenance = "otto_compliance"
+            custom string[] domains = ["otto", "compliance"]
+            custom string[] triggers = ["thinkingmachines", "determinism", "compliance", "he2025", "reproducible"]
+        }
+
+        def "StorageAdapters" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/StorageAdapters"
+            custom string content = """OTTO storage adapters provide cloud sync backends. LocalStorageAdapter: filesystem testing. WebDAVAdapter: Nextcloud, ownCloud, any WebDAV server - configure with endpoint, username, password. S3Adapter: AWS S3 or MinIO - configure with bucket, access_key, secret_key, region, optional endpoint for MinIO. Factory: create_storage_adapter('webdav'|'s3'|'local', **kwargs). All adapters implement: connect, disconnect, upload, download, delete, list_files, exists, get_file_info. Async operations with retry logic."""
+            custom string summary = "Storage adapters: Local (test), WebDAV (Nextcloud/ownCloud), S3 (AWS/MinIO)"
+            custom float confidence = 0.95
+            custom string provenance = "otto_sync"
+            custom string[] domains = ["otto", "sync", "storage"]
+            custom string[] triggers = ["storage adapter", "webdav adapter", "s3 adapter", "sync backend"]
+        }
+
+        def "CognitiveEngine" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/CognitiveEngine"
+            custom string content = """OTTO cognitive engine orchestrates response generation. 6-phase flow: 0. RETRIEVE (knowledge fast path), 1. DETECT (PRISM signal extraction), 2. CASCADE (ADHD_MoE expert routing), 3. LOCK (parameter locking), 4. EXECUTE (generation), 5. UPDATE (convergence tracking). Inherited from Orchestra with adaptations. Integrates protection checks, state management, human rendering. Deterministic routing ensures same signals produce same expert selection."""
+            custom string summary = "6-phase response flow: Retrieve > Detect > Cascade > Lock > Execute > Update"
+            custom float confidence = 0.95
+            custom string provenance = "otto_engine"
+            custom string[] domains = ["otto", "engine"]
+            custom string[] triggers = ["cognitive engine", "response flow", "otto engine", "phase flow"]
+        }
+
+        def "ProfileSystem" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/ProfileSystem"
+            custom string content = """OTTO profile stores user preferences in profile.usda (USD format). Key properties: otto_role (guardian/companion/tool), protection_firmness (0-1 float), allow_override (bool), override_cooldown_minutes (int), work_style preferences from intake. Immutable base profile specialized by calibration layer. Calibration.usda stores learned adjustments from usage patterns. Profile read at session start, calibration updated based on overrides and patterns. No diagnostic labels stored."""
+            custom string summary = "profile.usda for preferences, calibration.usda for learned adjustments"
+            custom float confidence = 0.95
+            custom string provenance = "otto_profile"
+            custom string[] domains = ["otto", "profile"]
+            custom string[] triggers = ["otto profile", "profile usda", "calibration", "user preferences"]
+        }
+
+        def "TUIDashboard" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/TUIDashboard"
+            custom string content = """OTTO TUI dashboard shows cognitive state visually. Launch: 'otto tui' (--once for single display, --watch for auto-refresh). Panels: Current State (energy bar, burnout color, momentum, mode, duration), Today (task list), Protection Status (level, next suggestion, override count). Built with Rich library. Keyboard: q=quit, r=refresh. Colors: GREEN/YELLOW/ORANGE/RED for burnout, visual bars for energy. Status line format: [~time | Goal | expert | altitude | burnout | momentum]."""
+            custom string summary = "Visual dashboard: current state, today panel, protection status - launch with 'otto tui'"
+            custom float confidence = 0.95
+            custom string provenance = "otto_tui"
+            custom string[] domains = ["otto", "tui"]
+            custom string[] triggers = ["otto tui", "otto dashboard", "tui dashboard", "visual status"]
+        }
+
+        def "ProtocolLayers" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/ProtocolLayers"
+            custom string content = """OTTO protocol has 3 layers for communication. Layer 0 (Binary): MessagePack encoding, 7-byte header (version + type + length), fast agent-to-agent communication, <1ms per message. Layer 1 (JSON-RPC): JSON-RPC 2.0 spec, otto.* method namespace, standard error codes + custom (-32001 to -32004). Layer 2 (Human): dignity-first natural language via HumanRender. Protocol router detects format and dispatches to correct handler. Layers only talk to adjacent layers."""
+            custom string summary = "3 protocol layers: L0 Binary (MessagePack), L1 JSON-RPC, L2 Human (dignity-first)"
+            custom float confidence = 0.95
+            custom string provenance = "otto_protocol"
+            custom string[] domains = ["otto", "protocol"]
+            custom string[] triggers = ["otto protocol", "binary protocol", "json rpc", "protocol layers"]
+        }
+
+        def "OveruseDetection" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/OveruseDetection"
+            custom string content = """OTTO detects 5 overuse patterns: TIME_EXTENDED (45/90/150 min thresholds), RAPID_EXCHANGE (20+ quick messages), OVERRIDE_PATTERN (2+ warning, 5+ concern), ENERGY_MISMATCH (low energy but still pushing), HYPERFOCUS (deep focus without body check). Each produces OveruseSignal with type, severity (0-1), duration, override count. Protection engine combines signals with burnout level and profile firmness to decide action. Cooldown prevents repeated suggestions (5 min)."""
+            custom string summary = "5 overuse types: time, rapid exchange, override pattern, energy mismatch, hyperfocus"
+            custom float confidence = 0.95
+            custom string provenance = "otto_protection"
+            custom string[] domains = ["otto", "protection"]
+            custom string[] triggers = ["overuse detection", "overuse types", "time threshold", "rapid exchange"]
+        }
+
+        def "DevelopmentPhases" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/DevelopmentPhases"
+            custom string content = """OTTO development phases: Phase 0 (Foundation) - clone Orchestra, rename, verify tests. Phase 1 (Core v0.1.0) - life signal detection, human render, profile, CLI, basic protection. Phase 2 (Protocol v0.1.5) - binary protocol, JSON-RPC, layer separation. Phase 3 (Protection v0.2.0) - full overuse detection, calibration learning. Phase 4 (Privacy v0.2.5) - encryption at rest, key management. Phase 5 (Integrations v0.3.0) - calendar, task, notes adapters. Phase 6 (Agents v0.4.0) - multi-agent orchestration. Phase 7 (TUI v0.5.0) - rich dashboard."""
+            custom string summary = "8 phases: Foundation > Core > Protocol > Protection > Privacy > Integrations > Agents > TUI"
+            custom float confidence = 0.95
+            custom string provenance = "otto_blueprint"
+            custom string[] domains = ["otto", "development"]
+            custom string[] triggers = ["development phases", "otto phases", "otto roadmap", "version targets"]
+        }
+
+        def "TestSuite" (
+            prepend apiSchemas = ["KnowledgePrimAPI"]
+        )
+        {
+            custom string canonical_path = "/Knowledge/OTTO/TestSuite"
+            custom string content = """OTTO test suite: 1807+ tests across 67 test files. Categories: Unit tests (800+), Integration tests (500+), Property-based (Hypothesis), Fuzz tests (Atheris on Linux). Coverage: 50%+ threshold, Codecov integration. Key test files: test_cognitive_engine.py, test_protection.py, test_cli_commands.py, test_webdav_adapter.py, test_s3_adapter.py, test_sync.py. Run: 'pytest tests/ -v'. ThinkingMachines compliance tests marked with @pytest.mark.determinism."""
+            custom string summary = "1807+ tests in 67 files - unit, integration, property-based, fuzz testing"
+            custom float confidence = 0.95
+            custom string provenance = "otto_tests"
+            custom string[] domains = ["otto", "testing"]
+            custom string[] triggers = ["otto tests", "test suite", "pytest", "test coverage"]
+        }
+    }
+}
