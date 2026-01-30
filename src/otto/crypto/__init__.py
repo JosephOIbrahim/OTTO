@@ -15,10 +15,12 @@ Components:
 - keyring_adapter: OS keychain integration
 - secure_file: Memory-only file decryption
 - recovery: Recovery key generation
+- pqcrypto: Post-quantum hybrid key exchange (X25519 + ML-KEM-768)
 
 Security Properties:
 - AES-256-GCM: Authenticated encryption with 256-bit key
 - Argon2id: Memory-hard, side-channel resistant
+- Hybrid PQ: Quantum-resistant key exchange (when liboqs available)
 - NEVER writes decrypted data to disk
 - Key material zeroed after use
 """
@@ -63,6 +65,32 @@ from .recovery import (
     RecoveryKey,
 )
 
+from .pqcrypto import (
+    # Core classes
+    HybridKEM,
+    HybridKeyExchange,
+    X25519KEM,
+    # Key types
+    HybridKeyPair,
+    HybridPublicKey,
+    HybridPrivateKey,
+    HybridCiphertext,
+    KEMKeyPair,
+    KEMPublicKey,
+    KEMPrivateKey,
+    KEMCiphertext,
+    KEMAlgorithm,
+    # Status
+    PQSecurityStatus,
+    is_pq_available,
+    get_pq_status,
+    # Convenience
+    create_hybrid_kem,
+    create_key_exchange,
+    serialize_hybrid_public_key,
+    deserialize_hybrid_public_key,
+)
+
 __all__ = [
     # Encryption
     "encrypt_data",
@@ -94,4 +122,24 @@ __all__ = [
     "validate_recovery_key",
     "recovery_key_to_bytes",
     "RecoveryKey",
+    # Post-Quantum Cryptography
+    "HybridKEM",
+    "HybridKeyExchange",
+    "X25519KEM",
+    "HybridKeyPair",
+    "HybridPublicKey",
+    "HybridPrivateKey",
+    "HybridCiphertext",
+    "KEMKeyPair",
+    "KEMPublicKey",
+    "KEMPrivateKey",
+    "KEMCiphertext",
+    "KEMAlgorithm",
+    "PQSecurityStatus",
+    "is_pq_available",
+    "get_pq_status",
+    "create_hybrid_kem",
+    "create_key_exchange",
+    "serialize_hybrid_public_key",
+    "deserialize_hybrid_public_key",
 ]
