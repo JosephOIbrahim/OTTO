@@ -3,16 +3,18 @@ Deterministic API Wrapper
 =========================
 
 The main entry point for deterministic inference. Wraps LLM API calls
-with caching, deterministic configuration, and metrics.
+with caching, deterministic configuration, verification, and metrics.
 
 [He2025] Principles Applied:
 - Fixed evaluation order
 - Response caching for guaranteed reproducibility
 - No dynamic algorithm switching
 - Deterministic configuration throughout
+- Multi-trial verification for non-determinism detection (Tier 2)
 
-This is the Tier 1 implementation that maximizes determinism within
-API constraints. For true kernel-level compliance, use a local backend.
+Tier 1: API-maximized determinism (caching, fixed params)
+Tier 2: Verification (multi-trial, divergence detection)
+Tier 3: Kernel-level determinism (local backend with batch_size=1)
 """
 
 import asyncio
@@ -40,6 +42,9 @@ from .backends.base import (
     BackendStatus,
 )
 from .backends.mock import MockBackend, DeterministicMockBackend
+
+# Tier 2 imports (lazy to avoid circular imports)
+# from .verification import DeterminismVerifier, VerificationResult, ConsensusStrategy
 
 
 @dataclass
@@ -176,6 +181,8 @@ class DeterministicAPIWrapper:
         config: Optional[DeterministicInferenceConfig] = None,
         cache: Optional[ResponseCache] = None,
         backends: Optional[Dict[InferenceBackendType, InferenceBackend]] = None,
+        verification_trials: int = 3,
+        auto_verify_criticality: str = "critical",
     ):
         """
         Initialize the wrapper.
@@ -184,6 +191,9 @@ class DeterministicAPIWrapper:
             config: Default inference configuration
             cache: Response cache (creates default if None)
             backends: Dict of backends (creates defaults if None)
+            verification_trials: Number of trials for Tier 2 verification
+            auto_verify_criticality: Criticality level that triggers auto-verification
+                                     ("low", "normal", "high", "critical", "none")
         """
         self._config = config or DETERMINISTIC_DEFAULT
         self._cache = cache or ResponseCache(
@@ -194,12 +204,28 @@ class DeterministicAPIWrapper:
         self._default_backend: Optional[InferenceBackend] = None
         self._initialized = False
 
+        # Tier 2 verification settings
+        self._verification_trials = verification_trials
+        self._auto_verify_criticality = auto_verify_criticality
+        self._verifier = None  # Lazy initialization
+
+        # Criticality levels for auto-verification
+        self._criticality_levels = {
+            "low": 0,
+            "normal": 1,
+            "high": 2,
+            "critical": 3,
+        }
+        self._verify_threshold = self._criticality_levels.get(auto_verify_criticality, 99)
+
         # Metrics
         self._total_requests = 0
         self._cache_hits = 0
         self._cache_misses = 0
         self._errors = 0
         self._total_latency_ms = 0.0
+        self._verified_requests = 0
+        self._verification_divergences = 0
 
     @property
     def config(self) -> DeterministicInferenceConfig:
@@ -243,13 +269,19 @@ class DeterministicAPIWrapper:
         self,
         request: Union[InferenceRequest, str],
         use_cache: Optional[bool] = None,
+        skip_auto_verify: bool = False,
     ) -> InferenceResult:
         """
         Perform inference with determinism guarantees.
 
+        If the request's criticality exceeds the auto_verify_criticality threshold,
+        this method automatically performs Tier 2 verification and returns the
+        verified result. This can be disabled with skip_auto_verify=True.
+
         Args:
             request: InferenceRequest or prompt string
             use_cache: Override cache usage (None = use config)
+            skip_auto_verify: If True, skip auto-verification even for high criticality
 
         Returns:
             InferenceResult with content and metadata
@@ -266,6 +298,35 @@ class DeterministicAPIWrapper:
         # Convert string to request
         if isinstance(request, str):
             request = InferenceRequest(prompt=request, config=self._config)
+
+        # Tier 2 Auto-verification based on criticality
+        if not skip_auto_verify and self._auto_verify_criticality != "none":
+            request_criticality = self._criticality_levels.get(request.criticality, 1)
+            if request_criticality >= self._verify_threshold:
+                # High criticality request - use verification
+                verification_result = await self.infer_verified(request)
+
+                latency_ms = (time.perf_counter() - start_time) * 1000
+                self._total_latency_ms += latency_ms
+
+                # Convert VerificationResult to InferenceResult
+                unique_count = len(set(verification_result.all_responses))
+                return InferenceResult(
+                    content=verification_result.response,
+                    cache_hit=False,  # Verification always makes fresh calls
+                    determinism_level=DeterminismLevel.VERIFIED if verification_result.verified else DeterminismLevel.API_MAXIMIZED,
+                    backend_used=f"verified-{self._default_backend.name}",
+                    latency_ms=latency_ms,
+                    request_id=f"verified-{verification_result.trials}trials",
+                    cache_key=request.cache_key,
+                    metadata={
+                        "verified": verification_result.verified,
+                        "confidence": verification_result.confidence,
+                        "trials": verification_result.trials,
+                        "unique_responses": unique_count,
+                        "divergence_type": verification_result.divergence_type.value if verification_result.divergence_type else None,
+                    },
+                )
 
         # Check cache first
         cache_enabled = use_cache if use_cache is not None else self._config.cache_enabled
@@ -393,16 +454,109 @@ class DeterministicAPIWrapper:
 
         return processed
 
+    async def infer_verified(
+        self,
+        request: Union[InferenceRequest, str],
+        n_trials: Optional[int] = None,
+    ) -> 'VerificationResult':
+        """
+        Perform verified inference with multiple trials (Tier 2).
+
+        This method runs multiple inference trials and compares results
+        to detect non-determinism. Use for critical decisions that need
+        verification.
+
+        Args:
+            request: InferenceRequest or prompt string
+            n_trials: Override number of trials (None = use default)
+
+        Returns:
+            VerificationResult with divergence analysis
+
+        Example:
+            >>> result = await wrapper.infer_verified("Critical question")
+            >>> if result.verified:
+            ...     print("All trials agreed!")
+            ... else:
+            ...     print(f"Divergence: {result.divergence_type}")
+        """
+        if not self._initialized:
+            raise RuntimeError("Wrapper not initialized. Call initialize() first.")
+
+        # Lazy import to avoid circular imports
+        from .verification import DeterminismVerifier, VerificationResult
+
+        # Convert string to request
+        if isinstance(request, str):
+            request = InferenceRequest(prompt=request, config=self._config)
+
+        # Initialize verifier if needed
+        if self._verifier is None:
+            self._verifier = DeterminismVerifier(
+                backend=self._default_backend,
+                n_trials=n_trials or self._verification_trials,
+            )
+
+        # Run verification
+        result = await self._verifier.verify(
+            prompt=request.prompt,
+            system_prompt=request.system_prompt,
+            temperature=request.config.temperature,
+            max_tokens=request.config.max_tokens,
+            seed=request.config.seed,
+        )
+
+        # Update metrics
+        self._verified_requests += 1
+        if not result.verified:
+            self._verification_divergences += 1
+
+        # Cache the consensus result if verified
+        if result.verified and self._config.cache_enabled:
+            self._cache.put(
+                key=request.cache_key,
+                response=result.response,
+                metadata={
+                    "verified": True,
+                    "trials": result.trials,
+                    "confidence": result.confidence,
+                },
+            )
+
+        return result
+
+    def get_verifier_stats(self) -> Dict[str, Any]:
+        """
+        Get Tier 2 verification statistics.
+
+        Returns:
+            Dict with verification metrics and divergence report
+        """
+        if self._verifier is None:
+            return {
+                "status": "not_initialized",
+                "verified_requests": self._verified_requests,
+                "divergences": self._verification_divergences,
+            }
+
+        return {
+            "verified_requests": self._verified_requests,
+            "divergences": self._verification_divergences,
+            "divergence_rate": self._verification_divergences / max(1, self._verified_requests),
+            "verifier_stats": self._verifier.stats,
+            "divergence_report": self._verifier.get_divergence_report(),
+        }
+
     def get_stats(self) -> Dict[str, Any]:
         """
         Get wrapper statistics.
 
         Returns:
-            Dict with request counts, cache stats, and latency
+            Dict with request counts, cache stats, verification stats, and latency
         """
         cache_stats = self._cache.stats
 
-        return {
+        stats = {
             "total_requests": self._total_requests,
             "cache_hits": self._cache_hits,
             "cache_misses": self._cache_misses,
@@ -415,7 +569,16 @@ class DeterministicAPIWrapper:
                 name.value: backend.get_status_report()
                 for name, backend in self._backends.items()
             },
+            # Tier 2 verification stats
+            "verification": {
+                "verified_requests": self._verified_requests,
+                "divergences": self._verification_divergences,
+                "divergence_rate": self._verification_divergences / max(1, self._verified_requests),
+                "auto_verify_threshold": self._auto_verify_criticality,
+            },
         }
+
+        return stats
 
     def reset_stats(self) -> None:
         """Reset all statistics."""
@@ -424,6 +587,8 @@ class DeterministicAPIWrapper:
         self._cache_misses = 0
         self._errors = 0
         self._total_latency_ms = 0.0
+        self._verified_requests = 0
+        self._verification_divergences = 0
 
     async def shutdown(self) -> None:
         """Shutdown all backends."""

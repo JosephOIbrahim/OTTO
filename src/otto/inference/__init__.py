@@ -2,22 +2,31 @@
 Deterministic Inference Layer
 =============================
 
-Tier 1 implementation of [He2025]-inspired deterministic inference.
+Tier 1 & 2 implementation of [He2025]-inspired deterministic inference.
 
 This module provides:
+
+**Tier 1 - API-Maximized Determinism:**
 - DeterministicInferenceConfig: Configuration for maximizing inference determinism
 - ResponseCache: Deterministic caching with integrity verification
 - DeterministicAPIWrapper: Wraps LLM APIs with determinism-maximizing settings
 - Backend abstraction for Claude, OpenAI, and local models
+
+**Tier 2 - Verification:**
+- DeterminismVerifier: Multi-trial verification for detecting non-determinism
+- VerificationResult: Results with divergence analysis and confidence scores
+- VerifiedInferenceWrapper: Auto-verification based on criticality
 
 [He2025] Principles Applied:
 - Fixed evaluation order for cache key computation (sorted keys)
 - No dynamic algorithm switching based on load
 - Deterministic serialization throughout
 - Response caching for guaranteed reproducibility (after first call)
+- Multi-trial verification for probabilistic non-determinism detection
 
-Note: This is Tier 1 compliance (API-maximized determinism).
-True kernel-level compliance requires Tier 3 (local deterministic inference).
+Note: Tier 1 provides API-maximized determinism.
+      Tier 2 adds verification (detection of non-determinism).
+      Tier 3 (local deterministic inference) provides kernel-level compliance.
 See docs/HE2025_KERNEL_COMPLIANCE_STRATEGY.md for full strategy.
 """
 
@@ -41,6 +50,14 @@ from .metrics import (
     InferenceMetrics,
     DeterminismReport,
 )
+from .verification import (
+    DeterminismVerifier,
+    VerificationResult,
+    VerifiedInferenceWrapper,
+    DivergenceAnalysis,
+    DivergenceType,
+    ConsensusStrategy,
+)
 
 __all__ = [
     # Config
@@ -59,6 +76,13 @@ __all__ = [
     # Metrics
     'InferenceMetrics',
     'DeterminismReport',
+    # Verification (Tier 2)
+    'DeterminismVerifier',
+    'VerificationResult',
+    'VerifiedInferenceWrapper',
+    'DivergenceAnalysis',
+    'DivergenceType',
+    'ConsensusStrategy',
 ]
 
-__version__ = '1.0.0'
+__version__ = '2.0.0'

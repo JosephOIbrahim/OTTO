@@ -1,9 +1,9 @@
 # [He2025] Kernel-Level Compliance Strategy
 
-**Status**: Tier 1 Implemented
+**Status**: Tier 1 & 2 Implemented
 **Date**: 2026-01-30
 **Author**: Claude Opus 4.5
-**Implementation**: `src/otto/inference/` (59 tests, 100% pass)
+**Implementation**: `src/otto/inference/` (113 tests, 100% pass)
 
 ---
 
@@ -186,66 +186,58 @@ class DeterministicAPIWrapper:
 
 ### Tier 2: Determinism Verification
 
-**Status**: 🔲 Not Implemented
+**Status**: ✅ Implemented (54 tests)
 
 **Approach**: Can't guarantee determinism, but can DETECT non-determinism
 
+**Implementation**: `src/otto/inference/verification.py`
+
 ```python
-class DeterminismVerifier:
-    """Verifies inference determinism through repeated queries."""
+from otto.inference import DeterminismVerifier, VerificationResult
 
-    def __init__(self, n_trials: int = 3, tolerance: float = 0.0):
-        self.n_trials = n_trials
-        self.tolerance = tolerance
+# Create verifier with multi-trial configuration
+verifier = DeterminismVerifier(
+    backend=backend,
+    n_trials=3,
+    tolerance=0.0,  # Exact match required
+    consensus_strategy=ConsensusStrategy.MAJORITY,
+)
 
-    async def verified_infer(self, prompt: str, params: dict) -> VerifiedResult:
-        """Run inference multiple times and verify consistency."""
+# Run verified inference
+result = await verifier.verify("What is 2+2?")
+if result.verified:
+    print(f"Deterministic! Response: {result.response}")
+else:
+    print(f"Divergence detected: {result.divergence_type}")
+    print(f"Confidence: {result.confidence}")
+```
 
-        results = []
-        for _ in range(self.n_trials):
-            result = await self._infer(prompt, params)
-            results.append(result)
+**Features Implemented**:
+- Multi-trial verification (parallel or sequential)
+- Divergence analysis with edit distance and similarity matrices
+- 5 consensus strategies: MAJORITY, FIRST, STRICTEST, SHORTEST, LONGEST
+- 6 divergence types: NONE, TRIVIAL, MINOR, MODERATE, MAJOR, COMPLETE
+- Criticality-based auto-verification in wrapper
+- Statistics tracking and divergence history
 
-        # Check for divergence
-        if self._all_identical(results):
-            return VerifiedResult(
-                response=results[0],
-                determinism_score=1.0,
-                verified=True
-            )
-        else:
-            # Divergence detected!
-            divergence = self._compute_divergence(results)
-            return VerifiedResult(
-                response=self._consensus(results),  # Majority vote
-                determinism_score=1.0 - divergence,
-                verified=False,
-                divergence_details=self._analyze_divergence(results)
-            )
-
-    def _all_identical(self, results: List[str]) -> bool:
-        """Check if all results are bit-identical."""
-        return len(set(results)) == 1
-
-    def _compute_divergence(self, results: List[str]) -> float:
-        """Compute divergence metric (0 = identical, 1 = completely different)."""
-        # Use edit distance or embedding similarity
-        pass
+**Auto-Verification in Wrapper**:
+```python
+# Critical requests auto-verify
+wrapper = DeterministicAPIWrapper(
+    auto_verify_criticality="critical",  # or "high", "normal", "low"
+    verification_trials=3,
+)
+result = await wrapper.infer(InferenceRequest(
+    prompt="Important decision",
+    criticality="critical",
+))
+# result.metadata["verified"] contains verification status
 ```
 
 **Guarantee**: Probabilistic detection of non-determinism
 **Limitation**: 3x latency, 3x cost; doesn't prevent non-determinism
 
 **Use Case**: Critical decisions where determinism matters
-
-```python
-# In cognitive routing
-if decision.criticality == "high":
-    result = await verifier.verified_infer(prompt, params)
-    if not result.verified:
-        log.warning(f"Non-determinism detected: {result.divergence_details}")
-        # Optionally: fall back to deterministic local model
-```
 
 ---
 
