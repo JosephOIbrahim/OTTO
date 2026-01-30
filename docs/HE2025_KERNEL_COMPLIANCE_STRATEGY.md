@@ -1,9 +1,9 @@
 # [He2025] Kernel-Level Compliance Strategy
 
-**Status**: Tier 1, 2 & 3 Implemented
+**Status**: ALL TIERS IMPLEMENTED (Tier 1, 2, 3 & 4)
 **Date**: 2026-01-30
 **Author**: Claude Opus 4.5
-**Implementation**: `src/otto/inference/` (157 tests, 100% pass)
+**Implementation**: `src/otto/inference/` (233 tests, 100% pass)
 
 ---
 
@@ -414,9 +414,20 @@ def fixed_order_reduction(tensor, dim):
 
 ### Tier 4: Cryptographically Verified Inference
 
-**Status**: 🔲 Research-Grade
+**Status**: ✅ IMPLEMENTED (`crypto.py`, 76 tests)
 
 **Approach**: Not just deterministic, but *provably* deterministic with cryptographic guarantees
+
+**Implementation Summary**:
+- `Commitment`: Cryptographic commitment scheme (hiding + binding via H(value || randomness))
+- `MerkleTree`: Merkle tree for execution trace verification with O(log n) proofs
+- `ExecutionTrace`: Records intermediate states as tamper-evident Merkle tree
+- `TEEProvider`: Abstract interface for TEE (SGX, SEV, TrustZone) with `SimulatedTEE` for testing
+- `AttestationReport`: TEE attestation with enclave hash, config hash, and signature
+- `CryptographicProof`: Complete proof containing commitments, attestation, and trace root
+- `ProofVerifier`: Third-party verification of cryptographic proofs
+- `CryptographicBackend`: Backend producing `VerifiedInferenceResult` with proofs
+- `MockCryptographicBackend`: Mock backend for testing verified inference
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐

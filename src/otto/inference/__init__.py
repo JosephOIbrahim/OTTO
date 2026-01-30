@@ -2,7 +2,7 @@
 Deterministic Inference Layer
 =============================
 
-Tier 1, 2 & 3 implementation of [He2025]-inspired deterministic inference.
+Tier 1, 2, 3 & 4 implementation of [He2025]-inspired deterministic inference.
 
 This module provides:
 
@@ -23,6 +23,13 @@ This module provides:
 - ServerConfigValidator: Validates server determinism settings
 - DeterministicVLLMBackend: Local inference with kernel-level guarantees
 
+**Tier 4 - Cryptographically Verified Inference:**
+- Commitment: Cryptographic commitment scheme (hiding + binding)
+- MerkleTree: Merkle tree for execution trace verification
+- TEEProvider: Abstract TEE interface (SGX, SEV, TrustZone)
+- CryptographicProof: Complete proof of deterministic execution
+- CryptographicBackend: Backend producing verified inference results
+
 [He2025] Principles Applied:
 - Fixed evaluation order for cache key computation (sorted keys)
 - No dynamic algorithm switching based on load
@@ -31,6 +38,7 @@ This module provides:
 - Multi-trial verification for probabilistic non-determinism detection
 - Batch size = 1 for kernel-level determinism (Tier 3)
 - CUDA deterministic operations enabled (Tier 3)
+- Cryptographic proofs for third-party verification (Tier 4)
 
 See docs/HE2025_KERNEL_COMPLIANCE_STRATEGY.md for full strategy.
 """
@@ -75,6 +83,30 @@ from .kernel import (
     HE2025_WITH_FLASH_ATTENTION,
     HE2025_INT8,
 )
+from .crypto import (
+    # Primitives
+    Commitment,
+    InputCommitment,
+    # Merkle Tree
+    MerkleTree,
+    MerkleNode,
+    # Execution Trace
+    ExecutionTrace,
+    ExecutionStep,
+    # TEE
+    TEEType,
+    TEECapabilities,
+    TEEProvider,
+    SimulatedTEE,
+    AttestationReport,
+    # Proofs
+    CryptographicProof,
+    ProofVerifier,
+    VerifiedInferenceResult,
+    # Backend
+    CryptographicBackend,
+    MockCryptographicBackend,
+)
 
 __all__ = [
     # Config
@@ -111,6 +143,23 @@ __all__ = [
     'HE2025_STRICT',
     'HE2025_WITH_FLASH_ATTENTION',
     'HE2025_INT8',
+    # Cryptographic (Tier 4)
+    'Commitment',
+    'InputCommitment',
+    'MerkleTree',
+    'MerkleNode',
+    'ExecutionTrace',
+    'ExecutionStep',
+    'TEEType',
+    'TEECapabilities',
+    'TEEProvider',
+    'SimulatedTEE',
+    'AttestationReport',
+    'CryptographicProof',
+    'ProofVerifier',
+    'VerifiedInferenceResult',
+    'CryptographicBackend',
+    'MockCryptographicBackend',
 ]
 
-__version__ = '3.0.0'
+__version__ = '4.0.0'
