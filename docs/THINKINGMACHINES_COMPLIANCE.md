@@ -6,11 +6,31 @@ He, Horace and Thinking Machines Lab, "Defeating Nondeterminism in LLM Inference
 Thinking Machines Lab: Connectionism, Sep 2025.
 https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 
+---
+
+## ⚠️ Scope Clarification (Critical)
+
+**[He2025] addresses GPU kernel-level batch-variance** in LLM inference:
+- RMSNorm reduction order varying with batch size
+- MatMul tile sizes changing with input dimensions
+- Attention split-KV strategy varying with load
+
+**OTTO OS applies these *principles* at the application level**:
+- Fixed LIVRPS priority order (analogous to fixed reduction order)
+- Fixed expert routing (no load-dependent algorithm switching)
+- Fixed NEXUS evaluation order (no dynamic phase reordering)
+
+**OTTO does NOT implement LLM inference kernels.** The compliance claim refers to
+applying the same *design principles* (deterministic evaluation order, no runtime
+strategy switching) at a different abstraction layer.
+
+---
+
 ## Core Requirement: Batch-Invariance
 
 **Definition**: Identical inputs must produce identical outputs regardless of batch size or system load.
 
-**Otto Implementation**: ✅ COMPLIANT
+**Otto Implementation**: ✅ PRINCIPLES APPLIED (Application Level)
 
 The cognitive routing system produces identical results regardless of:
 - How many concurrent sessions exist

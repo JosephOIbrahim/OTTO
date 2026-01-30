@@ -69,6 +69,13 @@ class HumanRender:
         Args:
             otto_role: guardian | companion | tool
             seed: Random seed for phrase selection (for determinism)
+
+        Note:
+            Unseeded by default for natural output variation.
+            This affects human-readable phrasing only, not routing decisions.
+            For deterministic output, pass seed parameter.
+            This is NOT a [He2025] violation - [He2025] principles apply to
+            cognitive routing, not presentation layer phrase selection.
         """
         self.otto_role = otto_role
         self._rng = random.Random(seed) if seed else random.Random()

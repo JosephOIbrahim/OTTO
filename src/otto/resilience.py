@@ -360,7 +360,11 @@ async def with_retry(
         rng = random.Random(seed)
         logger.debug(f"{operation_name}: Using seeded RNG (seed={seed}) for deterministic jitter")
     else:
-        rng = random.Random()  # Unseeded for true randomness in production
+        # NOTE: Intentionally unseeded for production retry jitter.
+        # This is NOT a [He2025] violation - jitter randomness prevents
+        # thundering herd and is outside the deterministic routing path.
+        # [He2025] principles apply to cognitive routing, not retry timing.
+        rng = random.Random()
 
     for attempt in range(1, max_attempts + 1):
         try:

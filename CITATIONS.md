@@ -26,6 +26,11 @@ This document provides formal citations for the theoretical foundations and prio
 - Deterministic checksums for reproducibility
 - No dynamic algorithm switching based on runtime conditions
 
+**Scope Clarification:** [He2025] addresses GPU kernel-level batch-variance in LLM
+inference (RMSNorm, MatMul, Attention). OTTO applies the same *principles* at the
+application level for cognitive routing. OTTO does not implement or modify LLM
+inference kernels. See `docs/HE2025_DEEP_CONSISTENCY_AUDIT.md` for full analysis.
+
 ---
 
 ### Universal Scene Description (USD)
