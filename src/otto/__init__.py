@@ -385,7 +385,7 @@ from .dashboard_bridge import (
 )
 
 # ============================================================================
-# v7.0 USD Cognitive Substrate Runtime
+# v7.1.0 USD Cognitive Substrate Runtime (Batch Invariance)
 # ============================================================================
 
 # Substrate Runtime (extracted from cognitive-orchestrator)
@@ -677,7 +677,7 @@ __all__ = [
     "create_bridge",
 
     # ========================================
-    # v7.0 USD Cognitive Substrate Runtime
+    # v7.1.0 USD Cognitive Substrate Runtime (Batch Invariance)
     # ========================================
 
     # Knowledge - O(1) factual retrieval

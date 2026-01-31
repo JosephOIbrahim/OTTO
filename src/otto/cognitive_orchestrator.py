@@ -30,6 +30,9 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, Union
 import logging
 
+# [He2025] Determinism utilities
+from .determinism import sorted_max_key
+
 # Cognitive modules
 from .prism_detector import PRISMDetector, SignalVector, create_detector
 # Knowledge layer for Phase 0 fast path
@@ -181,10 +184,13 @@ class NexusResult:
         }
 
     def _get_top_signal(self, signals: Dict[str, float]) -> Optional[str]:
-        """Get top signal from dict."""
+        """Get top signal from dict.
+
+        [He2025] Uses sorted_max_key for deterministic tie-breaking.
+        """
         if not signals:
             return None
-        return max(signals.items(), key=lambda x: x[1])[0]
+        return sorted_max_key(signals)
 
 
 # =============================================================================

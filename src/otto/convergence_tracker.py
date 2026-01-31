@@ -26,6 +26,9 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 import logging
 
+# [He2025] Determinism utilities
+from .determinism import kahan_sum
+
 from .expert_router import Expert
 from .parameter_locker import Paradigm
 from .cognitive_state import BurnoutLevel, MomentumPhase, Altitude
@@ -155,10 +158,13 @@ class StateVector:
         Calculate L2 distance between two state vectors.
 
         Formula: ||A - B||_2 = sqrt(sum((a_i - b_i)^2))
+
+        [He2025] Uses Kahan summation for batch-invariant accumulation.
         """
         arr_a = a.to_array()
         arr_b = b.to_array()
-        return math.sqrt(sum((x - y) ** 2 for x, y in zip(arr_a, arr_b)))
+        squared_diffs = [(x - y) ** 2 for x, y in zip(arr_a, arr_b)]
+        return math.sqrt(kahan_sum(squared_diffs))
 
 
 # =============================================================================
@@ -349,7 +355,9 @@ class ConvergenceTracker:
         min_distance = float('inf')
         closest = AttractorBasin.FOCUSED
 
-        for attractor, definition in ATTRACTOR_DEFINITIONS.items():
+        # [He2025] Use deterministic iteration order (sort by enum value for stability)
+        for attractor in sorted(ATTRACTOR_DEFINITIONS.keys(), key=lambda x: x.value):
+            definition = ATTRACTOR_DEFINITIONS[attractor]
             # Create target state vector
             target = self._normalize_state(
                 definition["expert"],

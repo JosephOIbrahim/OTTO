@@ -33,6 +33,9 @@ from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
 import logging
 
+# [He2025] Determinism utilities
+from .determinism import sorted_max, sorted_max_key, kahan_sum, deterministic_dict_iter
+
 logger = logging.getLogger(__name__)
 
 
@@ -189,8 +192,9 @@ class SignalVector:
             (category, signal_name, score) tuple
         """
         # Check in FIXED priority order
+        # [He2025] Use sorted_max for deterministic tie-breaking
         if self.emotional and max(self.emotional.values()) > 0:
-            top_emotional = max(self.emotional.items(), key=lambda x: x[1])
+            top_emotional = sorted_max(self.emotional)
             return (SignalCategory.EMOTIONAL, top_emotional[0], top_emotional[1])
 
         # OTTO: Protection signals are second priority
@@ -415,17 +419,24 @@ class PRISMDetector:
         Calculate aggregate emotional score with severity weighting.
 
         Higher severity emotions (angry, overwhelmed) weight more heavily.
+
+        [He2025] Uses deterministic iteration and Kahan summation.
         """
         if not emotional_signals:
             return 0.0
 
-        weighted_sum = 0.0
-        weight_total = 0.0
+        # [He2025] Collect weighted values in deterministic order
+        weighted_values = []
+        severity_values = []
 
-        for signal, score in emotional_signals.items():
+        for signal, score in deterministic_dict_iter(emotional_signals):
             severity = EMOTIONAL_SEVERITY.get(signal, 0.5)
-            weighted_sum += score * severity
-            weight_total += severity
+            weighted_values.append(score * severity)
+            severity_values.append(severity)
+
+        # [He2025] Kahan summation for batch-invariant accumulation
+        weighted_sum = kahan_sum(weighted_values)
+        weight_total = kahan_sum(severity_values)
 
         if weight_total == 0:
             return 0.0
@@ -437,17 +448,24 @@ class PRISMDetector:
         Calculate aggregate protection score with severity weighting.
 
         OTTO-specific: weighs signals by how concerning they are for user wellbeing.
+
+        [He2025] Uses deterministic iteration and Kahan summation.
         """
         if not protection_signals:
             return 0.0
 
-        weighted_sum = 0.0
-        weight_total = 0.0
+        # [He2025] Collect weighted values in deterministic order
+        weighted_values = []
+        severity_values = []
 
-        for signal, score in protection_signals.items():
+        for signal, score in deterministic_dict_iter(protection_signals):
             severity = PROTECTION_SEVERITY.get(signal, 0.5)
-            weighted_sum += score * severity
-            weight_total += severity
+            weighted_values.append(score * severity)
+            severity_values.append(severity)
+
+        # [He2025] Kahan summation for batch-invariant accumulation
+        weighted_sum = kahan_sum(weighted_values)
+        weight_total = kahan_sum(severity_values)
 
         if weight_total == 0:
             return 0.0
@@ -455,10 +473,13 @@ class PRISMDetector:
         return min(weighted_sum / weight_total, 1.0)
 
     def _get_primary(self, signals: Dict[str, float]) -> Optional[str]:
-        """Get primary signal (highest score) from dict."""
+        """Get primary signal (highest score) from dict.
+
+        [He2025] Uses sorted_max_key for deterministic tie-breaking.
+        """
         if not signals:
             return None
-        return max(signals.items(), key=lambda x: x[1])[0]
+        return sorted_max_key(signals)
 
     def _apply_perspectives(self, text: str, signals: SignalVector) -> Dict[str, Any]:
         """

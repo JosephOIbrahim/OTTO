@@ -26,6 +26,9 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# [He2025] Determinism utilities
+from ..determinism import kahan_sum
+
 from .outcome_tracker import OutcomeTracker, Outcome, OutcomeType
 
 logger = logging.getLogger(__name__)
@@ -249,11 +252,16 @@ class CalibrationLearner:
         return weight
 
     def _normalize_weights(self) -> None:
-        """Normalize weights to sum to 1.0."""
-        total = sum(w.weight for w in self._weights.values())
+        """Normalize weights to sum to 1.0.
+
+        [He2025] Uses Kahan summation and sorted iteration for determinism.
+        """
+        # [He2025] Kahan summation for batch-invariant accumulation
+        total = kahan_sum([w.weight for w in self._weights.values()])
         if total > 0:
-            for w in self._weights.values():
-                w.weight /= total
+            # [He2025] Iterate in sorted key order for determinism
+            for expert in sorted(self._weights.keys()):
+                self._weights[expert].weight /= total
 
     def _update_trend(self, expert: str, recent_score: float) -> None:
         """Update trend for an expert based on recent outcomes."""

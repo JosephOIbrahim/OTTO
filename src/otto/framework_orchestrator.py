@@ -77,6 +77,9 @@ from .decision_engine import (
 )
 from .agent_coordinator import DecisionMode
 
+# [He2025] Determinism utilities
+from .determinism import kahan_sum, sorted_max
+
 # Production excellence modules (v3.0)
 from .metrics import OrchestratorMetrics, get_metrics
 from .tracing import DistributedTracer, get_tracer, configure_tracer, SpanStatus
@@ -865,7 +868,8 @@ class MoERouterAgent(BaseAgent):
                 activation["guide"] = max(activation["guide"], task_signals["research"])
 
         # Fallback: Original keyword matching (if no PRISM signals)
-        if not prism_signals or sum(activation.values()) == 0:
+        # [He2025] Use kahan_sum for batch-invariant accumulation
+        if not prism_signals or kahan_sum(activation.values()) == 0:
             for expert, config in self.EXPERTS.items():
                 triggers = config["triggers"]
                 matches = sum(1 for t in triggers if t in task_lower)
@@ -901,9 +905,11 @@ class MoERouterAgent(BaseAgent):
             bounded[expert] = max(score, floor)
 
         # Homeostatic normalization: ensure weights sum to 1.0
-        total = sum(bounded.values())
+        # [He2025] Use kahan_sum for batch-invariant accumulation
+        total = kahan_sum(bounded.values())
         if total > 0:
-            bounded = {k: v / total for k, v in bounded.items()}
+            # Normalize in sorted key order for determinism
+            bounded = {k: bounded[k] / total for k in sorted(bounded.keys())}
 
         return bounded
 
@@ -970,7 +976,14 @@ class MoERouterAgent(BaseAgent):
         selected = self._select(bounded)
 
         # Compute who would have won WITHOUT safety floors (for transparency)
-        raw_winner = max(weighted.items(), key=lambda x: (x[1], -self.EXPERTS[x[0]]["priority"]))[0] if any(weighted.values()) else "protector"
+        # [He2025] Use sorted_max with priority tiebreaker for determinism
+        if any(weighted.values()):
+            raw_winner = sorted_max(
+                weighted,
+                tiebreaker=lambda k: self.EXPERTS[k]["priority"]
+            )[0]
+        else:
+            raw_winner = "protector"
         safety_intervention = (selected != raw_winner) and (weighted.get(raw_winner, 0) > weighted.get(selected, 0))
 
         # PHASE 5: UPDATE - Prepare for Hebbian learning

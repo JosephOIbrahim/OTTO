@@ -21,6 +21,9 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+# [He2025] Determinism utilities
+from ..determinism import sorted_set_to_list
+
 from .base import Agent, AgentConfig, NonRetryableError
 
 logger = logging.getLogger(__name__)
@@ -428,7 +431,8 @@ class PlannerAgent(Agent[ExecutionPlan]):
         if parallel_groups:
             notes.append(f"Contains {len(parallel_groups)} parallelizable groups")
         if any(s.agent_type for s in steps):
-            agent_types = set(s.agent_type for s in steps if s.agent_type)
+            # [He2025] Use sorted_set_to_list for deterministic ordering
+            agent_types = sorted_set_to_list(set(s.agent_type for s in steps if s.agent_type))
             notes.append(f"Suggested agents: {', '.join(agent_types)}")
 
         return ExecutionPlan(
@@ -464,7 +468,8 @@ class PlannerAgent(Agent[ExecutionPlan]):
     def _generate_summary(self, task: str, steps: List[PlanStep]) -> str:
         """Generate plan summary."""
         step_count = len(steps)
-        categories = list(set(s.category for s in steps))
+        # [He2025] Use sorted_set_to_list for deterministic ordering
+        categories = sorted_set_to_list(set(s.category for s in steps))
 
         if step_count == 1:
             return f"Single-step {categories[0]} task"
