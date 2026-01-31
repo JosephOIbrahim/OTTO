@@ -1,0 +1,61 @@
+# OTTO Matrix Bot - Systemd Service
+# ==================================
+#
+# Installation:
+#   1. Copy to /etc/systemd/system/otto-bot.service
+#   2. Create /etc/otto/bot.env with configuration
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable otto-bot
+#   5. sudo systemctl start otto-bot
+#
+# Logs:
+#   journalctl -u otto-bot -f
+
+[Unit]
+Description=OTTO Matrix Bot - Secure Mobile Interface
+Documentation=https://github.com/JosephOIbrahim/otto-os
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=otto
+Group=otto
+
+# Working directory
+WorkingDirectory=/opt/otto
+
+# Environment file with secrets
+EnvironmentFile=/etc/otto/bot.env
+
+# Additional environment
+Environment="PYTHONPATH=/opt/otto/src"
+Environment="PYTHONUNBUFFERED=1"
+
+# Start command
+ExecStart=/opt/otto/venv/bin/python -m otto.messaging.run_bot
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/otto /var/log/otto
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=100%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=otto-bot
+
+[Install]
+WantedBy=multi-user.target

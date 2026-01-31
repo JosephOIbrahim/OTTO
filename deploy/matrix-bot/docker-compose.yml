@@ -1,0 +1,153 @@
+# OTTO Matrix Bot - Docker Compose
+# =================================
+#
+# Production deployment with optional services
+#
+# Usage:
+#   cp .env.example .env
+#   # Edit .env with your credentials
+#   docker-compose up -d
+#
+# Services:
+#   - otto-bot: Main Matrix bot
+#   - redis: Session/cache store (optional)
+#   - prometheus: Metrics collection (optional)
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # OTTO Matrix Bot - Core Service
+  # ===========================================
+  otto-bot:
+    build:
+      context: ../..
+      dockerfile: deploy/matrix-bot/Dockerfile
+      args:
+        ENABLE_PQ: ${ENABLE_PQ:-true}
+    image: otto-matrix-bot:latest
+    container_name: otto-bot
+    restart: unless-stopped
+
+    environment:
+      # Required
+      - OTTO_HOMESERVER=${OTTO_HOMESERVER}
+      - OTTO_USER_ID=${OTTO_USER_ID}
+      - OTTO_PASSWORD=${OTTO_PASSWORD}
+      # Optional
+      - OTTO_ACCESS_TOKEN=${OTTO_ACCESS_TOKEN:-}
+      - OTTO_DEVICE_ID=${OTTO_DEVICE_ID:-OTTO_BOT}
+      - OTTO_DATA_DIR=/data
+      - OTTO_LOG_LEVEL=${OTTO_LOG_LEVEL:-INFO}
+      - OTTO_ENABLE_PQ=${ENABLE_PQ:-true}
+      - OTTO_ALLOWED_USERS=${OTTO_ALLOWED_USERS:-}
+      - OTTO_AUTO_JOIN=${OTTO_AUTO_JOIN:-false}
+      # Redis (if enabled)
+      - OTTO_REDIS_URL=${OTTO_REDIS_URL:-}
+      # API (if enabled)
+      - OTTO_API_ENABLED=${OTTO_API_ENABLED:-false}
+      - OTTO_API_PORT=8080
+
+    volumes:
+      # Persistent data
+      - otto-data:/data
+      # Optional: Mount config file
+      - ./config.yaml:/app/config.yaml:ro
+
+    networks:
+      - otto-network
+
+    ports:
+      # API port (if enabled)
+      - "${OTTO_API_PORT:-8080}:8080"
+      # Metrics port
+      - "${OTTO_METRICS_PORT:-9090}:9090"
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # ===========================================
+  # Redis - Session/Cache Store (Optional)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: otto-redis
+    restart: unless-stopped
+    profiles:
+      - with-redis
+
+    command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
+
+    volumes:
+      - redis-data:/data
+
+    networks:
+      - otto-network
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ===========================================
+  # Prometheus - Metrics (Optional)
+  # ===========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: otto-prometheus
+    restart: unless-stopped
+    profiles:
+      - with-monitoring
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - otto-network
+
+    ports:
+      - "9091:9090"
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  otto-data:
+    driver: local
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  otto-network:
+    driver: bridge
