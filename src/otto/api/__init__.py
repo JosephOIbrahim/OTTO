@@ -329,6 +329,31 @@ from .merkle_audit import (
     create_audit_log,
 )
 
+# Mobile API
+from .mobile import (
+    # Enums
+    DeviceType,
+    DeviceStatus,
+    PushProvider,
+    CommandCategory,
+    # Data classes
+    DeviceInfo,
+    MobileSession,
+    SyncState,
+    CryptoCapabilities,
+    CommandResult,
+    # Managers
+    MobileDeviceManager,
+    MobileSyncManager,
+    MobileCommandExecutor,
+    # API
+    MobileAPI,
+    get_mobile_api,
+    reset_mobile_api,
+    # Routes
+    get_mobile_routes,
+)
+
 
 __all__ = [
     # Version
@@ -570,4 +595,22 @@ __all__ = [
     "AuditEventType",
     "AuditLogAPI",
     "create_audit_log",
+
+    # Mobile API
+    "DeviceType",
+    "DeviceStatus",
+    "PushProvider",
+    "CommandCategory",
+    "DeviceInfo",
+    "MobileSession",
+    "SyncState",
+    "CryptoCapabilities",
+    "CommandResult",
+    "MobileDeviceManager",
+    "MobileSyncManager",
+    "MobileCommandExecutor",
+    "MobileAPI",
+    "get_mobile_api",
+    "reset_mobile_api",
+    "get_mobile_routes",
 ]
