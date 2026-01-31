@@ -27,11 +27,13 @@ Usage:
 
 import time
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 import logging
 
 # Cognitive modules
 from .prism_detector import PRISMDetector, SignalVector, create_detector
+# Knowledge layer for Phase 0 fast path
+from .substrate.knowledge import get_unified_search, RetrievalResult
 from .expert_router import ExpertRouter, Expert, RoutingResult, create_router
 from .parameter_locker import (
     ParameterLocker, LockedParams, LockResult, ThinkDepth, Paradigm, create_locker
@@ -45,6 +47,65 @@ from .cognitive_state import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Confidence threshold for knowledge fast path short-circuit
+KNOWLEDGE_CONFIDENCE_THRESHOLD = 0.85
+
+
+# =============================================================================
+# Knowledge Result (Phase 0 Fast Path)
+# =============================================================================
+
+@dataclass
+class KnowledgeResult:
+    """
+    Result from Phase 0 Knowledge Fast Path.
+
+    When a factual query matches high-confidence knowledge (≥0.85),
+    the pipeline short-circuits here instead of running full NEXUS.
+
+    ThinkingMachines [He2025] Compliance:
+    - Fixed confidence threshold (0.85)
+    - Deterministic short-circuit decision
+    """
+    retrieval: RetrievalResult
+    query: str
+    short_circuited: bool = True
+    processing_time_ms: float = 0.0
+
+    @property
+    def found(self) -> bool:
+        """Whether knowledge was found."""
+        return self.retrieval.found
+
+    @property
+    def top_prim(self):
+        """Get the top-scoring prim if any."""
+        if self.retrieval.prims:
+            return self.retrieval.prims[0]
+        return None
+
+    def to_anchor(self) -> str:
+        """Get anchor string for embedding in responses."""
+        prim = self.top_prim
+        path = prim.canonical_path if prim else "unknown"
+        conf = f"{self.retrieval.top_confidence:.2f}"
+        return f"[KNOW:{path}|conf={conf}]"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize to dict for WebSocket/dashboard."""
+        prim = self.top_prim
+        return {
+            "phase": "knowledge",
+            "short_circuited": self.short_circuited,
+            "query": self.query,
+            "found": self.found,
+            "path": prim.canonical_path if prim else None,
+            "confidence": self.retrieval.top_confidence,
+            "summary": prim.summary if prim else None,
+            "retrieval_method": self.retrieval.retrieval_method,
+            "processing_time_ms": self.processing_time_ms,
+        }
 
 
 # =============================================================================
@@ -174,7 +235,7 @@ class CognitiveOrchestrator:
         message: str,
         context: Dict[str, Any] = None,
         requested_depth: ThinkDepth = ThinkDepth.STANDARD
-    ) -> NexusResult:
+    ) -> Union[NexusResult, KnowledgeResult]:
         """
         Process a message through the 5-Phase NEXUS Pipeline.
 
@@ -199,6 +260,24 @@ class CognitiveOrchestrator:
         state_checksum = snapshot.checksum()
 
         logger.info(f"NEXUS Pipeline starting: state={state_checksum}")
+
+        # =================================================================
+        # PHASE 0: RETRIEVE (Knowledge Fast Path)
+        # =================================================================
+        # Check if this is a factual query that can be answered from knowledge
+        if self.detector.detect_factual_query(message):
+            logger.debug("Phase 0: RETRIEVE - Factual query detected")
+            knowledge = get_unified_search()
+            result = knowledge.search(message, max_results=1)
+
+            if result.found and result.top_confidence >= KNOWLEDGE_CONFIDENCE_THRESHOLD:
+                # Short-circuit: Return knowledge directly
+                logger.info(f"Phase 0: Knowledge hit - {result.prims[0].canonical_path} "
+                           f"(conf={result.top_confidence:.2f})")
+                return self._build_knowledge_result(result, message, start_time)
+
+            logger.debug(f"Phase 0: No high-confidence match "
+                        f"(found={result.found}, conf={result.top_confidence:.2f})")
 
         # =================================================================
         # PHASE 1: DETECT (PRISM Signal Extraction)
@@ -374,6 +453,31 @@ class CognitiveOrchestrator:
         state.complete_task()
         self.state_manager.save()
 
+    def _build_knowledge_result(
+        self,
+        retrieval: RetrievalResult,
+        query: str,
+        start_time: float
+    ) -> KnowledgeResult:
+        """
+        Build result for knowledge fast path short-circuit.
+
+        Args:
+            retrieval: The knowledge retrieval result
+            query: Original user query
+            start_time: Processing start time for timing
+
+        Returns:
+            KnowledgeResult with short_circuited=True
+        """
+        processing_time = (time.time() - start_time) * 1000
+        return KnowledgeResult(
+            retrieval=retrieval,
+            query=query,
+            short_circuited=True,
+            processing_time_ms=processing_time
+        )
+
 
 # =============================================================================
 # Factory Function
@@ -385,5 +489,6 @@ def create_orchestrator() -> CognitiveOrchestrator:
 
 
 __all__ = [
-    'NexusResult', 'CognitiveOrchestrator', 'create_orchestrator'
+    'NexusResult', 'KnowledgeResult', 'CognitiveOrchestrator', 'create_orchestrator',
+    'KNOWLEDGE_CONFIDENCE_THRESHOLD'
 ]

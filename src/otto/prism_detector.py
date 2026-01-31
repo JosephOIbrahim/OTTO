@@ -552,6 +552,44 @@ class PRISMDetector:
 
         return (False, None)
 
+    # =========================================================================
+    # Phase 0: Factual Query Detection (Knowledge Fast Path)
+    # =========================================================================
+
+    # FIXED signal list for factual queries - ThinkingMachines [He2025] compliant
+    FACTUAL_SIGNALS = [
+        "what is", "what's", "what are",
+        "explain", "define", "describe",
+        "how does", "how do",
+        "tell me about",
+    ]
+
+    def detect_factual_query(self, text: str) -> bool:
+        """
+        Detect if message is a factual query (Phase 0 fast path candidate).
+
+        Factual queries can short-circuit to Knowledge Layer if high-confidence
+        match is found (≥0.85), bypassing the full NEXUS pipeline.
+
+        ThinkingMachines [He2025] Compliance:
+        - FIXED signal list (no runtime variation)
+        - Deterministic detection (same input = same output)
+
+        Args:
+            text: User message to analyze
+
+        Returns:
+            True if message appears to be a factual query
+        """
+        text_lower = text.lower().strip()
+
+        # Check for factual query signals
+        for signal in self.FACTUAL_SIGNALS:
+            if text_lower.startswith(signal):
+                return True
+
+        return False
+
 
 # =============================================================================
 # Factory Functions
