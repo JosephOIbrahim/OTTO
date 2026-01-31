@@ -16,6 +16,7 @@ Components:
 - secure_file: Memory-only file decryption
 - recovery: Recovery key generation
 - pqcrypto: Post-quantum hybrid key exchange (X25519 + ML-KEM-768)
+- threshold: N-of-M threshold signatures (Shamir Secret Sharing)
 
 Security Properties:
 - AES-256-GCM: Authenticated encryption with 256-bit key
@@ -91,6 +92,28 @@ from .pqcrypto import (
     deserialize_hybrid_public_key,
 )
 
+from .threshold import (
+    # Core classes
+    ThresholdScheme,
+    ThresholdSigner,
+    KeyEscrow,
+    # Data types
+    Share,
+    ShareSet,
+    PartialSignature,
+    ThresholdSignature,
+    # Exceptions
+    ThresholdError,
+    InsufficientSharesError,
+    InvalidShareError,
+    DuplicateShareError,
+    # Convenience functions
+    split_secret,
+    combine_shares,
+    create_threshold_signer,
+    create_key_escrow,
+)
+
 __all__ = [
     # Encryption
     "encrypt_data",
@@ -142,4 +165,20 @@ __all__ = [
     "create_key_exchange",
     "serialize_hybrid_public_key",
     "deserialize_hybrid_public_key",
+    # Threshold Cryptography
+    "ThresholdScheme",
+    "ThresholdSigner",
+    "KeyEscrow",
+    "Share",
+    "ShareSet",
+    "PartialSignature",
+    "ThresholdSignature",
+    "ThresholdError",
+    "InsufficientSharesError",
+    "InvalidShareError",
+    "DuplicateShareError",
+    "split_secret",
+    "combine_shares",
+    "create_threshold_signer",
+    "create_key_escrow",
 ]
