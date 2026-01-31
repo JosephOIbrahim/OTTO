@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "otto-mcp"
-version = "1.0.0"
+version = "1.0.1"
 description = "MCP server for Otto cognitive safety layer - ThinkingMachines [He2025] compliant"
 readme = "README.md"
 license = {text = "MIT"}
