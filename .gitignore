@@ -27,6 +27,8 @@ build/
 # Testing
 .coverage
 htmlcov/
+test_results.txt
+test_input.json
 
 # Ralph state
 .ralph-state.json

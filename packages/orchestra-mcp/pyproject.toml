@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "otto-mcp"
+version = "1.0.0"
+description = "MCP server for Otto cognitive safety layer - ThinkingMachines [He2025] compliant"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Otto Contributors"}
+]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "otto",
+    "cognitive",
+    "safety",
+    "claude",
+    "anthropic",
+    "llm",
+    "thinkingmachines"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "otto-os>=0.6.0",
+    "mcp>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/JosephOIbrahim/otto-os"
+Documentation = "https://github.com/JosephOIbrahim/otto-os#readme"
+Repository = "https://github.com/JosephOIbrahim/otto-os"
+Issues = "https://github.com/JosephOIbrahim/otto-os/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+otto-mcp = "otto_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
