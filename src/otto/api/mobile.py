@@ -34,6 +34,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+# Import PushProvider from push.py to avoid duplicate enum definitions
+from .push import PushProvider
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,14 +58,6 @@ class DeviceStatus(Enum):
     VERIFIED = "verified"
     SUSPENDED = "suspended"
     REVOKED = "revoked"
-
-
-class PushProvider(Enum):
-    """Push notification providers."""
-    APNS = "apns"           # Apple Push Notification Service
-    FCM = "fcm"             # Firebase Cloud Messaging
-    MATRIX = "matrix"       # Matrix push gateway
-    UNIFIED = "unified"     # UnifiedPush (open standard)
 
 
 class CommandCategory(Enum):
