@@ -13,6 +13,8 @@ Agent Types:
 - Researcher: Deep research with knowledge integration
 - Memory: Profile storage and recall (USD-backed)
 - Reflection: Self-assessment and cognitive integration
+- Validation: [He2025] determinism compliance checking
+- Context: Import analysis and dependency mapping
 - Explorer: Codebase exploration (existing)
 - Implementer: Code generation (existing)
 - Reviewer: Code review (existing)
@@ -44,6 +46,23 @@ from .context_aware_coordinator import (
     EnhancedCognitiveContext,
     create_context_aware_coordinator,
 )
+from .validation_agent import (
+    ValidationAgent,
+    ValidationResult,
+    ValidationFinding,
+    ValidationSeverity,
+    validate_file,
+    validate_directory,
+)
+from .context_agent import (
+    ContextAgent,
+    FileContext,
+    ImportInfo,
+    DependencyGraph,
+    analyze_file as analyze_file_context,
+    analyze_directory as analyze_directory_context,
+    build_dependency_graph,
+)
 
 __all__ = [
     # Base classes
@@ -68,4 +87,19 @@ __all__ = [
     "ContextAwareCoordinator",
     "EnhancedCognitiveContext",
     "create_context_aware_coordinator",
+    # Validation Agent
+    "ValidationAgent",
+    "ValidationResult",
+    "ValidationFinding",
+    "ValidationSeverity",
+    "validate_file",
+    "validate_directory",
+    # Context Agent
+    "ContextAgent",
+    "FileContext",
+    "ImportInfo",
+    "DependencyGraph",
+    "analyze_file_context",
+    "analyze_directory_context",
+    "build_dependency_graph",
 ]

@@ -387,7 +387,8 @@ class SecurityAssessor:
         components: Dict[str, ComponentScore] = {}
         all_issues: List[SecurityIssue] = []
 
-        for component_name in COMPONENT_WEIGHTS.keys():
+        # [He2025] Use sorted() for deterministic iteration order
+        for component_name in sorted(COMPONENT_WEIGHTS.keys()):
             results = component_results.get(component_name, [])
 
             if not results:

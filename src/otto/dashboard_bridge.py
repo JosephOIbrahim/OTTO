@@ -22,6 +22,7 @@ import logging
 from .cognitive_orchestrator import CognitiveOrchestrator, NexusResult, create_orchestrator
 from .cognitive_state import CognitiveState, BurnoutLevel, EnergyLevel, MomentumPhase
 from .expert_router import Expert
+from .determinism import sorted_max
 
 logger = logging.getLogger(__name__)
 
@@ -187,10 +188,11 @@ def _format_altitude(altitude_value: int) -> str:
 
 
 def _get_top_emotional(emotional_signals: Dict[str, float]) -> Optional[str]:
-    """Get top emotional signal."""
+    """Get top emotional signal with deterministic tie-breaking [He2025]."""
     if not emotional_signals:
         return None
-    return max(emotional_signals.items(), key=lambda x: x[1])[0]
+    # Use sorted_max for deterministic tie-breaking when signals have equal values
+    return sorted_max(emotional_signals)[0]
 
 
 # =============================================================================

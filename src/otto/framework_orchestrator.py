@@ -534,19 +534,21 @@ class DomainIntelligenceAgent(BaseAgent):
         return index
 
     def get_routing_keywords(self) -> List[str]:
-        """Return all routing keywords from all loaded domains."""
+        """Return all routing keywords from all loaded domains (deterministic order)."""
         keywords = []
         for domain in self.domains.values():
             keywords.extend(domain.get("routing_keywords", []))
-        return list(set(keywords))
+        # Sort for deterministic iteration order [He2025]
+        return sorted(set(keywords))
 
     def get_all_specialist_keywords(self) -> List[str]:
-        """Return all specialist keywords from all domains (for fallback matching)."""
+        """Return all specialist keywords from all domains (deterministic order)."""
         keywords = []
         for domain in self.domains.values():
             for specialist in domain.get("specialists", {}).values():
                 keywords.extend(specialist.get("keywords", []))
-        return list(set(keywords))
+        # Sort for deterministic iteration order [He2025]
+        return sorted(set(keywords))
 
     async def execute(self, task: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -620,13 +622,16 @@ class DomainIntelligenceAgent(BaseAgent):
                     }
 
         # Determine primary domain and specialist (highest keyword hits, or first if fallback)
+        # Use sorted_max for deterministic tie-breaking [He2025]
         if detected_domains:
-            primary_domain = max(detected_domains, key=lambda d: detected_domains[d]["hits"])
+            domain_hits = {d: detected_domains[d]["hits"] for d in detected_domains}
+            primary_domain = sorted_max(domain_hits)[0]
         else:
             primary_domain = "general"
 
         if detected_specialists:
-            primary_specialist = max(detected_specialists, key=lambda s: detected_specialists[s]["hits"])
+            specialist_hits = {s: detected_specialists[s]["hits"] for s in detected_specialists}
+            primary_specialist = sorted_max(specialist_hits)[0]
         else:
             primary_specialist = "general.analysis"
 
@@ -1102,7 +1107,7 @@ class WorldModelerAgent(BaseAgent):
             "causal_chains": causal_chains,
             "causal_chain_count": len(causal_chains),
             "energy_state": energy_state,
-            "composite_energy": sum(energy_state.values()) / len(energy_state),
+            "composite_energy": kahan_sum(energy_state.values()) / len(energy_state),
             "object_permanence_valid": True,
             "world_model_version": "CORTEX_v1"
         }
@@ -1159,8 +1164,8 @@ class CodeGeneratorAgent(BaseAgent):
             "bounded_reflection_depth": 3
         }
 
-        # Fitness score (evolutionary)
-        fitness = sum(reflection_metrics.values()) / len(reflection_metrics)
+        # Fitness score (evolutionary) - use kahan_sum for numerical stability [He2025]
+        fitness = kahan_sum(reflection_metrics.values()) / len(reflection_metrics)
 
         return {
             "generation_method": "evolutionary_proposer_solver",
@@ -1358,7 +1363,8 @@ class SelfReflectorAgent(BaseAgent):
             principle_hash = int(hashlib.sha256(principle.encode()).hexdigest(), 16)
             constitutional_scores[principle_name] = 0.85 + (principle_hash % 10) / 100
 
-        overall_score = sum(constitutional_scores.values()) / len(constitutional_scores)
+        # Use kahan_sum for deterministic floating-point accumulation [He2025]
+        overall_score = kahan_sum(constitutional_scores.values()) / len(constitutional_scores)
 
         # Store reflection
         reflection_entry = {

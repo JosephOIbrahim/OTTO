@@ -216,8 +216,13 @@ class MockPushProvider(PushProviderInterface):
         """Mock send - always succeeds unless failure_rate set."""
         self.sent_notifications.append((token, notification))
 
+        # [He2025] Use seeded random for deterministic test behavior
         import random
-        if random.random() < self._failure_rate:
+        import hashlib
+        # Deterministic seed based on notification id for reproducibility
+        seed = int(hashlib.sha256(notification.id.encode()).hexdigest()[:8], 16)
+        rng = random.Random(seed)
+        if rng.random() < self._failure_rate:
             return DeliveryResult(
                 notification_id=notification.id,
                 token=token,

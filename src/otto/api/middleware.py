@@ -704,9 +704,10 @@ class InputValidationMiddleware(Middleware):
                 errors.append(f"{field_path}: required field missing")
 
         # Check additional properties
+        # [He2025] Use sorted() for deterministic iteration order
         if additional is False and self._strict:
             allowed = set(properties.keys())
-            for key in data.keys():
+            for key in sorted(data.keys()):
                 if key not in allowed:
                     field_path = f"{path}.{key}" if path else key
                     errors.append(f"{field_path}: unknown field not allowed")

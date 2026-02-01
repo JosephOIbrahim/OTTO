@@ -554,13 +554,15 @@ class SubstrateIntegrity:
         root = self.build_merkle_tree(refresh=True)
 
         # Verify all configuration files
-        for config_path in CONFIG_SCHEMAS.keys():
+        # [He2025] Use sorted() for deterministic iteration order
+        for config_path in sorted(CONFIG_SCHEMAS.keys()):
             is_valid, config_issues = self.verify_config(config_path)
             issues.extend(config_issues)
             verified_count += 1
 
         # Check safety constraints
-        for config_path in SAFETY_CONSTRAINTS.keys():
+        # [He2025] Use sorted() for deterministic iteration order
+        for config_path in sorted(SAFETY_CONSTRAINTS.keys()):
             file_path = self.substrate_dir / config_path
             if file_path.exists():
                 try:

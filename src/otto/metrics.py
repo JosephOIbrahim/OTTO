@@ -130,7 +130,8 @@ class Histogram:
         """Export in Prometheus text format."""
         lines = [f"# HELP {self.name} {self.help}", f"# TYPE {self.name} histogram"]
 
-        for key in set(self._count.keys()) | set(self._bucket_counts.keys()):
+        # Sort for deterministic output order [He2025]
+        for key in sorted(set(self._count.keys()) | set(self._bucket_counts.keys())):
             label_prefix = ""
             if key:
                 labels_str = ",".join(f'{l}="{v}"' for l, v in zip(self.labels, key))

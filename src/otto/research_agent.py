@@ -29,6 +29,8 @@ from typing import Dict, List, Any, Optional, Tuple
 import logging
 import json
 
+from .determinism import sorted_max_value
+
 logger = logging.getLogger(__name__)
 
 
@@ -355,7 +357,8 @@ class ResearchAgent:
                 title=pattern,
                 content=f"Found {count} occurrences",
                 confidence=min(count / 10, 1.0),
-                relevance=count / max(patterns_found.values()) if patterns_found else 0
+                # [He2025] Use sorted_max_value for deterministic max
+                relevance=count / sorted_max_value(patterns_found) if patterns_found else 0
             ))
 
         result.patterns_found = len(findings)
