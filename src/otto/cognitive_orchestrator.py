@@ -49,10 +49,198 @@ from .cognitive_state import (
     MomentumPhase, CognitiveMode, Altitude
 )
 
+# Lazy imports to avoid circular dependency:
+# - hooks module imports from cognitive_orchestrator
+# - We import hooks/trails inside methods that use them
+
 logger = logging.getLogger(__name__)
 
 # Confidence threshold for knowledge fast path short-circuit
 KNOWLEDGE_CONFIDENCE_THRESHOLD = 0.85
+
+
+# =============================================================================
+# Pattern Tracker (PATTERN Trail Learning)
+# =============================================================================
+
+class PatternTracker:
+    """
+    Tracks state transitions and deposits PATTERN trails for successful patterns.
+
+    PATTERN trails record emergent learning from:
+    - stuck → resolved: User went from stuck/overwhelmed to focused
+    - momentum_up: Successful momentum transitions (cold_start→building, etc.)
+    - recovery_success: Burnout/energy improved after intervention
+
+    ThinkingMachines [He2025] Compliance:
+    - Fixed evaluation order for pattern detection
+    - Deterministic trail signals
+    - State comparison uses snapshot values only
+    """
+
+    def __init__(self):
+        self._previous_state: Optional[Dict[str, Any]] = None
+        self._previous_detected_state: Optional[str] = None
+        self._session_id: str = "pattern_tracker"
+
+    def set_session_id(self, session_id: str) -> None:
+        """Set session ID for trail attribution."""
+        self._session_id = session_id
+
+    def capture_before(
+        self,
+        state_snapshot: 'CognitiveState',
+        detected_state: Optional[str] = None
+    ) -> None:
+        """
+        Capture state BEFORE processing.
+
+        Args:
+            state_snapshot: Immutable state snapshot
+            detected_state: PRISM-detected emotional state (stuck, overwhelmed, etc.)
+        """
+        self._previous_state = {
+            "burnout": state_snapshot.burnout_level.value,
+            "momentum": state_snapshot.momentum_phase.value,
+            "energy": state_snapshot.energy_level.value,
+            "mode": state_snapshot.mode.value,
+        }
+        self._previous_detected_state = detected_state
+
+    def check_and_deposit(
+        self,
+        new_state: 'CognitiveState',
+        new_detected_state: Optional[str] = None,
+        expert_used: Optional[str] = None
+    ) -> list:
+        """
+        Check for successful patterns and deposit PATTERN trails.
+
+        Args:
+            new_state: State after processing
+            new_detected_state: New PRISM-detected state
+            expert_used: Which expert handled this exchange
+
+        Returns:
+            List of patterns detected and deposited
+        """
+        if self._previous_state is None:
+            return []
+
+        patterns_deposited = []
+
+        # 1. Check stuck → resolved
+        stuck_states = {"stuck", "overwhelmed", "frustrated"}
+        resolved_states = {"focused", None}  # None means no negative state detected
+
+        if (self._previous_detected_state in stuck_states and
+            new_detected_state in resolved_states):
+            pattern = self._deposit_pattern(
+                signal=f"stuck_resolved|from:{self._previous_detected_state}|expert:{expert_used or 'unknown'}",
+                metadata={
+                    "from_state": self._previous_detected_state,
+                    "to_state": new_detected_state or "focused",
+                    "expert": expert_used,
+                    "pattern_type": "stuck_resolved"
+                }
+            )
+            if pattern:
+                patterns_deposited.append(pattern)
+
+        # 2. Check momentum transitions (positive)
+        momentum_upgrades = [
+            ("cold_start", "building"),
+            ("building", "rolling"),
+            ("rolling", "peak"),
+            ("crashed", "cold_start"),  # Recovery from crash
+            ("crashed", "building"),    # Strong recovery from crash
+        ]
+
+        prev_momentum = self._previous_state["momentum"]
+        new_momentum = new_state.momentum_phase.value
+
+        for from_m, to_m in momentum_upgrades:
+            if prev_momentum == from_m and new_momentum == to_m:
+                pattern = self._deposit_pattern(
+                    signal=f"momentum_up|{from_m}→{to_m}",
+                    metadata={
+                        "from_momentum": from_m,
+                        "to_momentum": to_m,
+                        "pattern_type": "momentum_up"
+                    }
+                )
+                if pattern:
+                    patterns_deposited.append(pattern)
+                break
+
+        # 3. Check recovery success (burnout improved)
+        burnout_order = ["green", "yellow", "orange", "red"]
+        prev_burnout_idx = burnout_order.index(self._previous_state["burnout"])
+        new_burnout_idx = burnout_order.index(new_state.burnout_level.value)
+
+        if new_burnout_idx < prev_burnout_idx:  # Improved (lower is better)
+            pattern = self._deposit_pattern(
+                signal=f"recovery_success|burnout|{self._previous_state['burnout']}→{new_state.burnout_level.value}",
+                metadata={
+                    "from_burnout": self._previous_state["burnout"],
+                    "to_burnout": new_state.burnout_level.value,
+                    "expert": expert_used,
+                    "pattern_type": "recovery_burnout"
+                }
+            )
+            if pattern:
+                patterns_deposited.append(pattern)
+
+        # 4. Check energy recovery
+        energy_order = ["depleted", "low", "medium", "high"]
+        prev_energy_idx = energy_order.index(self._previous_state["energy"])
+        new_energy_idx = energy_order.index(new_state.energy_level.value)
+
+        if new_energy_idx > prev_energy_idx:  # Improved (higher is better)
+            pattern = self._deposit_pattern(
+                signal=f"recovery_success|energy|{self._previous_state['energy']}→{new_state.energy_level.value}",
+                metadata={
+                    "from_energy": self._previous_state["energy"],
+                    "to_energy": new_state.energy_level.value,
+                    "pattern_type": "recovery_energy"
+                }
+            )
+            if pattern:
+                patterns_deposited.append(pattern)
+
+        return patterns_deposited
+
+    def _deposit_pattern(self, signal: str, metadata: dict) -> Optional[str]:
+        """
+        Deposit a PATTERN trail.
+
+        Args:
+            signal: Trail signal string
+            metadata: Additional metadata
+
+        Returns:
+            Signal if deposited, None on error
+        """
+        try:
+            from .trails import Trail, TrailType, get_store
+
+            store = get_store()
+            trail = Trail(
+                trail_type=TrailType.PATTERN,
+                path="cognitive_orchestrator",  # Attach to orchestrator
+                signal=signal,
+                deposited_by=self._session_id,
+                metadata=metadata,
+                half_life_days=14.0  # PATTERN trails last longer (2 weeks)
+            )
+
+            store.deposit(trail)
+            logger.info(f"PATTERN trail deposited: {signal}")
+            return signal
+
+        except Exception as e:
+            logger.warning(f"Failed to deposit PATTERN trail: {e}")
+            return None
 
 
 # =============================================================================
@@ -235,6 +423,18 @@ class CognitiveOrchestrator:
         self.tracker = tracker or create_tracker()
 
         self._last_result: Optional[NexusResult] = None
+        self._session_id: str = f"session_{int(time.time())}"
+
+        # Initialize pattern tracker for PATTERN trail learning
+        self.pattern_tracker = PatternTracker()
+        self.pattern_tracker.set_session_id(self._session_id)
+
+        # Initialize hook system with default hooks (lazy import to avoid circular)
+        from .hooks import setup_default_hooks
+        setup_default_hooks()
+
+        # Fire SESSION_START hook
+        self._fire_session_start_hook()
 
     def process_message(
         self,
@@ -264,6 +464,9 @@ class CognitiveOrchestrator:
         state = self.state_manager.get_state()
         snapshot = state.snapshot()
         state_checksum = snapshot.checksum()
+
+        # [He2025] Capture state for PATTERN trail learning (before processing)
+        self.pattern_tracker.capture_before(snapshot)
 
         logger.info(f"NEXUS Pipeline starting: state={state_checksum}")
 
@@ -321,6 +524,14 @@ class CognitiveOrchestrator:
         logger.debug(f"  Routing: expert={routing.expert.value}, "
                      f"trigger={routing.trigger}, "
                      f"safety_redirect={routing.safety_redirect}")
+
+        # Deposit DECISION trail for routing choice
+        # [He2025] Deterministic trail deposit - same routing = same trail
+        self._deposit_decision_trail(
+            expert=routing.expert.value,
+            trigger=routing.trigger,
+            alternatives=[e.value for e in routing.considered_experts] if hasattr(routing, 'considered_experts') else None
+        )
 
         # =================================================================
         # PHASE 3: LOCK (Parameter Locking)
@@ -400,6 +611,26 @@ class CognitiveOrchestrator:
         self.state_manager.batch_update(state_updates)
 
         # =================================================================
+        # PATTERN TRAIL DETECTION
+        # =================================================================
+        # [He2025] Check for successful patterns after state commit
+        # Get detected emotional state from PRISM signals
+        detected_emotional_state = None
+        if signals.emotional:
+            detected_emotional_state = sorted_max_key(signals.emotional)
+
+        # Get updated state for pattern comparison
+        updated_state = self.state_manager.get_state()
+        patterns = self.pattern_tracker.check_and_deposit(
+            new_state=updated_state,
+            new_detected_state=detected_emotional_state,
+            expert_used=routing.expert.value
+        )
+
+        if patterns:
+            logger.info(f"PATTERN trails deposited: {patterns}")
+
+        # =================================================================
         # BUILD RESULT
         # =================================================================
         processing_time = (time.time() - start_time) * 1000
@@ -429,10 +660,28 @@ class CognitiveOrchestrator:
 
     def reset_session(self) -> None:
         """Reset session state (new task/session)."""
+        # Lazy import to avoid circular dependency
+        from .hooks import execute_hooks, HookEvent, HookContext
+
+        # Fire SESSION_END hook for current session
+        end_context = HookContext(
+            event=HookEvent.SESSION_END,
+            session_id=self._session_id,
+            metadata={"reason": "reset"}
+        )
+        execute_hooks(end_context)
+
+        # Reset cognitive modules
         self.locker.reset()
         self.tracker.reset()
         self.state_manager.reset()
         self._last_result = None
+
+        # Generate new session ID and fire SESSION_START
+        self._session_id = f"session_{int(time.time())}"
+        self.pattern_tracker.set_session_id(self._session_id)
+        self._fire_session_start_hook()
+
         logger.info("Session reset")
 
     def calibrate(self, focus_level: str = None, urgency: str = None) -> None:
@@ -483,6 +732,80 @@ class CognitiveOrchestrator:
             short_circuited=True,
             processing_time_ms=processing_time
         )
+
+    def _fire_session_start_hook(self) -> None:
+        """
+        Fire SESSION_START hook for trail-based initialization.
+
+        ThinkingMachines [He2025]: Deterministic hook execution order.
+        """
+        # Lazy import to avoid circular dependency
+        from .hooks import execute_hooks, HookEvent, HookContext
+
+        context = HookContext(
+            event=HookEvent.SESSION_START,
+            session_id=self._session_id,
+            metadata={"orchestrator_version": "7.1.0"}
+        )
+
+        results = execute_hooks(context)
+
+        for result in results:
+            if result.context_injection:
+                logger.debug(f"SESSION_START hook '{result.hook_name}' injected context")
+            if result.trails_deposited > 0:
+                logger.debug(f"SESSION_START hook '{result.hook_name}' deposited {result.trails_deposited} trails")
+
+    def _deposit_decision_trail(
+        self,
+        expert: str,
+        trigger: str,
+        alternatives: Optional[list] = None,
+        context_path: str = "cognitive_orchestrator"
+    ) -> None:
+        """
+        Deposit a DECISION trail recording routing choice.
+
+        DECISION trails record why choices were made, enabling:
+        - Historical pattern analysis
+        - Debugging of routing decisions
+        - Learning from successful/failed paths
+
+        ThinkingMachines [He2025]: Trail deposits are idempotent and deterministic.
+
+        Args:
+            expert: The expert that was selected
+            trigger: What triggered this selection
+            alternatives: Other experts that were considered
+            context_path: File path context for the trail
+        """
+        try:
+            # Lazy import to avoid circular dependency
+            from .trails import Trail, TrailType, get_store
+
+            store = get_store()
+            alternatives_str = ",".join(alternatives) if alternatives else "none"
+
+            trail = Trail(
+                trail_type=TrailType.DECISION,
+                path=context_path,
+                signal=f"routed_to:{expert}|trigger:{trigger}|alternatives:{alternatives_str}",
+                deposited_by=self._session_id,
+                metadata={
+                    "expert": expert,
+                    "trigger": trigger,
+                    "alternatives": alternatives or [],
+                    "timestamp": time.time()
+                },
+                half_life_days=7.0  # DECISION trails decay in 1 week
+            )
+
+            store.deposit(trail)
+            logger.debug(f"DECISION trail deposited: {expert} (trigger={trigger})")
+
+        except Exception as e:
+            # Trail deposit failures should not break the pipeline
+            logger.warning(f"Failed to deposit DECISION trail: {e}")
 
 
 # =============================================================================

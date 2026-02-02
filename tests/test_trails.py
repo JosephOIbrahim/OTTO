@@ -684,3 +684,204 @@ class TestDeterminism:
 
         # Should always return "alpha" (lexicographically first)
         assert all(r == "alpha" for r in results)
+
+
+# =============================================================================
+# PatternTracker Tests - PATTERN Trail Learning
+# =============================================================================
+
+class TestPatternTracker:
+    """Tests for PatternTracker in the Cognitive Orchestrator."""
+
+    @pytest.fixture
+    def temp_db(self):
+        """Create a temporary database for testing."""
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            db_path = Path(f.name)
+        yield db_path
+        if db_path.exists():
+            db_path.unlink()
+
+    @pytest.fixture
+    def mock_state_before(self):
+        """Create a mock state snapshot before processing."""
+        from unittest.mock import MagicMock
+        from otto.cognitive_state import BurnoutLevel, EnergyLevel, MomentumPhase, CognitiveMode
+
+        state = MagicMock()
+        state.burnout_level = BurnoutLevel.YELLOW
+        state.energy_level = EnergyLevel.LOW
+        state.momentum_phase = MomentumPhase.COLD_START
+        state.mode = CognitiveMode.FOCUSED
+        return state
+
+    @pytest.fixture
+    def mock_state_after(self):
+        """Create a mock state snapshot after processing."""
+        from unittest.mock import MagicMock
+        from otto.cognitive_state import BurnoutLevel, EnergyLevel, MomentumPhase, CognitiveMode
+
+        state = MagicMock()
+        state.burnout_level = BurnoutLevel.GREEN  # Improved
+        state.energy_level = EnergyLevel.MEDIUM   # Improved
+        state.momentum_phase = MomentumPhase.BUILDING  # Improved
+        state.mode = CognitiveMode.FOCUSED
+        return state
+
+    def test_pattern_tracker_init(self, temp_db):
+        """PatternTracker should initialize correctly."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+
+        assert tracker._previous_state is None
+        assert tracker._session_id == "pattern_tracker"
+
+    def test_pattern_tracker_capture_before(self, temp_db, mock_state_before):
+        """capture_before should store state snapshot."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+        tracker.capture_before(mock_state_before, detected_state="stuck")
+
+        assert tracker._previous_state is not None
+        assert tracker._previous_state["burnout"] == "yellow"
+        assert tracker._previous_state["energy"] == "low"
+        assert tracker._previous_detected_state == "stuck"
+
+    def test_pattern_tracker_stuck_resolved(self, temp_db, mock_state_before, mock_state_after):
+        """PatternTracker should detect stuck→resolved pattern."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+        tracker.set_session_id("test_session")
+
+        # Capture "before" state with stuck detected
+        tracker.capture_before(mock_state_before, detected_state="stuck")
+
+        # Check patterns - now user is focused (resolved)
+        patterns = tracker.check_and_deposit(
+            new_state=mock_state_after,
+            new_detected_state="focused",
+            expert_used="Scaffolder"
+        )
+
+        # Should have deposited stuck_resolved pattern
+        stuck_patterns = [p for p in patterns if "stuck_resolved" in p]
+        assert len(stuck_patterns) >= 1
+
+    def test_pattern_tracker_momentum_up(self, temp_db, mock_state_before, mock_state_after):
+        """PatternTracker should detect momentum upgrade pattern."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+        tracker.set_session_id("test_session")
+
+        # Before: cold_start, After: building
+        tracker.capture_before(mock_state_before)
+        patterns = tracker.check_and_deposit(
+            new_state=mock_state_after,
+            expert_used="Direct"
+        )
+
+        # Should have deposited momentum_up pattern
+        momentum_patterns = [p for p in patterns if "momentum_up" in p]
+        assert len(momentum_patterns) >= 1
+        assert any("cold_start→building" in p for p in momentum_patterns)
+
+    def test_pattern_tracker_burnout_recovery(self, temp_db, mock_state_before, mock_state_after):
+        """PatternTracker should detect burnout recovery pattern."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+        tracker.set_session_id("test_session")
+
+        # Before: YELLOW burnout, After: GREEN burnout
+        tracker.capture_before(mock_state_before)
+        patterns = tracker.check_and_deposit(
+            new_state=mock_state_after,
+            expert_used="Restorer"
+        )
+
+        # Should have deposited recovery_success pattern for burnout
+        recovery_patterns = [p for p in patterns if "recovery_success|burnout" in p]
+        assert len(recovery_patterns) >= 1
+
+    def test_pattern_tracker_energy_recovery(self, temp_db, mock_state_before, mock_state_after):
+        """PatternTracker should detect energy recovery pattern."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+        tracker.set_session_id("test_session")
+
+        # Before: low energy, After: medium energy
+        tracker.capture_before(mock_state_before)
+        patterns = tracker.check_and_deposit(
+            new_state=mock_state_after,
+            expert_used="Restorer"
+        )
+
+        # Should have deposited recovery_success pattern for energy
+        energy_patterns = [p for p in patterns if "recovery_success|energy" in p]
+        assert len(energy_patterns) >= 1
+
+    def test_pattern_tracker_no_pattern_on_unchanged(self, temp_db, mock_state_before):
+        """PatternTracker should not deposit trails if no pattern detected."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto import trails
+        trails._global_store = TrailStore(db_path=temp_db)
+
+        tracker = PatternTracker()
+        tracker.set_session_id("test_session")
+
+        # Capture before and check with same state (no change)
+        tracker.capture_before(mock_state_before)
+        patterns = tracker.check_and_deposit(
+            new_state=mock_state_before,  # Same state
+            expert_used="Direct"
+        )
+
+        # Should not deposit any patterns (no improvement detected)
+        assert len(patterns) == 0
+
+    def test_pattern_tracker_trails_persisted(self, temp_db, mock_state_before, mock_state_after):
+        """PatternTracker trails should be persisted to store."""
+        from otto.cognitive_orchestrator import PatternTracker
+        from otto.trails import store as trails_store
+
+        # Set up the global store to use temp db
+        test_store = TrailStore(db_path=temp_db)
+        trails_store._default_store = test_store
+
+        try:
+            tracker = PatternTracker()
+            tracker.set_session_id("test_session")
+
+            # Trigger pattern detection
+            tracker.capture_before(mock_state_before, detected_state="stuck")
+            tracker.check_and_deposit(
+                new_state=mock_state_after,
+                new_detected_state="focused",
+                expert_used="Scaffolder"
+            )
+
+            # Check that trails were actually persisted
+            pattern_trails = test_store.query(TrailQuery(trail_type=TrailType.PATTERN))
+
+            assert len(pattern_trails) >= 1
+            assert all(t.trail_type == TrailType.PATTERN for t in pattern_trails)
+        finally:
+            # Reset the global store
+            trails_store._default_store = None

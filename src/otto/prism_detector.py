@@ -54,13 +54,60 @@ class SignalCategory(Enum):
 
 
 # Signal patterns - evaluated in category order
+# [He2025] FIXED pattern sets - deterministic matching
 SIGNAL_PATTERNS = {
     SignalCategory.EMOTIONAL: {
-        "frustrated": ["frustrated", "annoying", "ugh", "damn", "wtf", "hate"],
-        "overwhelmed": ["overwhelmed", "too much", "can't handle", "drowning"],
-        "stuck": ["stuck", "blocked", "can't figure", "don't understand", "confused"],
-        "anxious": ["anxious", "worried", "nervous", "stress"],
-        "angry": ["angry", "pissed", "furious"],  # Higher severity
+        "frustrated": [
+            # Core signals
+            "frustrated", "frustrating", "annoying", "annoyed",
+            "ugh", "damn", "wtf", "hate", "hating",
+            # Natural language extensions
+            "driving me crazy", "driving me nuts", "going crazy",
+            "so done with", "done with this", "had enough",
+            "sick of", "fed up", "over it", "give up",
+            "makes no sense", "this sucks", "ridiculous",
+            "what the hell", "are you kidding", "seriously",
+            "losing my mind", "want to scream",
+            # Repeated failure patterns (distinguish from stuck)
+            "makes it worse", "getting worse", "even worse",
+            "nothing works", "doesn't work", "still broken",
+            "tried everything", "no matter what", "every time",
+            "keeps happening", "happening again", "again and again",
+            # Rhetorical frustration questions
+            "why is this", "why won't", "why can't", "why doesn't",
+            "so hard", "is this so hard", "so difficult",
+        ],
+        "overwhelmed": [
+            # Core signals
+            "overwhelmed", "too much", "can't handle", "drowning",
+            # Natural language extensions
+            "piling up", "everything at once", "so many things",
+            "all of this", "where do i start", "don't know where to begin",
+            "head is spinning", "can't keep up", "falling behind",
+            "too many", "everything is", "so much to do",
+            "swamped", "buried", "overloaded", "snowed under",
+            # Decision paralysis
+            "don't know where to start", "paralyzed by", "paralyzed",
+            "can't keep track", "losing track", "too many options",
+            "which one", "where to even", "so overwhelming",
+            "where do i even", "where do i begin", "how do i even",
+        ],
+        "stuck": [
+            # Core signals
+            "stuck", "blocked", "can't figure", "don't understand", "confused",
+            # Natural language extensions
+            "don't know what to do", "no idea what", "lost here",
+            "don't get it", "not making sense", "hitting a wall",
+            "going in circles", "same problem", "tried everything",
+            "spinning my wheels", "getting nowhere", "at a loss",
+            "stumped", "baffled", "puzzled", "clueless",
+            # Progress blockers
+            "hit a wall", "i've hit a wall", "nothing is working",
+            "keep trying", "same thing", "no idea how", "how to proceed",
+            "no idea how to proceed", "what to do next",
+        ],
+        "anxious": ["anxious", "worried", "nervous", "stress", "stressing", "panicking", "freaking out"],
+        "angry": ["angry", "pissed", "furious", "livid", "enraged", "seething"],  # Higher severity
     },
     SignalCategory.PROTECTION: {
         # Overuse signals - user pushing past limits
@@ -85,10 +132,37 @@ SIGNAL_PATTERNS = {
         ],
     },
     SignalCategory.MODE: {
-        "exploring": ["what if", "explore", "brainstorm", "ideas", "consider", "might"],
-        "focused": ["focus", "just do", "implement", "execute", "get it done"],
-        "teaching": ["explain", "how does", "why does", "teach me", "help me understand"],
-        "recovery": ["break", "rest", "pause", "step back", "need time"],
+        "exploring": [
+            # Core signals
+            "what if", "explore", "brainstorm", "ideas", "consider", "might",
+            # Natural language extensions
+            "curious about", "i'm curious", "wondering", "i wonder",
+            "think differently", "another way", "alternative", "alternatives",
+            "play with", "experiment", "try something", "think about this",
+            "let me think", "interesting idea", "could we", "maybe we could",
+            "possibilities", "options", "approaches",
+            # Question-based exploration
+            "what about", "how about", "have you thought", "have you considered",
+            "something new", "something different", "different approach",
+            "doing it this way", "try this", "trying this",
+        ],
+        "focused": [
+            # Core signals - require positive intent context
+            "let me focus", "staying focused", "i'm focused", "need to focus",
+            "just do", "execute", "get it done", "let's do this",
+            # Task execution signals
+            "let's build", "let's implement", "ship it", "let's ship",
+            "moving forward", "next step", "here's my plan",
+            "ready to", "going to", "i'll do", "i will",
+        ],
+        "teaching": [
+            "explain", "how does", "why does", "teach me", "help me understand",
+            "what does", "can you explain", "walk me through", "show me how",
+        ],
+        "recovery": [
+            "break", "rest", "pause", "step back", "need time",
+            "take a breather", "cool down", "decompress",
+        ],
     },
     SignalCategory.DOMAIN: {
         # WebDev domain
@@ -97,28 +171,48 @@ SIGNAL_PATTERNS = {
         "ai_research": ["model", "train", "inference", "llm", "agent", "cognitive"],
     },
     SignalCategory.TASK: {
-        "implement": ["implement", "code", "build", "create", "write", "add"],
-        "debug": ["debug", "fix", "error", "bug", "broken", "not working"],
+        "implement": ["implement", "code", "build", "create", "write", "add feature"],
+        "debug": ["debug", "fix the", "fix this", "error", "bug", "broken", "not working"],
         "plan": ["plan", "design", "architect", "structure", "organize"],
-        "research": ["research", "find", "search", "learn", "investigate"],
+        "research": ["research", "find out", "search for", "learn about", "investigate"],
         "review": ["review", "check", "verify", "validate", "test"],
-        "completed": ["done", "finished", "completed", "works now", "it works", "fixed it", "shipped", "deployed", "pushed"],
+        # [He2025] Require completion context - avoid "so done with this" collision
+        # Note: "done" alone now included - negatives filtered by frustrated patterns
+        "completed": [
+            "done", "it's done", "i'm done", "all done", "we're done",
+            "finished", "completed", "works now", "it works", "working now",
+            "fixed it", "got it working", "shipped", "deployed", "pushed",
+            "task complete", "that's it", "nailed it",
+        ],
     },
     SignalCategory.ENERGY: {
         # Human-state language (no clinical terms)
+        # [He2025] Extended patterns for better state detection
         "depleted": [
-            "exhausted", "burnt out", "done for today", "can't anymore",
-            "brain fried", "completely wiped", "running on empty"
+            # Core signals
+            "exhausted", "burnt out", "burned out", "done for today", "can't anymore",
+            "brain fried", "brain is fried", "my brain is fried", "completely wiped", "running on empty",
+            # Negation patterns - these indicate inability, not mode
+            "can't focus", "cannot focus", "can't concentrate", "can't think",
+            "can't focus anymore", "lost focus", "losing focus",
+            # Natural language extensions
+            "i'm exhausted", "i'm so tired", "i'm burnt out", "i'm wiped",
+            "need to stop", "need a break", "calling it", "that's it for today",
+            "too wiped", "completely drained", "nothing left",
+            "hitting the wall", "hit the wall", "at my limit",
+            "fried", "cooked", "toast", "spent",
         ],
         "low": [
             "tired", "sleepy", "drained", "low energy", "not feeling it",
-            "slow today", "foggy", "scattered"
+            "slow today", "foggy", "scattered", "sluggish", "groggy",
+            "half asleep", "spacing out", "zoning out",
         ],
         "high": [
             "let's go", "ready", "feeling good", "energized", "sharp",
-            "on it", "got this"
+            "on it", "got this", "fired up", "pumped", "in the zone",
+            "feeling great", "full of energy",
         ],
-        "taking_break": ["taking a break", "be right back", "brb", "quick break"],
+        "taking_break": ["taking a break", "be right back", "brb", "quick break", "stepping away"],
     }
 }
 
@@ -137,6 +231,24 @@ EMOTIONAL_SEVERITY = {
     "stuck": 0.5,
     "anxious": 0.7,
     "angry": 0.9,  # Highest severity
+}
+
+# [He2025] FIXED negation patterns - words that negate following keywords
+# Used to prevent "can't focus" from matching "focused"
+NEGATION_PREFIXES = [
+    "can't", "cannot", "can not",
+    "don't", "do not", "doesn't", "does not",
+    "won't", "will not", "wouldn't", "would not",
+    "couldn't", "could not", "shouldn't", "should not",
+    "not", "no longer", "never", "lost", "losing",
+]
+
+# Keywords that should NOT match when preceded by negation
+# Maps: signal_name -> list of keywords that are negation-sensitive
+NEGATION_SENSITIVE = {
+    "focused": ["focus", "focused", "focusing", "concentrate", "concentrating"],
+    "exploring": [],  # exploring is rarely negated meaningfully
+    "high": ["energy", "energized", "sharp"],
 }
 
 # PRISM perspectives for multi-angle analysis
@@ -399,6 +511,9 @@ class PRISMDetector:
         """
         Detect signals for a single category.
 
+        [He2025] Includes negation filtering to prevent false positives.
+        Example: "can't focus" should NOT match "focused" mode.
+
         Returns:
             Dict mapping signal names to detection scores (0-1)
         """
@@ -408,11 +523,72 @@ class PRISMDetector:
         for signal_name, pattern in patterns.items():
             matches = pattern.findall(text)
             if matches:
-                # Score based on match count (normalized)
-                score = min(len(matches) / 3.0, 1.0)  # Cap at 3 mentions = 1.0
-                results[signal_name] = score
+                # [He2025] Filter out negated matches
+                valid_matches = self._filter_negated_matches(
+                    text, matches, signal_name
+                )
+                if valid_matches:
+                    # Score based on match count (normalized)
+                    score = min(len(valid_matches) / 3.0, 1.0)  # Cap at 3 mentions = 1.0
+                    results[signal_name] = score
 
         return results
+
+    def _filter_negated_matches(
+        self, text: str, matches: List[str], signal_name: str
+    ) -> List[str]:
+        """
+        Filter out matches that are preceded by negation words.
+
+        [He2025] Deterministic negation detection:
+        - FIXED list of negation prefixes
+        - FIXED list of negation-sensitive keywords per signal
+        - Same input always produces same filtered output
+
+        Args:
+            text: Original text (lowercased)
+            matches: List of matched keywords
+            signal_name: Name of the signal being detected
+
+        Returns:
+            Filtered list of matches (negated ones removed)
+        """
+        # Check if this signal has negation-sensitive keywords
+        sensitive_keywords = NEGATION_SENSITIVE.get(signal_name, [])
+        if not sensitive_keywords:
+            return matches  # No filtering needed
+
+        valid_matches = []
+        for match in matches:
+            match_lower = match.lower()
+            # Check if this match is negation-sensitive
+            if match_lower not in sensitive_keywords:
+                valid_matches.append(match)
+                continue
+
+            # Check if preceded by negation
+            match_pos = text.find(match_lower)
+            if match_pos == -1:
+                valid_matches.append(match)
+                continue
+
+            # Look for negation prefix before the match
+            prefix_text = text[:match_pos].strip()
+            is_negated = False
+
+            for neg in NEGATION_PREFIXES:
+                if prefix_text.endswith(neg):
+                    is_negated = True
+                    break
+                # Also check with space (e.g., "can't focus")
+                if prefix_text.endswith(neg + " "):
+                    is_negated = True
+                    break
+
+            if not is_negated:
+                valid_matches.append(match)
+
+        return valid_matches
 
     def _calculate_emotional_score(self, emotional_signals: Dict[str, float]) -> float:
         """
