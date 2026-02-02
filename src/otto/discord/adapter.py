@@ -38,6 +38,7 @@ from ..cognitive_state import (
     CognitiveMode,
 )
 from ..parameter_locker import ThinkDepth
+from ..memory import get_memory, Episode, Outcome, OTTOMemory
 
 # Optional LLM imports
 try:
@@ -228,6 +229,7 @@ class DiscordAdapter:
         orchestrator: Optional[CognitiveOrchestrator] = None,
         session_store_path: Optional[Path] = None,
         response_generator: Optional["ResponseGenerator"] = None,
+        memory: Optional[OTTOMemory] = None,
     ):
         """
         Initialize adapter.
@@ -236,10 +238,14 @@ class DiscordAdapter:
             orchestrator: Cognitive orchestrator (creates default if None)
             session_store_path: Path to persist sessions (optional)
             response_generator: LLM response generator (optional, for async generation)
+            memory: OTTOMemory instance (uses singleton if None)
         """
         self.orchestrator = orchestrator or create_orchestrator()
         self.session_store_path = session_store_path
         self.response_generator = response_generator
+
+        # Memory backbone integration
+        self._memory = memory or get_memory()
 
         # [He2025] Session dict - iterate in sorted order
         self._sessions: Dict[int, DiscordSession] = {}
@@ -301,6 +307,12 @@ class DiscordAdapter:
             momentum=state.momentum_phase,
             mode=state.mode,
         )
+
+        # Step 6: Record episode to memory backbone
+        self._record_episode(message, response, session)
+
+        # Step 7: Deposit trail for trust tracking
+        self._deposit_trail(response.expert or "direct", success=True)
 
         # Persist sessions if store configured
         if self.session_store_path:
@@ -368,6 +380,12 @@ class DiscordAdapter:
             momentum=state.momentum_phase,
             mode=state.mode,
         )
+
+        # Step 6: Record episode to memory backbone
+        self._record_episode(message, response, session)
+
+        # Step 7: Deposit trail for trust tracking
+        self._deposit_trail(response.expert or "direct", success=True)
 
         # Persist sessions if store configured
         if self.session_store_path:
@@ -789,6 +807,57 @@ class DiscordAdapter:
 
         except Exception as e:
             logger.warning(f"Failed to save sessions: {e}")
+
+    def _record_episode(
+        self,
+        message: DiscordMessage,
+        response: DiscordResponse,
+        session: DiscordSession,
+    ) -> None:
+        """
+        Record message processing episode to memory backbone.
+
+        This enables cross-surface visibility - actions in Discord
+        are visible to other surfaces (Telegram, CLI, etc.)
+
+        [He2025] Fixed data structure for deterministic recording.
+        """
+        try:
+            episode = Episode(
+                type="surface.discord.message",
+                data={
+                    "user_id": message.user_id,
+                    "guild_id": message.guild_id,
+                    "is_dm": message.is_dm,
+                    "expert": response.expert or "direct",
+                    "anchor": response.anchor,
+                    "processing_time_ms": response.processing_time_ms,
+                    "burnout_level": session.burnout_level,
+                    "energy_level": session.energy_level,
+                    "momentum_phase": session.momentum_phase,
+                },
+                outcome=Outcome.SUCCESS,
+                actor="discord_adapter",
+                service="discord",
+            )
+            self._memory.record_episode(episode)
+        except Exception as e:
+            logger.warning(f"Failed to record episode: {e}")
+
+    def _deposit_trail(self, expert: str, success: bool) -> None:
+        """
+        Deposit trail for trust tracking.
+
+        Trails enable auto-approval when trust is established.
+
+        [He2025] Fixed action format for deterministic trail matching.
+        """
+        try:
+            action = f"discord.{expert.lower()}"
+            outcome = Outcome.SUCCESS if success else Outcome.FAILURE
+            self._memory.deposit_trail(action=action, outcome=outcome)
+        except Exception as e:
+            logger.warning(f"Failed to deposit trail: {e}")
 
     def cleanup_expired_sessions(self) -> int:
         """
