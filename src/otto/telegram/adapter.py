@@ -525,6 +525,15 @@ Or just start chatting!"""
 - /reset - Start fresh session
 - /calibrate - Calibrate energy/focus
 - /approve - View approval status
+- /services - List available services
+
+*Services (MCP):*
+- /calendar today - Today's events
+- /calendar week - This week's events
+- /tasks list - List tasks
+- /tasks add [title] - Add task
+- /email inbox - Check inbox
+- /notion pages - List pages
 
 *Cognitive Support:*
 Just chat naturally! OTTO detects:

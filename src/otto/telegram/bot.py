@@ -32,6 +32,7 @@ from typing import Final, Optional
 
 from .adapter import TelegramAdapter, TelegramMessage, TelegramResponse
 from .approval import TelegramApprovalHandler, get_telegram_approval_handler
+from .services import TelegramServiceRouter, get_service_router
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,9 @@ class OTTOTelegramBot:
 
         # Approval handler for inline button approvals
         self._approval_handler = get_telegram_approval_handler()
+
+        # Service router for MCP integration
+        self._service_router = get_service_router()
 
         # Application will be created on run()
         self._application: Optional[Application] = None
@@ -202,6 +206,65 @@ class OTTOTelegramBot:
             )
         except Exception:
             await update.message.reply_text(text=text)
+
+    async def services_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle /services command - list available MCP services.
+
+        [He2025] Fixed output format.
+        """
+        services = self._service_router.list_services()
+
+        lines = ["*Available Services*\n"]
+        for service in services:
+            lines.append(f"• /{service} - {service.title()} operations")
+
+        lines.append("\n*Usage:*")
+        lines.append("/calendar today - Today's events")
+        lines.append("/tasks list - List tasks")
+        lines.append("/email inbox - Check inbox")
+
+        text = "\n".join(lines)
+
+        try:
+            await update.message.reply_text(
+                text=text,
+                parse_mode="Markdown",
+            )
+        except Exception:
+            await update.message.reply_text(text=text)
+
+    async def service_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle service commands (/calendar, /tasks, /email, /notion).
+
+        Routes to MCP services via TelegramServiceRouter.
+        """
+        if not update.message or not update.message.text:
+            return
+
+        text = update.message.text
+        chat_id = update.message.chat_id
+
+        # Route to service
+        response = await self._service_router.route(text, chat_id=chat_id)
+
+        try:
+            await update.message.reply_text(
+                text=response.text,
+                parse_mode="Markdown",
+            )
+        except Exception:
+            # Fallback without markdown
+            await update.message.reply_text(text=response.text)
 
     async def handle_message(
         self,
@@ -351,6 +414,13 @@ class OTTOTelegramBot:
         self._application.add_handler(CommandHandler("reset", self.reset_command))
         self._application.add_handler(CommandHandler("calibrate", self.calibrate_command))
         self._application.add_handler(CommandHandler("approve", self.approve_command))
+        self._application.add_handler(CommandHandler("services", self.services_command))
+
+        # Service commands (route to MCP)
+        self._application.add_handler(CommandHandler("calendar", self.service_command))
+        self._application.add_handler(CommandHandler("tasks", self.service_command))
+        self._application.add_handler(CommandHandler("email", self.service_command))
+        self._application.add_handler(CommandHandler("notion", self.service_command))
 
         # 2. Callback query handler (for inline buttons)
         self._application.add_handler(CallbackQueryHandler(self.handle_callback_query))
