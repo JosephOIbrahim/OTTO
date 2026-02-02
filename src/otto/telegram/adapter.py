@@ -524,6 +524,7 @@ Or just start chatting!"""
 - /status - Current cognitive state
 - /reset - Start fresh session
 - /calibrate - Calibrate energy/focus
+- /approve - View approval status
 
 *Cognitive Support:*
 Just chat naturally! OTTO detects:
@@ -538,7 +539,13 @@ I route to different experts based on your state:
 - Scaffolder: Break down overwhelm
 - Restorer: Easy wins when depleted
 - Socratic: Guide exploration
-- Direct: Stay out of your way"""
+- Direct: Stay out of your way
+
+*Approvals:*
+When OTTO needs permission for actions:
+- Inline buttons appear [Approve] [Deny]
+- Approved actions build trust over time
+- Trusted actions auto-approve later"""
 
         return TelegramResponse(
             text=text,

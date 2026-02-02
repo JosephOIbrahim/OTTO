@@ -11,11 +11,14 @@ Telegram bot adapter for OTTO cognitive system.
 """
 
 from .adapter import TelegramAdapter, TelegramSession
+from .approval import TelegramApprovalHandler, get_telegram_approval_handler
 from .bot import OTTOTelegramBot, create_bot
 
 __all__ = [
     "TelegramAdapter",
     "TelegramSession",
+    "TelegramApprovalHandler",
+    "get_telegram_approval_handler",
     "OTTOTelegramBot",
     "create_bot",
 ]
