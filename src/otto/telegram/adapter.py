@@ -42,6 +42,7 @@ from ..parameter_locker import ThinkDepth
 
 # Memory integration (Stream A - Concurrent Rollout)
 from ..memory import get_memory, Episode, Outcome, OTTOMemory
+from ..substrate.protection import get_protection, SubstrateProtectionError
 
 logger = logging.getLogger(__name__)
 
@@ -766,7 +767,34 @@ Example: `medium locked_in`"""
         return "Got it. Proceeding."
 
     def _load_sessions(self) -> None:
-        """Load sessions from disk."""
+        """
+        Load sessions from disk.
+
+        Uses encrypted storage if protection is set up, otherwise falls
+        back to plaintext with a warning.
+
+        [He2025] Compliance: Fixed evaluation order, sorted iteration.
+        """
+        # Try encrypted storage first (preferred)
+        try:
+            protection = get_protection()
+            if protection.is_setup() and protection.is_unlocked():
+                data = protection.read_protected_json("sessions/telegram.json")
+                for user_id in sorted(data.keys()):
+                    session_data = data[user_id]
+                    session = TelegramSession.from_dict(session_data)
+                    if not session.is_expired:
+                        self._sessions[int(user_id)] = session
+                logger.info(f"Loaded {len(self._sessions)} encrypted sessions")
+                return
+        except SubstrateProtectionError:
+            pass  # Protection not set up, fall through to plaintext
+        except FileNotFoundError:
+            return  # No sessions file yet
+        except Exception as e:
+            logger.debug(f"Encrypted load failed, trying plaintext: {e}")
+
+        # Fall back to plaintext (legacy or protection not set up)
         if not self.session_store_path:
             return
 
@@ -784,27 +812,55 @@ Example: `medium locked_in`"""
                     self._sessions[int(user_id)] = session
 
             logger.info(f"Loaded {len(self._sessions)} sessions")
+            logger.warning(
+                "Sessions loaded from PLAINTEXT storage. "
+                "Run 'otto protection setup' to enable encryption."
+            )
         except Exception as e:
             logger.warning(f"Failed to load sessions: {e}")
 
     def _save_sessions(self) -> None:
-        """Save sessions to disk."""
+        """
+        Save sessions to disk.
+
+        Uses encrypted storage if protection is set up, otherwise falls
+        back to plaintext with a warning.
+
+        [He2025] Compliance: Sorted keys for deterministic output.
+        """
+        # [He2025] Save in sorted order by user_id
+        data = {}
+        for user_id in sorted(self._sessions.keys()):
+            session = self._sessions[user_id]
+            if not session.is_expired:
+                data[str(user_id)] = session.to_dict()
+
+        # Try encrypted storage first (preferred)
+        try:
+            protection = get_protection()
+            if protection.is_setup() and protection.is_unlocked():
+                protection.write_protected_json("sessions/telegram.json", data)
+                logger.debug("Sessions saved with encryption")
+                return
+        except SubstrateProtectionError as e:
+            logger.debug(f"Encrypted save unavailable: {e}")
+        except Exception as e:
+            logger.warning(f"Failed to save encrypted sessions: {e}")
+
+        # Fall back to plaintext (legacy or protection not set up)
         if not self.session_store_path:
             return
 
         try:
-            # [He2025] Save in sorted order by user_id
-            data = {}
-            for user_id in sorted(self._sessions.keys()):
-                session = self._sessions[user_id]
-                if not session.is_expired:
-                    data[str(user_id)] = session.to_dict()
-
             # Atomic write
             temp_path = self.session_store_path.with_suffix(".tmp")
             with open(temp_path, "w") as f:
                 json.dump(data, f, indent=2, sort_keys=True)
             temp_path.replace(self.session_store_path)
+            logger.debug(
+                "Sessions saved in PLAINTEXT. "
+                "Run 'otto protection setup' to enable encryption."
+            )
 
         except Exception as e:
             logger.warning(f"Failed to save sessions: {e}")

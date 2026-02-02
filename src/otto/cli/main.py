@@ -16,6 +16,7 @@ Commands:
   otto export            # Export all data
   otto wipe              # Delete all OTTO data
   otto sync              # Cloud sync operations
+  otto encryption        # Manage data encryption
 
 Your Personal Operating System.
 """
@@ -790,6 +791,214 @@ def cmd_integrations(args):
         return 1
 
 
+def _ensure_protection_unlocked(protection, action_name: str) -> bool:
+    """
+    Ensure protection is unlocked, prompting for passphrase if needed.
+
+    Since each CLI invocation is a new process, unlock state doesn't persist.
+    This helper prompts for passphrase when protection is set up but locked.
+
+    Args:
+        protection: SubstrateProtection instance
+        action_name: Name of action requiring unlock (for error messages)
+
+    Returns:
+        True if unlocked successfully, False otherwise
+    """
+    import getpass
+    from ..substrate.protection import SubstrateProtectionError
+
+    if not protection.is_setup():
+        print(f"Encryption is not set up yet.")
+        print("Run 'otto encryption setup' first.")
+        return False
+
+    if protection.is_unlocked():
+        return True
+
+    # Need to unlock - prompt for passphrase
+    print(f"Encryption passphrase required for {action_name}.")
+    passphrase = getpass.getpass("Enter encryption passphrase: ")
+
+    try:
+        protection.unlock(passphrase)
+        return True
+    except SubstrateProtectionError as e:
+        print(f"Failed to unlock: {e}")
+        return False
+
+
+def cmd_encryption(args):
+    """
+    Encryption management for cognitive data.
+
+    Manages the SubstrateProtection system for encrypting
+    sessions, trails, and other cognitive data at rest.
+    """
+    import getpass
+    from ..substrate.protection import get_protection, SubstrateProtectionError
+
+    protection = get_protection()
+
+    if args.action == "setup":
+        # Set up encryption with passphrase
+        if protection.is_setup():
+            print("Encryption is already set up.")
+            print()
+            print("Use 'otto encryption status' to check status.")
+            print("Use 'otto encryption change-passphrase' to change passphrase.")
+            return 0
+
+        print("OTTO Encryption Setup")
+        print("=" * 50)
+        print()
+        print("This will encrypt your cognitive data (sessions, trails, etc.)")
+        print("at rest using AES-256-GCM encryption.")
+        print()
+        print("IMPORTANT: You will receive a recovery key. Store it safely!")
+        print("           If you forget your passphrase, you'll need it.")
+        print()
+
+        # Get passphrase
+        passphrase = getpass.getpass("Enter encryption passphrase: ")
+        if len(passphrase) < 8:
+            print("Passphrase must be at least 8 characters.")
+            return 1
+
+        confirm = getpass.getpass("Confirm passphrase: ")
+        if passphrase != confirm:
+            print("Passphrases do not match.")
+            return 1
+
+        try:
+            recovery_key = protection.setup(passphrase)
+            print()
+            print("Encryption set up successfully!")
+            print()
+            print("=" * 50)
+            print("RECOVERY KEY (store this safely!):")
+            print()
+            print(f"  {recovery_key}")
+            print()
+            print("=" * 50)
+            print()
+            print("Your cognitive data is now encrypted at rest.")
+            print("Run 'otto encryption status' to verify.")
+            return 0
+
+        except SubstrateProtectionError as e:
+            print(f"Setup failed: {e}")
+            return 1
+
+    elif args.action == "unlock":
+        # Unlock protection with passphrase
+        if not protection.is_setup():
+            print("Encryption is not set up yet.")
+            print("Run 'otto encryption setup' first.")
+            return 1
+
+        if protection.is_unlocked():
+            print("Encryption is already unlocked.")
+            return 0
+
+        passphrase = getpass.getpass("Enter encryption passphrase: ")
+
+        try:
+            if protection.unlock(passphrase):
+                print("Encryption unlocked successfully.")
+                return 0
+            else:
+                print("Failed to unlock. Invalid passphrase.")
+                return 1
+        except SubstrateProtectionError as e:
+            print(f"Unlock failed: {e}")
+            return 1
+
+    elif args.action == "status":
+        # Show encryption status
+        status = protection.get_status()
+
+        print("OTTO Encryption Status")
+        print("=" * 50)
+        print()
+        print(f"  Setup:      {'Yes' if status.is_setup else 'No'}")
+        print(f"  Unlocked:   {'Yes' if status.is_unlocked else 'No'}")
+        print(f"  Protected assets: {status.protected_asset_count}")
+        print(f"  Signed assets:    {status.signed_asset_count}")
+        print(f"  Integrity valid:  {'Yes' if status.integrity_valid else 'No'}")
+
+        if status.invalid_signatures:
+            print()
+            print("  Invalid signatures:")
+            for path in status.invalid_signatures[:5]:
+                print(f"    - {path}")
+
+        # Check if sessions/trails are encrypted
+        print()
+        print("Data Encryption Status:")
+        try:
+            from ..trails.store import is_encrypted as trails_encrypted
+            print(f"  Trails:   {'Encrypted' if trails_encrypted() else 'PLAINTEXT'}")
+        except Exception:
+            print("  Trails:   Unknown")
+
+        if status.is_setup and not status.is_unlocked:
+            print()
+            print("Run 'otto encryption unlock' to unlock encryption.")
+
+        if not status.is_setup:
+            print()
+            print("Run 'otto encryption setup' to enable encryption.")
+
+        return 0
+
+    elif args.action == "change-passphrase":
+        # Change passphrase
+        if not protection.is_setup():
+            print("Encryption is not set up yet.")
+            print("Run 'otto encryption setup' first.")
+            return 1
+
+        old_pass = getpass.getpass("Enter current passphrase: ")
+        new_pass = getpass.getpass("Enter new passphrase: ")
+
+        if len(new_pass) < 8:
+            print("New passphrase must be at least 8 characters.")
+            return 1
+
+        confirm = getpass.getpass("Confirm new passphrase: ")
+        if new_pass != confirm:
+            print("Passphrases do not match.")
+            return 1
+
+        try:
+            protection.change_passphrase(old_pass, new_pass)
+            print("Passphrase changed successfully.")
+            return 0
+        except SubstrateProtectionError as e:
+            print(f"Failed to change passphrase: {e}")
+            return 1
+
+    elif args.action == "migrate":
+        # Migrate existing plaintext data to encrypted
+        # Prompt for passphrase if needed (unlock state doesn't persist across CLI invocations)
+        if not _ensure_protection_unlocked(protection, "migration"):
+            return 1
+
+        # Use the migration script
+        from ..scripts.migrate_to_encrypted import run_migration, print_result
+
+        result = run_migration(create_backup_first=True)
+        print_result(result)
+
+        return 0 if result.success else 1
+
+    else:
+        print(f"Unknown action: {args.action}")
+        print("Valid actions: setup, unlock, status, change-passphrase, migrate")
+        return 1
+
+
 def cmd_sync(args):
     """Cloud sync operations."""
 
@@ -1330,6 +1539,16 @@ def main():
         help="Force deletion without confirmation"
     )
 
+    # encryption command (cognitive data encryption management)
+    encryption_parser = subparsers.add_parser("encryption", help="Manage cognitive data encryption")
+    encryption_parser.add_argument(
+        "action",
+        nargs="?",
+        default="status",
+        choices=["setup", "unlock", "status", "change-passphrase", "migrate"],
+        help="Action (default: status)"
+    )
+
     args = parser.parse_args()
 
     # Command dispatch
@@ -1368,6 +1587,8 @@ def main():
         return cmd_sync(args)
     elif args.command == "api-key":
         return cmd_api_key(args)
+    elif args.command == "encryption":
+        return cmd_encryption(args)
     else:
         # Default: start interactive mode
         return cmd_interactive(args)

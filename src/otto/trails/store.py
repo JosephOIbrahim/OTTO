@@ -12,6 +12,12 @@ ThinkingMachines [He2025] Compliance:
 
 Database Location: data/trails.db (configurable)
 
+Encryption Support (v0.7.0):
+- If SubstrateProtection is set up and unlocked, the database file
+  is encrypted at rest using AES-256-GCM
+- On initialization, encrypted DB is decrypted to working location
+- On close(), the database is re-encrypted
+
 Schema:
     CREATE TABLE trails (
         id INTEGER PRIMARY KEY,
@@ -28,14 +34,20 @@ Schema:
     );
 """
 
+import atexit
 import json
+import logging
+import shutil
 import sqlite3
+import tempfile
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Iterator, List, Optional
 
 from .models import Trail, TrailQuery, TrailType
+
+logger = logging.getLogger(__name__)
 
 
 class TrailStore:
@@ -46,6 +58,11 @@ class TrailStore:
     Trails are uniquely identified by (trail_type, path, signal).
     Depositing an existing trail reinforces it rather than duplicating.
 
+    Encryption Support (v0.7.0):
+    - If SubstrateProtection is set up, the DB file is encrypted at rest
+    - Decrypted to temp file for operations
+    - Re-encrypted on close()
+
     Attributes:
         db_path: Path to SQLite database file
         prune_threshold: Strength below which trails are pruned (default 0.1)
@@ -55,6 +72,7 @@ class TrailStore:
         self,
         db_path: Optional[Path] = None,
         prune_threshold: float = 0.1,
+        use_encryption: bool = True,
     ):
         """
         Initialize TrailStore with SQLite database.
@@ -62,19 +80,144 @@ class TrailStore:
         Args:
             db_path: Path to database file (default: data/trails.db relative to OTTO_OS)
             prune_threshold: Minimum strength to keep trails (default 0.1)
+            use_encryption: Whether to use encryption if available (default: True)
         """
         if db_path is None:
             # Default to OTTO_OS/data/trails.db
             db_path = Path(__file__).parent.parent.parent.parent / "data" / "trails.db"
 
-        self.db_path = Path(db_path)
+        self._original_db_path = Path(db_path)
+        self._encrypted_path = self._original_db_path.with_suffix(".db.enc")
+        self._temp_db_path: Optional[Path] = None
+        self._protection = None
+        self._is_encrypted = False
         self.prune_threshold = prune_threshold
 
         # Ensure parent directory exists
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._original_db_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Try to set up encryption
+        if use_encryption:
+            self._setup_encryption()
+
+        # Set working db_path
+        if self._is_encrypted and self._temp_db_path:
+            self.db_path = self._temp_db_path
+        else:
+            self.db_path = self._original_db_path
 
         # Initialize database schema
         self._init_schema()
+
+        # Register cleanup on exit
+        atexit.register(self._cleanup_on_exit)
+
+    def _setup_encryption(self) -> None:
+        """
+        Set up encryption if SubstrateProtection is available and configured.
+
+        [He2025] Compliance: Deterministic decision based on protection state.
+        """
+        try:
+            from ..substrate.protection import get_protection, SubstrateProtectionError
+
+            self._protection = get_protection()
+
+            if not self._protection.is_setup():
+                logger.debug("Protection not set up, using plaintext trails.db")
+                return
+
+            if not self._protection.is_unlocked():
+                logger.warning(
+                    "Protection is set up but locked. "
+                    "Trails stored in PLAINTEXT. Run 'otto protection unlock'."
+                )
+                return
+
+            # Protection is ready - decrypt or create encrypted storage
+            self._is_encrypted = True
+
+            # Create temp file for decrypted DB
+            temp_fd, temp_path = tempfile.mkstemp(suffix=".db", prefix="trails_")
+            self._temp_db_path = Path(temp_path)
+
+            # If encrypted file exists, decrypt it
+            if self._encrypted_path.exists():
+                encrypted_data = self._encrypted_path.read_bytes()
+                decrypted_data = self._protection._encryption.decrypt(encrypted_data)
+                self._temp_db_path.write_bytes(decrypted_data)
+                logger.info("Decrypted trails.db for use")
+            elif self._original_db_path.exists():
+                # Migrate existing plaintext DB
+                shutil.copy2(self._original_db_path, self._temp_db_path)
+                logger.info("Migrating existing trails.db to encrypted storage")
+            else:
+                # New database - temp file already created empty
+                logger.debug("Creating new encrypted trails.db")
+
+        except ImportError:
+            logger.debug("SubstrateProtection not available")
+        except Exception as e:
+            logger.warning(f"Failed to set up trail encryption: {e}")
+            self._is_encrypted = False
+            self._temp_db_path = None
+
+    def _encrypt_and_save(self) -> None:
+        """
+        Encrypt the temp database and save to encrypted path.
+
+        [He2025] Compliance: Atomic write via temp file.
+        """
+        if not self._is_encrypted or not self._temp_db_path or not self._protection:
+            return
+
+        try:
+            if not self._temp_db_path.exists():
+                return
+
+            # Read current DB state
+            db_data = self._temp_db_path.read_bytes()
+
+            # Encrypt
+            encrypted_data = self._protection._encryption.encrypt(db_data)
+
+            # Atomic write
+            temp_enc_path = self._encrypted_path.with_suffix(".enc.tmp")
+            temp_enc_path.write_bytes(encrypted_data)
+            temp_enc_path.replace(self._encrypted_path)
+
+            logger.debug("Encrypted trails.db saved")
+
+        except Exception as e:
+            logger.warning(f"Failed to encrypt trails.db: {e}")
+
+    def _cleanup_on_exit(self) -> None:
+        """Cleanup handler for process exit."""
+        self.close()
+
+    def close(self) -> None:
+        """
+        Close the TrailStore and encrypt data.
+
+        Must be called to ensure encrypted data is saved.
+        """
+        if self._is_encrypted:
+            self._encrypt_and_save()
+
+            # Clean up temp file
+            if self._temp_db_path and self._temp_db_path.exists():
+                try:
+                    self._temp_db_path.unlink()
+                except Exception:
+                    pass
+
+            # Remove plaintext if encrypted version exists
+            if self._encrypted_path.exists() and self._original_db_path.exists():
+                try:
+                    self._original_db_path.unlink()
+                    logger.info("Removed plaintext trails.db (now encrypted)")
+                except Exception:
+                    pass
 
     def _init_schema(self) -> None:
         """Create database tables if they don't exist."""
@@ -698,6 +841,18 @@ def get_store() -> TrailStore:
     return _default_store
 
 
+def reset_store() -> None:
+    """
+    Reset the store singleton and encrypt data.
+
+    Used for testing and clean shutdown.
+    """
+    global _default_store
+    if _default_store is not None:
+        _default_store.close()
+        _default_store = None
+
+
 def deposit(trail: Trail) -> Trail:
     """Deposit a trail using the default store."""
     return get_store().deposit(trail)
@@ -713,6 +868,23 @@ def follow_strongest(path: str, trail_type: TrailType) -> Optional[Trail]:
     return get_store().follow_strongest(path, trail_type)
 
 
+def flush_encrypted() -> None:
+    """
+    Flush encrypted state to disk.
+
+    Call periodically or before risky operations to ensure
+    encrypted data is persisted.
+    """
+    store = get_store()
+    if store._is_encrypted:
+        store._encrypt_and_save()
+
+
+def is_encrypted() -> bool:
+    """Check if the trail store is using encryption."""
+    return get_store()._is_encrypted
+
+
 # =============================================================================
 # Exports
 # =============================================================================
@@ -720,7 +892,10 @@ def follow_strongest(path: str, trail_type: TrailType) -> Optional[Trail]:
 __all__ = [
     "TrailStore",
     "get_store",
+    "reset_store",
     "deposit",
     "read_trails",
     "follow_strongest",
+    "flush_encrypted",
+    "is_encrypted",
 ]

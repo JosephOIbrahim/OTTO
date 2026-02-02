@@ -733,6 +733,40 @@ def create_substrate_protection(otto_dir: Path = None) -> SubstrateProtection:
     return SubstrateProtection(otto_dir)
 
 
+# =============================================================================
+# Singleton Pattern
+# =============================================================================
+
+_default_protection: SubstrateProtection | None = None
+
+
+def get_protection() -> SubstrateProtection:
+    """
+    Get or create the default SubstrateProtection instance (singleton).
+
+    [He2025] Compliance:
+    - Singleton ensures consistent state across all callers
+    - Deterministic initialization order
+
+    Returns:
+        SubstrateProtection singleton instance
+    """
+    global _default_protection
+    if _default_protection is None:
+        _default_protection = create_substrate_protection()
+    return _default_protection
+
+
+def reset_protection() -> None:
+    """
+    Reset the protection singleton (for testing only).
+
+    WARNING: This will lose all unlocked state.
+    """
+    global _default_protection
+    _default_protection = None
+
+
 __all__ = [
     "SubstrateProtection",
     "SubstrateProtectionError",
@@ -744,4 +778,6 @@ __all__ = [
     "Signature",
     "SUBSTRATE_ASSETS",
     "create_substrate_protection",
+    "get_protection",
+    "reset_protection",
 ]

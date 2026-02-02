@@ -44,3 +44,7 @@ HANDOFF_QUICK.md
 .hypothesis/
 data/trails.db
 nul
+
+# Encrypted data (user-specific)
+data/*.enc
+data/*.bak

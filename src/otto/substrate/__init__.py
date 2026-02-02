@@ -84,6 +84,8 @@ from .protection import (
     Signature,
     SUBSTRATE_ASSETS,
     create_substrate_protection,
+    get_protection,
+    reset_protection,
 )
 
 from .integrity import (
@@ -135,6 +137,8 @@ __all__ = [
     "Signature",
     "SUBSTRATE_ASSETS",
     "create_substrate_protection",
+    "get_protection",
+    "reset_protection",
     # Integrity (NEW)
     "SubstrateIntegrity",
     "IntegrityReport",

@@ -345,6 +345,52 @@ class EncryptionManager:
         logger.info("Encryption locked")
 
     # =========================================================================
+    # Raw Byte Encryption (for in-memory data like SQLite DBs)
+    # =========================================================================
+
+    def encrypt(self, data: bytes) -> bytes:
+        """
+        Encrypt raw bytes using the master key.
+
+        Use this for in-memory encryption of data that doesn't fit
+        the file-based encryption model (e.g., SQLite databases).
+
+        Args:
+            data: Plaintext bytes to encrypt
+
+        Returns:
+            Encrypted bytes (includes nonce, can be decrypted with decrypt())
+
+        Raises:
+            EncryptionManagerError: If not unlocked
+        """
+        if not self.is_unlocked():
+            raise EncryptionManagerError("Encryption is locked - call unlock() first")
+
+        return encrypt_bytes(self._key, data)
+
+    def decrypt(self, data: bytes) -> bytes:
+        """
+        Decrypt raw bytes using the master key.
+
+        Use this to decrypt data encrypted with encrypt().
+
+        Args:
+            data: Encrypted bytes (from encrypt())
+
+        Returns:
+            Decrypted plaintext bytes
+
+        Raises:
+            EncryptionManagerError: If not unlocked
+            DecryptionError: If decryption fails (wrong key or tampered data)
+        """
+        if not self.is_unlocked():
+            raise EncryptionManagerError("Encryption is locked - call unlock() first")
+
+        return decrypt_bytes(self._key, data)
+
+    # =========================================================================
     # Recovery
     # =========================================================================
 

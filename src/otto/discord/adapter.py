@@ -39,6 +39,7 @@ from ..cognitive_state import (
 )
 from ..parameter_locker import ThinkDepth
 from ..memory import get_memory, Episode, Outcome, OTTOMemory
+from ..substrate.protection import get_protection, SubstrateProtectionError
 
 # Optional LLM imports
 try:
@@ -767,7 +768,33 @@ class DiscordAdapter:
         return None
 
     def _load_sessions(self) -> None:
-        """Load persisted sessions from disk."""
+        """
+        Load persisted sessions from disk.
+
+        Uses encrypted storage if protection is set up, otherwise falls
+        back to plaintext with a warning.
+
+        [He2025] Compliance: Fixed evaluation order, sorted iteration.
+        """
+        # Try encrypted storage first (preferred)
+        try:
+            protection = get_protection()
+            if protection.is_setup() and protection.is_unlocked():
+                data = protection.read_protected_json("sessions/discord.json")
+                for user_id_str, session_data in sorted(data.items()):
+                    session = DiscordSession.from_dict(session_data)
+                    if not session.is_expired:
+                        self._sessions[int(user_id_str)] = session
+                logger.info(f"Loaded {len(self._sessions)} encrypted sessions")
+                return
+        except SubstrateProtectionError:
+            pass  # Protection not set up, fall through to plaintext
+        except FileNotFoundError:
+            return  # No sessions file yet
+        except Exception as e:
+            logger.debug(f"Encrypted load failed, trying plaintext: {e}")
+
+        # Fall back to plaintext (legacy or protection not set up)
         if not self.session_store_path or not self.session_store_path.exists():
             return
 
@@ -782,12 +809,42 @@ class DiscordAdapter:
                     self._sessions[int(user_id_str)] = session
 
             logger.info(f"Loaded {len(self._sessions)} sessions from disk")
+            logger.warning(
+                "Sessions loaded from PLAINTEXT storage. "
+                "Run 'otto protection setup' to enable encryption."
+            )
 
         except Exception as e:
             logger.warning(f"Failed to load sessions: {e}")
 
     def _save_sessions(self) -> None:
-        """Save sessions to disk."""
+        """
+        Save sessions to disk.
+
+        Uses encrypted storage if protection is set up, otherwise falls
+        back to plaintext with a warning.
+
+        [He2025] Compliance: Sorted keys for deterministic output.
+        """
+        # [He2025] Sort by user_id for deterministic output
+        data = {
+            str(user_id): session.to_dict()
+            for user_id, session in sorted(self._sessions.items())
+        }
+
+        # Try encrypted storage first (preferred)
+        try:
+            protection = get_protection()
+            if protection.is_setup() and protection.is_unlocked():
+                protection.write_protected_json("sessions/discord.json", data)
+                logger.debug("Sessions saved with encryption")
+                return
+        except SubstrateProtectionError as e:
+            logger.debug(f"Encrypted save unavailable: {e}")
+        except Exception as e:
+            logger.warning(f"Failed to save encrypted sessions: {e}")
+
+        # Fall back to plaintext (legacy or protection not set up)
         if not self.session_store_path:
             return
 
@@ -795,14 +852,12 @@ class DiscordAdapter:
             # Ensure parent directory exists
             self.session_store_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # [He2025] Sort by user_id for deterministic output
-            data = {
-                str(user_id): session.to_dict()
-                for user_id, session in sorted(self._sessions.items())
-            }
-
             self.session_store_path.write_text(
                 json.dumps(data, indent=2, sort_keys=True)
+            )
+            logger.debug(
+                "Sessions saved in PLAINTEXT. "
+                "Run 'otto protection setup' to enable encryption."
             )
 
         except Exception as e:
