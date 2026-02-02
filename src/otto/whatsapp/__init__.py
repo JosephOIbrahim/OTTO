@@ -8,19 +8,25 @@ Provides WhatsApp Cloud API integration for voice and text messaging:
 - Media upload/download
 - Session management
 
-Usage:
-    from otto.whatsapp import create_adapter
+Usage (Standalone Server):
+    python -m otto.whatsapp.server --port 8000
 
-    adapter = create_adapter(
-        otto_processor=my_processor_function,
-        enable_voice_response=True,
-    )
+Usage (Mount to Existing App):
+    from otto.whatsapp import get_whatsapp_router
+    app.include_router(get_whatsapp_router(), prefix="/webhook")
 
-    # Add webhook router to FastAPI app
-    app.include_router(adapter.get_webhook().router)
+Usage (Custom Adapter):
+    from otto.whatsapp import create_whatsapp_adapter
 
-    # Start processing
+    # Automatically wired to OTTO cognitive orchestrator
+    adapter = create_whatsapp_adapter()
     await adapter.start()
+
+Environment Variables:
+    OPENAI_API_KEY          - OpenAI API key (for Whisper STT and TTS)
+    WHATSAPP_TOKEN          - WhatsApp Cloud API access token
+    WHATSAPP_PHONE_NUMBER_ID - WhatsApp Business phone number ID
+    WHATSAPP_VERIFY_TOKEN   - Webhook verification token
 
 Target Metrics:
 - Latency: <10 seconds end-to-end
@@ -91,6 +97,22 @@ from .adapter import (
     OTTOProcessor,
 )
 
+# Server integration (imports lazily to avoid FastAPI dependency)
+def get_whatsapp_router():
+    """Get FastAPI router for WhatsApp webhooks."""
+    from .server import get_whatsapp_router as _get_router
+    return _get_router()
+
+def create_app():
+    """Create FastAPI app with WhatsApp integration."""
+    from .server import create_app as _create_app
+    return _create_app()
+
+def create_whatsapp_adapter(orchestrator=None):
+    """Create WhatsApp adapter wired to OTTO."""
+    from .server import create_whatsapp_adapter as _create_adapter
+    return _create_adapter(orchestrator)
+
 
 __all__ = [
     # Schemas - Message types
@@ -143,6 +165,10 @@ __all__ = [
     "VoiceAdapterConfig",
     "create_adapter",
     "OTTOProcessor",
+    # Server integration
+    "get_whatsapp_router",
+    "create_app",
+    "create_whatsapp_adapter",
 ]
 
 __version__ = "1.0.0"
