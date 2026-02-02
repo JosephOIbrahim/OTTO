@@ -1,0 +1,349 @@
+"""
+OTTO Telegram Bot
+=================
+
+Telegram bot runner using python-telegram-bot library.
+
+[He2025] Compliance:
+- Deterministic message processing order
+- Fixed evaluation sequence in handlers
+- Session state managed by TelegramAdapter
+
+Requirements:
+    pip install python-telegram-bot>=20.0
+
+Environment:
+    TELEGRAM_BOT_TOKEN: Your bot token from @BotFather
+
+Usage:
+    from otto.telegram import create_bot
+
+    bot = create_bot()
+    bot.run()
+"""
+
+import asyncio
+import logging
+import os
+import signal
+import sys
+from pathlib import Path
+from typing import Final, Optional
+
+from .adapter import TelegramAdapter, TelegramMessage, TelegramResponse
+
+logger = logging.getLogger(__name__)
+
+# Check for telegram library
+try:
+    from telegram import Update
+    from telegram.ext import (
+        Application,
+        CommandHandler,
+        ContextTypes,
+        MessageHandler,
+        filters,
+    )
+    TELEGRAM_AVAILABLE = True
+except ImportError:
+    TELEGRAM_AVAILABLE = False
+    logger.warning(
+        "python-telegram-bot not installed. "
+        "Install with: pip install python-telegram-bot>=20.0"
+    )
+
+
+# [He2025] Fixed constants
+_DEFAULT_SESSION_PATH: Final[str] = "data/telegram_sessions.json"
+_CLEANUP_INTERVAL_SECONDS: Final[int] = 3600  # 1 hour
+
+
+class OTTOTelegramBot:
+    """
+    Telegram bot for OTTO cognitive support.
+
+    [He2025] Compliance:
+    - Fixed handler registration order
+    - Deterministic message processing
+    - Session cleanup on fixed interval
+
+    Usage:
+        bot = OTTOTelegramBot(token="YOUR_BOT_TOKEN")
+        bot.run()
+    """
+
+    def __init__(
+        self,
+        token: str,
+        adapter: Optional[TelegramAdapter] = None,
+        session_path: Optional[Path] = None,
+    ):
+        """
+        Initialize the Telegram bot.
+
+        Args:
+            token: Telegram bot token from @BotFather
+            adapter: TelegramAdapter instance (creates default if None)
+            session_path: Path to session storage
+        """
+        if not TELEGRAM_AVAILABLE:
+            raise ImportError(
+                "python-telegram-bot is required. "
+                "Install with: pip install python-telegram-bot>=20.0"
+            )
+
+        self.token = token
+        self.session_path = session_path or Path(_DEFAULT_SESSION_PATH)
+
+        # Ensure session directory exists
+        self.session_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Create adapter with session persistence
+        self.adapter = adapter or TelegramAdapter(
+            session_store_path=self.session_path
+        )
+
+        # Application will be created on run()
+        self._application: Optional[Application] = None
+        self._running = False
+
+    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /start command."""
+        message = self._to_telegram_message(update)
+        response = self.adapter.process_message(message)
+        await self._send_response(update, response)
+
+    async def help_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /help command."""
+        message = self._to_telegram_message(update)
+        response = self.adapter.process_message(message)
+        await self._send_response(update, response)
+
+    async def status_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /status command."""
+        message = self._to_telegram_message(update)
+        response = self.adapter.process_message(message)
+        await self._send_response(update, response)
+
+    async def reset_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /reset command."""
+        message = self._to_telegram_message(update)
+        response = self.adapter.process_message(message)
+        await self._send_response(update, response)
+
+    async def calibrate_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle /calibrate command."""
+        message = self._to_telegram_message(update)
+        response = self.adapter.process_message(message)
+        await self._send_response(update, response)
+
+    async def handle_message(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle incoming text messages.
+
+        [He2025] Processing order:
+        1. Convert to normalized message
+        2. Process through adapter (-> orchestrator)
+        3. Send response
+        """
+        if not update.message or not update.message.text:
+            return
+
+        message = self._to_telegram_message(update)
+        response = self.adapter.process_message(message)
+        await self._send_response(update, response)
+
+    async def error_handler(
+        self,
+        update: object,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """Handle errors in message processing."""
+        logger.exception(f"Exception while handling update: {context.error}")
+
+        if isinstance(update, Update) and update.effective_chat:
+            try:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="Something went wrong. Please try again.",
+                )
+            except Exception as e:
+                logger.error(f"Failed to send error message: {e}")
+
+    def _to_telegram_message(self, update: Update) -> TelegramMessage:
+        """Convert Telegram Update to normalized TelegramMessage."""
+        msg = update.message
+
+        reply_to_id = None
+        if msg.reply_to_message:
+            reply_to_id = msg.reply_to_message.message_id
+
+        return TelegramMessage(
+            message_id=msg.message_id,
+            user_id=msg.from_user.id,
+            chat_id=msg.chat_id,
+            text=msg.text or "",
+            timestamp=msg.date.timestamp(),
+            reply_to_message_id=reply_to_id,
+        )
+
+    async def _send_response(
+        self,
+        update: Update,
+        response: TelegramResponse
+    ) -> None:
+        """Send response back to Telegram."""
+        # Truncate if needed
+        response = response.truncate()
+
+        try:
+            await update.message.reply_text(
+                text=response.text,
+                parse_mode=response.parse_mode,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send response: {e}")
+            # Try without parse mode (in case of markdown issues)
+            try:
+                await update.message.reply_text(text=response.text)
+            except Exception as e2:
+                logger.error(f"Failed to send plain text: {e2}")
+
+    async def _cleanup_sessions_periodic(self) -> None:
+        """Periodically clean up expired sessions."""
+        while self._running:
+            await asyncio.sleep(_CLEANUP_INTERVAL_SECONDS)
+            if self._running:
+                self.adapter.cleanup_expired_sessions()
+
+    def run(self, webhook_url: Optional[str] = None) -> None:
+        """
+        Run the bot.
+
+        Args:
+            webhook_url: If provided, use webhook mode instead of polling
+        """
+        logger.info("Starting OTTO Telegram bot...")
+
+        # Build application
+        self._application = (
+            Application.builder()
+            .token(self.token)
+            .build()
+        )
+
+        # [He2025] Fixed handler registration order
+        # 1. Command handlers (highest priority)
+        self._application.add_handler(CommandHandler("start", self.start))
+        self._application.add_handler(CommandHandler("help", self.help_command))
+        self._application.add_handler(CommandHandler("status", self.status_command))
+        self._application.add_handler(CommandHandler("reset", self.reset_command))
+        self._application.add_handler(CommandHandler("calibrate", self.calibrate_command))
+
+        # 2. Message handler (catch-all for text)
+        self._application.add_handler(
+            MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message)
+        )
+
+        # 3. Error handler
+        self._application.add_error_handler(self.error_handler)
+
+        self._running = True
+
+        if webhook_url:
+            # Webhook mode (for production)
+            logger.info(f"Running in webhook mode: {webhook_url}")
+            self._application.run_webhook(
+                listen="0.0.0.0",
+                port=int(os.environ.get("PORT", 8443)),
+                webhook_url=webhook_url,
+            )
+        else:
+            # Polling mode (for development)
+            logger.info("Running in polling mode")
+            self._application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+        self._running = False
+        logger.info("OTTO Telegram bot stopped")
+
+    def stop(self) -> None:
+        """Stop the bot gracefully."""
+        self._running = False
+        if self._application:
+            self._application.stop()
+
+
+def create_bot(
+    token: Optional[str] = None,
+    session_path: Optional[Path] = None,
+) -> OTTOTelegramBot:
+    """
+    Create and configure a Telegram bot instance.
+
+    Args:
+        token: Bot token (defaults to TELEGRAM_BOT_TOKEN env var)
+        session_path: Path to session storage
+
+    Returns:
+        Configured OTTOTelegramBot instance
+
+    Raises:
+        ValueError: If no token provided and TELEGRAM_BOT_TOKEN not set
+    """
+    bot_token = token or os.environ.get("TELEGRAM_BOT_TOKEN")
+
+    if not bot_token:
+        raise ValueError(
+            "No Telegram bot token provided. "
+            "Set TELEGRAM_BOT_TOKEN environment variable or pass token directly."
+        )
+
+    return OTTOTelegramBot(token=bot_token, session_path=session_path)
+
+
+def main() -> None:
+    """Entry point for running the bot directly."""
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.INFO,
+    )
+
+    try:
+        bot = create_bot()
+        bot.run()
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    except Exception as e:
+        logger.exception(f"Bot crashed: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+
+
+__all__ = [
+    "OTTOTelegramBot",
+    "create_bot",
+    "TELEGRAM_AVAILABLE",
+]

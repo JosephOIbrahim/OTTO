@@ -414,6 +414,61 @@ from .substrate import (
     get_state_manager,
 )
 
+# ============================================================================
+# v7.2.0 Mobile Abstraction Layers
+# ============================================================================
+
+# Storage Abstraction
+from .storage import (
+    StorageProvider,
+    StorageConfig,
+    StorageRoot,
+    LocalStorageProvider,
+    StorageManager,
+    get_storage,
+    get_storage_config,
+)
+
+# Security - Keyring Abstraction
+from .security import (
+    KeyringProvider,
+    KeyringBackend,
+    Credential,
+    SystemKeyringProvider,
+    MemoryKeyringProvider,
+    NoOpKeyringProvider,
+    KeyringManager,
+    get_keyring,
+    set_keyring,
+    reset_keyring,
+)
+
+# Output Abstraction
+from .output import (
+    OutputFormatter,
+    OutputFormat,
+    PlainFormatter,
+    JSONFormatter,
+    get_formatter,
+    set_formatter,
+    reset_formatter,
+)
+from .output.formatter import StatusData, AlertData
+
+# Input Abstraction
+from .input import (
+    InputProvider,
+    InputType,
+    InputChoice,
+    InputResult,
+    SyncInputProvider,
+    AsyncInputProvider,
+    MemoryInputProvider,
+    get_input_provider,
+    set_input_provider,
+    reset_input_provider,
+)
+
 __all__ = [
     # Version
     "__version__",
@@ -704,4 +759,52 @@ __all__ = [
     "StateResult",
     "get_handoff_manager",
     "get_state_manager",
+
+    # ========================================
+    # v7.2.0 Mobile Abstraction Layers
+    # ========================================
+
+    # Storage - Platform-agnostic storage
+    "StorageProvider",
+    "StorageConfig",
+    "StorageRoot",
+    "LocalStorageProvider",
+    "StorageManager",
+    "get_storage",
+    "get_storage_config",
+
+    # Security - Keyring abstraction
+    "KeyringProvider",
+    "KeyringBackend",
+    "Credential",
+    "SystemKeyringProvider",
+    "MemoryKeyringProvider",
+    "NoOpKeyringProvider",
+    "KeyringManager",
+    "get_keyring",
+    "set_keyring",
+    "reset_keyring",
+
+    # Output - Platform-agnostic formatting
+    "OutputFormatter",
+    "OutputFormat",
+    "PlainFormatter",
+    "JSONFormatter",
+    "StatusData",
+    "AlertData",
+    "get_formatter",
+    "set_formatter",
+    "reset_formatter",
+
+    # Input - Platform-agnostic input handling
+    "InputProvider",
+    "InputType",
+    "InputChoice",
+    "InputResult",
+    "SyncInputProvider",
+    "AsyncInputProvider",
+    "MemoryInputProvider",
+    "get_input_provider",
+    "set_input_provider",
+    "reset_input_provider",
 ]

@@ -1,0 +1,16 @@
+{
+  "805937889606631504": {
+    "burnout_level": "green",
+    "channel_id": 1467830094084177922,
+    "created_at": 1770045978.001926,
+    "display_name": null,
+    "energy_level": "medium",
+    "guild_id": 1467830092808978479,
+    "last_activity": 1770046031.1609528,
+    "message_count": 2,
+    "mode": "focused",
+    "momentum_phase": "cold_start",
+    "user_id": 805937889606631504,
+    "username": null
+  }
+}
