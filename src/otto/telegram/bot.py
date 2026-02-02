@@ -31,6 +31,8 @@ from pathlib import Path
 from typing import Final, Optional
 
 from .adapter import TelegramAdapter, TelegramMessage, TelegramResponse
+from .approval import TelegramApprovalHandler, get_telegram_approval_handler
+from .services import TelegramServiceRouter, get_service_router
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +41,7 @@ try:
     from telegram import Update
     from telegram.ext import (
         Application,
+        CallbackQueryHandler,
         CommandHandler,
         ContextTypes,
         MessageHandler,
@@ -103,6 +106,12 @@ class OTTOTelegramBot:
             session_store_path=self.session_path
         )
 
+        # Approval handler for inline button approvals
+        self._approval_handler = get_telegram_approval_handler()
+
+        # Service router for MCP integration
+        self._service_router = get_service_router()
+
         # Application will be created on run()
         self._application: Optional[Application] = None
         self._running = False
@@ -153,6 +162,110 @@ class OTTOTelegramBot:
         response = self.adapter.process_message(message)
         await self._send_response(update, response)
 
+    async def approve_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle /approve command - show pending approvals and stats.
+
+        [He2025] Fixed output format.
+        """
+        from ..services.approval import get_approval_gate
+
+        gate = get_approval_gate()
+        stats = gate.get_stats()
+        pending = gate.get_pending()
+
+        lines = ["*Approval Status*\n"]
+
+        # Stats
+        lines.append(f"*Total requests:* {stats['total_requests']}")
+        lines.append(f"*Approved:* {stats['approved']}")
+        lines.append(f"*Denied:* {stats['denied']}")
+        if stats['total_requests'] > 0:
+            rate = stats['approval_rate'] * 100
+            lines.append(f"*Approval rate:* {rate:.1f}%")
+
+        # Pending
+        lines.append(f"\n*Pending:* {len(pending)}")
+        if pending:
+            for req in pending[:5]:  # Show max 5
+                lines.append(f"  • {req.action} ({req.actor})")
+
+        # Trust-based auto-approvals
+        lines.append(f"\n*Trusted actions:* {stats['trust_records']}")
+
+        text = "\n".join(lines)
+
+        try:
+            await update.message.reply_text(
+                text=text,
+                parse_mode="Markdown",
+            )
+        except Exception:
+            await update.message.reply_text(text=text)
+
+    async def services_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle /services command - list available MCP services.
+
+        [He2025] Fixed output format.
+        """
+        services = self._service_router.list_services()
+
+        lines = ["*Available Services*\n"]
+        for service in services:
+            lines.append(f"• /{service} - {service.title()} operations")
+
+        lines.append("\n*Usage:*")
+        lines.append("/calendar today - Today's events")
+        lines.append("/tasks list - List tasks")
+        lines.append("/email inbox - Check inbox")
+
+        text = "\n".join(lines)
+
+        try:
+            await update.message.reply_text(
+                text=text,
+                parse_mode="Markdown",
+            )
+        except Exception:
+            await update.message.reply_text(text=text)
+
+    async def service_command(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle service commands (/calendar, /tasks, /email, /notion).
+
+        Routes to MCP services via TelegramServiceRouter.
+        """
+        if not update.message or not update.message.text:
+            return
+
+        text = update.message.text
+        chat_id = update.message.chat_id
+
+        # Route to service
+        response = await self._service_router.route(text, chat_id=chat_id)
+
+        try:
+            await update.message.reply_text(
+                text=response.text,
+                parse_mode="Markdown",
+            )
+        except Exception:
+            # Fallback without markdown
+            await update.message.reply_text(text=response.text)
+
     async def handle_message(
         self,
         update: Update,
@@ -172,6 +285,37 @@ class OTTOTelegramBot:
         message = self._to_telegram_message(update)
         response = self.adapter.process_message(message)
         await self._send_response(update, response)
+
+    async def handle_callback_query(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        """
+        Handle callback queries from inline buttons.
+
+        [He2025] Fixed processing order:
+        1. Check if approval callback
+        2. Delegate to approval handler
+        3. Log result
+        """
+        query = update.callback_query
+
+        if not query or not query.data:
+            return
+
+        # Check if this is an approval callback
+        if self._approval_handler.is_approval_callback(query.data):
+            handled = await self._approval_handler.handle_callback(query, context)
+            if handled:
+                logger.debug(f"Approval callback handled: {query.data}")
+            return
+
+        # Unknown callback - answer to prevent loading state
+        try:
+            await query.answer("Unknown action")
+        except Exception as e:
+            logger.debug(f"Could not answer callback: {e}")
 
     async def error_handler(
         self,
@@ -252,6 +396,16 @@ class OTTOTelegramBot:
             .build()
         )
 
+        # Wire up approval handler to send messages via bot
+        async def send_approval_message(chat_id, text, reply_markup, parse_mode="Markdown"):
+            return await self._application.bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                reply_markup=reply_markup,
+                parse_mode=parse_mode,
+            )
+        self._approval_handler.set_send_message(send_approval_message)
+
         # [He2025] Fixed handler registration order
         # 1. Command handlers (highest priority)
         self._application.add_handler(CommandHandler("start", self.start))
@@ -259,13 +413,24 @@ class OTTOTelegramBot:
         self._application.add_handler(CommandHandler("status", self.status_command))
         self._application.add_handler(CommandHandler("reset", self.reset_command))
         self._application.add_handler(CommandHandler("calibrate", self.calibrate_command))
+        self._application.add_handler(CommandHandler("approve", self.approve_command))
+        self._application.add_handler(CommandHandler("services", self.services_command))
 
-        # 2. Message handler (catch-all for text)
+        # Service commands (route to MCP)
+        self._application.add_handler(CommandHandler("calendar", self.service_command))
+        self._application.add_handler(CommandHandler("tasks", self.service_command))
+        self._application.add_handler(CommandHandler("email", self.service_command))
+        self._application.add_handler(CommandHandler("notion", self.service_command))
+
+        # 2. Callback query handler (for inline buttons)
+        self._application.add_handler(CallbackQueryHandler(self.handle_callback_query))
+
+        # 3. Message handler (catch-all for text)
         self._application.add_handler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message)
         )
 
-        # 3. Error handler
+        # 4. Error handler
         self._application.add_error_handler(self.error_handler)
 
         self._running = True

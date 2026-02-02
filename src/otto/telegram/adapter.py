@@ -40,6 +40,9 @@ from ..cognitive_state import (
 )
 from ..parameter_locker import ThinkDepth
 
+# Memory integration (Stream A - Concurrent Rollout)
+from ..memory import get_memory, Episode, Outcome, OTTOMemory
+
 logger = logging.getLogger(__name__)
 
 
@@ -212,6 +215,7 @@ class TelegramAdapter:
         self,
         orchestrator: Optional[CognitiveOrchestrator] = None,
         session_store_path: Optional[Path] = None,
+        memory: Optional[OTTOMemory] = None,
     ):
         """
         Initialize adapter.
@@ -219,9 +223,13 @@ class TelegramAdapter:
         Args:
             orchestrator: Cognitive orchestrator (creates default if None)
             session_store_path: Path to persist sessions (optional)
+            memory: OTTOMemory instance (uses singleton if None)
         """
         self.orchestrator = orchestrator or create_orchestrator()
         self.session_store_path = session_store_path
+
+        # Memory backbone integration (Stream A - Concurrent Rollout)
+        self._memory = memory or get_memory()
 
         # [He2025] Session dict - iterate in sorted order
         self._sessions: Dict[int, TelegramSession] = {}
@@ -286,12 +294,64 @@ class TelegramAdapter:
         if self.session_store_path:
             self._save_sessions()
 
+        # Step 6: Record to memory backbone (Stream A - Concurrent Rollout)
+        self._record_to_memory(message, response, result, session)
+
         logger.info(
             f"Processed message for user {message.user_id}: "
             f"{response.anchor} ({response.processing_time_ms:.1f}ms)"
         )
 
         return response
+
+    def _record_to_memory(
+        self,
+        message: TelegramMessage,
+        response: TelegramResponse,
+        result: NexusResult | KnowledgeResult,
+        session: TelegramSession,
+    ) -> None:
+        """
+        Record interaction to memory backbone.
+
+        [He2025] Compliance:
+        - Episode recording is deterministic
+        - Trail deposits use sorted keys
+        - Outcomes are binary (SUCCESS/FAILURE)
+
+        This enables:
+        - Cross-surface visibility (CLI can see Telegram actions)
+        - Trail-based trust building
+        - Episodic memory for context
+        """
+        try:
+            # Record episode
+            episode = Episode(
+                type="surface.telegram.message",
+                data={
+                    "user_id": str(message.user_id),
+                    "message_length": len(message.text),
+                    "expert": response.expert,
+                    "anchor": response.anchor,
+                    "processing_time_ms": response.processing_time_ms,
+                },
+                outcome=Outcome.SUCCESS,
+                actor="telegram_adapter",
+                service="telegram",
+                resource=f"user:{message.user_id}",
+            )
+            self._memory.record_episode(episode)
+
+            # Deposit trail for this interaction
+            # Trail strengthens with each successful interaction
+            trail_action = f"telegram.{response.expert or 'direct'}"
+            self._memory.deposit_trail(action=trail_action, outcome=Outcome.SUCCESS)
+
+            logger.debug(f"Memory recorded: {episode.type}, trail: {trail_action}")
+
+        except Exception as e:
+            # Memory recording should not break the interaction
+            logger.debug(f"Memory recording skipped: {e}")
 
     def _get_or_create_session(self, message: TelegramMessage) -> TelegramSession:
         """
@@ -464,6 +524,16 @@ Or just start chatting!"""
 - /status - Current cognitive state
 - /reset - Start fresh session
 - /calibrate - Calibrate energy/focus
+- /approve - View approval status
+- /services - List available services
+
+*Services (MCP):*
+- /calendar today - Today's events
+- /calendar week - This week's events
+- /tasks list - List tasks
+- /tasks add [title] - Add task
+- /email inbox - Check inbox
+- /notion pages - List pages
 
 *Cognitive Support:*
 Just chat naturally! OTTO detects:
@@ -478,7 +548,13 @@ I route to different experts based on your state:
 - Scaffolder: Break down overwhelm
 - Restorer: Easy wins when depleted
 - Socratic: Guide exploration
-- Direct: Stay out of your way"""
+- Direct: Stay out of your way
+
+*Approvals:*
+When OTTO needs permission for actions:
+- Inline buttons appear [Approve] [Deny]
+- Approved actions build trust over time
+- Trusted actions auto-approve later"""
 
         return TelegramResponse(
             text=text,
