@@ -25,7 +25,7 @@ Architecture:
 Each layer only talks to adjacent layers (layer isolation).
 """
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 # Message Types
 from .message_types import (

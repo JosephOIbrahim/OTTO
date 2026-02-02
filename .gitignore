@@ -42,3 +42,5 @@ npm-debug.log*
 HANDOFF.md
 HANDOFF_QUICK.md
 .hypothesis/
+data/trails.db
+nul

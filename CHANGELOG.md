@@ -5,6 +5,43 @@ All notable changes to Otto will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-02-02
+
+### Added
+
+- **Telegram MCP Service Integration**
+  - Service router for calendar, tasks, email, notion commands
+  - `/services` command to list available MCP services
+  - Adaptive response pacing based on content type
+  - Inline button approvals for CONSTITUTIONAL actions
+
+- **Discord Memory Backbone Integration**
+  - Episode recording for cross-surface visibility
+  - Trail deposits for trust tracking (pheromone trails)
+  - [He2025] compliant with fixed evaluation order
+
+- **Integration Test Suite**
+  - `test_memory_interface.py`: OTTOMemory unified interface tests
+  - `test_cross_surface.py`: Cross-surface state visibility tests
+  - `test_e2e_scenarios.py`: End-to-end user scenario tests
+  - `test_livrps_integration.py`: LIVRPS layer composition tests
+
+- **WhatsApp Voice Integration** (Blueprint)
+  - Voice-to-text pipeline via Whisper STT
+  - Text-to-speech via OpenAI/ElevenLabs TTS
+  - `prepare_for_speech()` 5-phase transformation
+  - [He2025] fixed seeds for determinism
+
+### Changed
+
+- Memory backbone now uses singleton pattern with `get_memory()`
+- Session cleanup interval standardized to 1 hour
+
+### Fixed
+
+- Discord adapter missing memory integration
+- Telegram service command routing
+
 ## [5.0.0] - 2026-01-26
 
 ### Added
