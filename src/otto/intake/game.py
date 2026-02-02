@@ -9,12 +9,17 @@ Design principles:
 - No clinical language
 - Scenarios feel like conversations
 - Results stored as USD
+
+[He2025] Compliance:
+- Trait accumulation uses sorted key iteration
+- Deterministic profile generation
 """
 
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional
 
 from rich.console import Console
 from rich.panel import Panel
@@ -212,9 +217,14 @@ class IntakeGame:
         )
 
     def _accumulate_traits(self, result: ScenarioResult) -> None:
-        """Accumulate traits from scenario result"""
-        for key, value in result.trait_mappings.items():
-            self.trait_accumulator[key] = value
+        """
+        Accumulate traits from scenario result.
+
+        [He2025] Compliance: Uses sorted key iteration for determinism.
+        """
+        # Sort keys for deterministic iteration order
+        for key in sorted(result.trait_mappings.keys()):
+            self.trait_accumulator[key] = result.trait_mappings[key]
 
     def _show_outro(self) -> None:
         """Show the closing sequence"""
@@ -295,18 +305,36 @@ class IntakeGame:
         return descriptions
 
 
-def run_intake() -> None:
-    """Entry point for intake game"""
+def run_intake(use_profile_manager: bool = True) -> None:
+    """
+    Entry point for intake game.
+
+    Args:
+        use_profile_manager: If True, also loads traits into ProfileManager.
+                            Default True for integration with cognitive substrate.
+
+    [He2025] Compliance: Sorted trait accumulation, deterministic profile generation.
+    """
     game = IntakeGame()
     profile_data = game.run()
 
-    # Write profile
+    # Write USD profile (always, for human readability)
     profile_path = Path.home() / ".otto" / "profile.usda"
     profile_path.parent.mkdir(parents=True, exist_ok=True)
-
     write_profile(profile_data, profile_path)
-
     console.print(f"\n[green]✓[/green] Profile saved to {profile_path}")
+
+    # Also load into ProfileManager if requested
+    if use_profile_manager:
+        try:
+            from .profile_integration import load_intake_to_profile_manager
+            profile = load_intake_to_profile_manager(profile_data.traits)
+            console.print(f"[green]✓[/green] Profile loaded into cognitive substrate")
+        except ImportError:
+            # otto.core not available (e.g., running standalone)
+            pass
+        except Exception as e:
+            console.print(f"[yellow]![/yellow] Could not load into cognitive substrate: {e}")
 
 
 def main() -> None:

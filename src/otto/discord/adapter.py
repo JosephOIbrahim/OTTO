@@ -39,6 +39,16 @@ from ..cognitive_state import (
 )
 from ..parameter_locker import ThinkDepth
 
+# Optional LLM imports
+try:
+    from ..llm import ResponseGenerator, GenerationContext, create_response_generator
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    ResponseGenerator = None
+    GenerationContext = None
+    create_response_generator = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -217,6 +227,7 @@ class DiscordAdapter:
         self,
         orchestrator: Optional[CognitiveOrchestrator] = None,
         session_store_path: Optional[Path] = None,
+        response_generator: Optional["ResponseGenerator"] = None,
     ):
         """
         Initialize adapter.
@@ -224,9 +235,11 @@ class DiscordAdapter:
         Args:
             orchestrator: Cognitive orchestrator (creates default if None)
             session_store_path: Path to persist sessions (optional)
+            response_generator: LLM response generator (optional, for async generation)
         """
         self.orchestrator = orchestrator or create_orchestrator()
         self.session_store_path = session_store_path
+        self.response_generator = response_generator
 
         # [He2025] Session dict - iterate in sorted order
         self._sessions: Dict[int, DiscordSession] = {}
@@ -278,6 +291,73 @@ class DiscordAdapter:
 
         # Step 4: Build response
         response = self._build_response(result, message, session)
+        response.processing_time_ms = (time.time() - start_time) * 1000
+
+        # Step 5: Update session with cognitive state
+        state = self.orchestrator.get_state()
+        session.update_cognitive_state(
+            burnout=state.burnout_level,
+            energy=state.energy_level,
+            momentum=state.momentum_phase,
+            mode=state.mode,
+        )
+
+        # Persist sessions if store configured
+        if self.session_store_path:
+            self._save_sessions()
+
+        logger.info(
+            f"Processed message for user {message.user_id}: "
+            f"{response.anchor} ({response.processing_time_ms:.1f}ms)"
+        )
+
+        return response
+
+    async def process_message_async(self, message: DiscordMessage) -> DiscordResponse:
+        """
+        Process a Discord message with async LLM generation.
+
+        Same as process_message but uses ResponseGenerator for actual LLM responses.
+
+        [He2025] Fixed evaluation order:
+        1. Get/create session
+        2. Check for commands
+        3. Route through orchestrator
+        4. Generate response via LLM
+        5. Update session state
+
+        Args:
+            message: Normalized Discord message
+
+        Returns:
+            Response with LLM-generated text
+        """
+        start_time = time.time()
+
+        # Step 1: Get or create session
+        session = self._get_or_create_session(message)
+        session.touch()
+
+        # Step 2: Handle commands (sync - no LLM needed)
+        if message.is_command:
+            response = self._handle_command(message, session)
+            response.processing_time_ms = (time.time() - start_time) * 1000
+            return response
+
+        # Step 3: Route through cognitive orchestrator
+        result = self.orchestrator.process_message(
+            message=message.text,
+            context={
+                "platform": "discord",
+                "user_id": message.user_id,
+                "session_id": session.session_id,
+                "guild_id": message.guild_id,
+                "is_dm": message.is_dm,
+            }
+        )
+
+        # Step 4: Build response with LLM generation
+        response = await self._build_response_async(result, message, session)
         response.processing_time_ms = (time.time() - start_time) * 1000
 
         # Step 5: Update session with cognitive state
@@ -525,6 +605,85 @@ class DiscordAdapter:
             anchor=anchor,
             expert=expert,
         )
+
+    async def _build_response_async(
+        self,
+        result: Union[NexusResult, KnowledgeResult],
+        message: DiscordMessage,
+        session: DiscordSession,
+    ) -> DiscordResponse:
+        """
+        Build Discord response with async LLM generation.
+
+        [He2025] Fixed response building order.
+        """
+        # Get anchor and expert from result
+        anchor = result.to_anchor()
+
+        if isinstance(result, NexusResult):
+            expert = result.routing.expert.value
+            # Generate response via LLM
+            response_text = await self._render_response_async(
+                result, session, message.text
+            )
+        else:
+            # KnowledgeResult - direct knowledge response (no LLM needed)
+            expert = "knowledge"
+            prim = result.top_prim
+            if prim:
+                response_text = f"**{prim.summary}**\n\n{prim.content}"
+            else:
+                response_text = "I couldn't find specific information on that."
+
+        return DiscordResponse(
+            text=response_text,
+            channel_id=message.channel_id,
+            reply_to_message_id=message.message_id,
+            anchor=anchor,
+            expert=expert,
+        )
+
+    async def _render_response_async(
+        self,
+        result: NexusResult,
+        session: DiscordSession,
+        user_message: str,
+    ) -> str:
+        """
+        Generate response text using LLM.
+
+        Uses ResponseGenerator if available, falls back to sync render.
+        """
+        if not self.response_generator or not LLM_AVAILABLE:
+            # Fall back to sync version
+            return self._render_response(result, session)
+
+        expert = result.routing.expert.value
+
+        # Build generation context from session state
+        from ..llm.response_generator import GenerationContext
+        context = GenerationContext(
+            expert=expert,
+            burnout_level=session.burnout_level,
+            energy_level=session.energy_level,
+            momentum_phase=session.momentum_phase,
+            mode=session.mode,
+            platform="discord",
+            user_id=session.user_id,
+            session_id=session.session_id,
+        )
+
+        try:
+            # Generate response via LLM
+            response = await self.response_generator.generate(
+                message=user_message,
+                context=context,
+            )
+            return response
+        except Exception as e:
+            logger.error(f"LLM generation failed: {e}")
+            # Fall back to sync version on error
+            return self._render_response(result, session)
 
     def _render_response(
         self,

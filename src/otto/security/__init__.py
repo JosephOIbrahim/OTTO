@@ -118,6 +118,22 @@ from .hsm import (
     is_hsm_available,
 )
 
+from .keyring_provider import (
+    # Core types
+    KeyringProvider,
+    KeyringBackend,
+    Credential,
+    # Implementations
+    SystemKeyringProvider,
+    MemoryKeyringProvider,
+    NoOpKeyringProvider,
+    # Manager
+    KeyringManager,
+    get_keyring,
+    set_keyring,
+    reset_keyring,
+)
+
 __all__ = [
     # Posture
     "SecurityPosture",
@@ -176,4 +192,15 @@ __all__ = [
     "get_hsm",
     "create_hsm",
     "is_hsm_available",
+    # Keyring
+    "KeyringProvider",
+    "KeyringBackend",
+    "Credential",
+    "SystemKeyringProvider",
+    "MemoryKeyringProvider",
+    "NoOpKeyringProvider",
+    "KeyringManager",
+    "get_keyring",
+    "set_keyring",
+    "reset_keyring",
 ]

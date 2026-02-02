@@ -24,6 +24,26 @@
     5. Recover without guilt - Rest is productive
     6. One at a time - Complete before switching
     7. User knows best - Their signal trumps Claude's guess
+
+    [He2025] Determinism Compliance:
+    ================================
+    Safety floors are ADDITIVE constraints, never removed:
+    - safety_floor_protector >= 0.10 (Validator always has 10% minimum)
+    - safety_floor_restorer >= 0.05 (Restorer always has 5% minimum)
+    - safety_floor_scaffolder >= 0.05 (Scaffolder always has 5% minimum)
+
+    Float precision (2 decimals for safety floors):
+    - Comparisons: if weight < 0.10 → weight = 0.10
+    - No rounding needed; values are exact decimals
+
+    Threshold comparisons:
+    - emotional_intervention_threshold (0.5) uses round(score, 2)
+    - burnout_escalation_threshold (0.7) uses round(score, 2)
+    - tension_surfacing_threshold (0.3) uses round(tension, 6)
+
+    Reference: [He2025] He, Horace and Thinking Machines Lab,
+    "Defeating Nondeterminism in LLM Inference", Sep 2025.
+    See also: docs/HE2025_DETERMINISM_ADDENDUM.md
     """
     metersPerUnit = 1
     upAxis = "Y"

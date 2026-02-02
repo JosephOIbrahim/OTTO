@@ -172,9 +172,11 @@ class TestHumanRender:
         renderer = HumanRender()
         celebration = renderer.render_celebration("medium_win", after_struggle=True)
 
-        # Should acknowledge the struggle
-        assert "through" in celebration.lower() or "hard" in celebration.lower() \
-               or "did" in celebration.lower()
+        # Should acknowledge the struggle - any of the after_struggle phrases
+        # Phrases: "You got through it.", "That was hard. You did it anyway.",
+        # "The stuck part is behind you.", "Proof you can do hard things."
+        valid_words = ["through", "hard", "did", "stuck", "behind", "proof"]
+        assert any(word in celebration.lower() for word in valid_words)
 
     def test_render_welcome_new_session(self):
         """Test welcome for new session."""

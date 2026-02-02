@@ -32,6 +32,15 @@ from .adapter import DiscordAdapter, DiscordMessage, DiscordResponse
 
 logger = logging.getLogger(__name__)
 
+# Optional LLM imports
+try:
+    from ..llm import create_response_generator, ResponseGenerator
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    create_response_generator = None
+    ResponseGenerator = None
+
 # [He2025] Fixed constants
 _DEFAULT_SESSION_PATH: Final[str] = "data/discord_sessions.json"
 _CLEANUP_INTERVAL_SECONDS: Final[int] = 3600  # 1 hour
@@ -72,6 +81,8 @@ if DISCORD_AVAILABLE:
             token: str,
             adapter: Optional[DiscordAdapter] = None,
             session_path: Optional[Path] = None,
+            response_generator: Optional["ResponseGenerator"] = None,
+            api_key: Optional[str] = None,
         ):
             """
             Initialize the Discord bot.
@@ -80,6 +91,8 @@ if DISCORD_AVAILABLE:
                 token: Discord bot token
                 adapter: DiscordAdapter instance (creates default if None)
                 session_path: Path to session storage
+                response_generator: LLM response generator (creates Claude if None and API key available)
+                api_key: Anthropic API key for response generation
             """
             # Set up intents
             intents = discord.Intents.default()
@@ -99,9 +112,20 @@ if DISCORD_AVAILABLE:
             # Ensure session directory exists
             self.session_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Create adapter with session persistence
+            # Create response generator if LLM available
+            self.response_generator = response_generator
+            if self.response_generator is None and LLM_AVAILABLE:
+                try:
+                    self.response_generator = create_response_generator(api_key=api_key)
+                    logger.info("Created Claude response generator")
+                except Exception as e:
+                    logger.warning(f"Could not create response generator: {e}")
+                    self.response_generator = None
+
+            # Create adapter with session persistence and response generator
             self.adapter = adapter or DiscordAdapter(
-                session_store_path=self.session_path
+                session_store_path=self.session_path,
+                response_generator=self.response_generator,
             )
 
             # Track sync status
@@ -213,32 +237,39 @@ if DISCORD_AVAILABLE:
             # Only respond if:
             # 1. In a DM
             # 2. Bot is mentioned
-            # 3. Message starts with bot prefix
+            # 3. Message contains "otto" (case insensitive)
             is_dm = isinstance(message.channel, discord.DMChannel)
             is_mentioned = self.user in message.mentions
-            is_prefixed = message.content.startswith(("otto ", "OTTO ", "@otto ", "@OTTO "))
+            contains_name = "otto" in message.content.lower()
 
-            if not (is_dm or is_mentioned or is_prefixed):
+            if not (is_dm or is_mentioned or contains_name):
                 return
 
-            # Remove mention from message text if present
+            # Remove mention/name from message text if present
             text = message.content
             if is_mentioned:
                 text = text.replace(f"<@{self.user.id}>", "").strip()
                 text = text.replace(f"<@!{self.user.id}>", "").strip()
-            if is_prefixed:
-                for prefix in ("otto ", "OTTO ", "@otto ", "@OTTO "):
-                    if text.startswith(prefix):
-                        text = text[len(prefix):]
-                        break
+            if contains_name and not is_mentioned:
+                # Remove "otto" variations from text (preserve case of rest)
+                import re
+                text = re.sub(r'\botto\b', '', text, flags=re.IGNORECASE).strip()
+                # Clean up extra spaces
+                text = ' '.join(text.split())
 
             # Skip if empty after cleaning
             if not text.strip():
                 return
 
-            # Convert and process
+            # Convert and process (async if response generator available)
             normalized = self._discord_to_message(message, text)
-            response = self.adapter.process_message(normalized)
+
+            if self.response_generator is not None:
+                # Use async processing with LLM generation
+                response = await self.adapter.process_message_async(normalized)
+            else:
+                # Sync processing (placeholder responses)
+                response = self.adapter.process_message(normalized)
 
             await self._send_message_response(message, response)
 
@@ -434,6 +465,7 @@ else:
 def create_bot(
     token: Optional[str] = None,
     session_path: Optional[Path] = None,
+    api_key: Optional[str] = None,
 ) -> "OTTODiscordBot":
     """
     Create and configure a Discord bot instance.
@@ -441,6 +473,7 @@ def create_bot(
     Args:
         token: Bot token (defaults to DISCORD_BOT_TOKEN env var)
         session_path: Path to session storage
+        api_key: Anthropic API key for LLM responses (defaults to ANTHROPIC_API_KEY env var)
 
     Returns:
         Configured OTTODiscordBot instance
@@ -463,7 +496,14 @@ def create_bot(
             "Set DISCORD_BOT_TOKEN environment variable or pass token directly."
         )
 
-    return OTTODiscordBot(token=bot_token, session_path=session_path)
+    # Get API key from env if not provided
+    anthropic_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+
+    return OTTODiscordBot(
+        token=bot_token,
+        session_path=session_path,
+        api_key=anthropic_key,
+    )
 
 
 def main() -> None:

@@ -23,6 +23,24 @@
     Novel Contribution:
     No existing system uses Pixar's USD scene graph composition
     to resolve cognitive state priority. This is genuine technical novelty.
+
+    [He2025] Determinism Compliance:
+    ================================
+    This schema is CONCEPTUAL documentation, not runtime-parsed USD.
+    See docs/USD_ARCHITECTURE_DECISION.md for rationale.
+
+    Float precision rules:
+    - All float comparisons use round(value, 6) before comparison
+    - Float aggregations use Kahan summation with sorted input
+    - Ratios use 2-decimal precision (e.g., 0.50, not 0.5)
+
+    Deterministic ordering:
+    - Layer resolution follows LIVRPS order exactly
+    - Variant selection uses alphabetical tie-breaking
+    - Query results always include explicit ORDER BY
+
+    Reference: [He2025] He, Horace and Thinking Machines Lab,
+    "Defeating Nondeterminism in LLM Inference", Sep 2025.
     """
     metersPerUnit = 1
     upAxis = "Y"
