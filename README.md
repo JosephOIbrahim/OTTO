@@ -175,6 +175,40 @@ We're building the first OS where **neurodivergence is the native architecture**
 
 ---
 
+## Acknowledgments & Citations
+
+OTTO OS builds upon foundational work from the following:
+
+### Universal Scene Description (USD)
+
+OTTO's cognitive substrate uses concepts inspired by Pixar's Universal Scene Description.
+
+```
+Copyright (c) 2016-2024 Pixar.
+Licensed under the Apache License, Version 2.0.
+https://github.com/PixarAnimationStudios/USD
+```
+
+### Deterministic LLM Inference
+
+OTTO implements application-level determinism principles from:
+
+```
+@article{he2025defeating,
+  title={Defeating Non-determinism in LLM Inference},
+  author={He, Horace},
+  journal={Thinking Machines Lab},
+  year={2025},
+  month={September},
+  url={https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/}
+}
+```
+
+OTTO applies [He2025] principles at the application layer (routing, state composition)
+rather than GPU kernels. See `THINKINGMACHINES_COMPLIANCE.md` for implementation details.
+
+---
+
 ## License
 
 MIT

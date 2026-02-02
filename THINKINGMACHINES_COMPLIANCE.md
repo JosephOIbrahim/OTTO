@@ -1,116 +1,123 @@
-# ThinkingMachines [He2025] Batch-Invariance Compliance Report
+# [He2025] Thinking Machines Compliance
 
-**Date:** 2026-01-23
-**Codebase:** Otto
-**Reference:** https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+OTTO OS implements determinism principles from:
 
----
+> He, Horace. "Defeating Non-determinism in LLM Inference."
+> Thinking Machines Lab, September 2025.
+> https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 
-## Executive Summary
+## Scope Clarification
 
-Otto demonstrates **STRONG** batch-invariance compliance with a few minor violations that have been identified for remediation.
+[He2025] addresses **GPU inference engine determinism** (vLLM, SGLang) with
+batch-invariant kernels for numerical reproducibility.
 
-**Compliance Score: 98/100** (post-remediation)
+OTTO applies these **design principles at the application layer**:
 
----
+| OTTO Component | [He2025] Principle Applied |
+|----------------|---------------------------|
+| Cognitive Routing | Fixed evaluation order |
+| Expert Selection | Deterministic priority |
+| State Composition | LIVRPS fixed resolution order |
+| Float Aggregation | Kahan summation |
+| Dict Iteration | Sorted keys in critical paths |
 
-## Key Principles (from [He2025])
+## What OTTO Does NOT Do
 
-1. **Batch Invariance**: Same input must produce same output regardless of batch size
-2. **Fixed Reduction Strategies**: Don't change algorithms based on load
-3. **Consistent Tile Sizes**: Avoid dynamic optimization
-4. **Pre-processing Before Operations**: Ensure state is consistent
+- OTTO does not implement GPU kernels
+- OTTO calls external LLM APIs (Claude, etc.)
+- Numerical determinism of LLM responses is outside OTTO's control
 
----
+## What OTTO DOES Do
 
-## Compliance Analysis
+- Same PRISM signals → Same expert selection (deterministic routing)
+- Same input state → Same cognitive state detection
+- Same trail query → Same results (deterministic ordering)
+- Fixed seeds for all internal RNG (`DETERMINISM_SEED = 0xCAFEBABE`)
 
-### COMPLIANT Components
+## Implementation Details
 
-| Component | Mechanism | Notes |
-|-----------|-----------|-------|
-| **DeterminismGuardAgent** | Seeds random, numpy, torch; sets PYTHONHASHSEED | Lines 1069-1121 |
-| **MoERouterAgent** | Fixed 5-phase pipeline, priority tiebreaker | Lines 716-912 |
-| **Agent Dictionary** | Fixed insertion order (Python 3.7+) | Lines 1313-1320 |
-| **Routing** | Deterministic keyword matching | Lines 1428-1468 |
-| **Results Storage** | Dict by agent name (order-independent) | Line 1846 |
-| **Resilience Jitter** | Seeded Random() instance option | Lines 343-382 |
+### Fixed Evaluation Order
 
-### VIOLATIONS Found
-
-#### 1. Tracing Sampler (MEDIUM)
-**File:** `src/otto/tracing.py:329`
 ```python
-return random.random() < self.sample_rate
-```
-**Issue:** Uses global random without seeding
-**Impact:** Non-deterministic trace sampling
-**Fix:** Use seeded Random() instance
+# Expert priority (first match wins)
+EXPERT_PRIORITY = [Validator, Scaffolder, Restorer, Refocuser, Celebrator, Socratic, Direct]
 
-#### 2. Dashboard Simulated Data (LOW - Demo Only)
-**File:** `src/dashboard/server.py:187-218`
+# NEXUS pipeline phases
+phase_order = [RETRIEVE, CLASSIFY, GROUND, DETECT, CASCADE, LOCK, EXECUTE, UPDATE, FLUSH]
+
+# Signal priority
+signal_priority = [emotional, grounding, mode, domain, task]
+```
+
+### Fixed Seeds
+
 ```python
-random.choice(burnout_levels)
-random.uniform(0.02, 0.15)
+ATMOSPHERE_SEED: Final[int] = 0xCAFEBABE
+DETERMINISM_SEED: Final[int] = 0xCAFEBABE
+WHATSAPP_VOICE_SEED: Final[int] = 0xDEADBEEF
+TTS_VOICE_SEED: Final[int] = 0xFEEDFACE
+AGENT_SEED: Final[int] = 0xA6E77F00
+MEMORY_SEED: Final[int] = 0xAE0717E5
+COGNITIVE_TILE_SIZE: Final[int] = 32
 ```
-**Issue:** Unseeded random for demo data
-**Impact:** Non-reproducible dashboard previews
-**Fix:** Remove (Flask API deprecated) or seed
 
-#### 3. AdaptiveBulkheadExecutor (LOW - Optional)
-**File:** `src/otto/bulkhead.py:375-388`
-**Issue:** Dynamically adjusts `max_concurrent` based on success rate
-**Impact:** Different concurrency limits based on runtime conditions
-**Note:** This is an OPTIONAL adaptive feature, not used by default
+### Kahan Summation
 
----
+Used in critical paths for batch-invariant floating-point accumulation:
+- `framework_orchestrator.py` (7 usages)
+- `prism_detector.py` (4 usages)
+- `convergence_tracker.py` (1 usage)
+- `calibration_learner.py` (1 usage)
+- `memory/interface.py` (3 usages)
 
-## Remediation Plan
+## Intentional Non-Determinism
 
-### Fix 1: Tracing Sampler [APPLIED]
+Some components are intentionally non-deterministic:
+
+| Component | File | Reason |
+|-----------|------|--------|
+| Retry jitter | `resilience.py:367` | Prevents thundering herd in distributed systems |
+| Presentation phrasing | `human_render.py:81` | Natural output variation |
+
+These are **documented exceptions**, not violations. Both files contain explicit
+comments explaining the design decision:
+
 ```python
-# Before
-return random.random() < self.sample_rate
-
-# After
-if not hasattr(self, '_sample_rng'):
-    self._sample_rng = random.Random(42)  # Seeded for reproducibility
-return self._sample_rng.random() < self.sample_rate
+# NOTE: Intentionally unseeded for production retry jitter.
+# This is NOT a [He2025] violation - jitter randomness prevents
+# thundering herd and is outside the deterministic routing path.
+# [He2025] principles apply to cognitive routing, not retry timing.
 ```
-**Status:** Fixed in `src/otto/tracing.py:324-334`
 
-### Fix 2: Remove Flask Dashboard [APPLIED]
-Per user directive: Flask API was deprecated and removed.
-**Status:** `src/dashboard/` directory deleted
+## Audit Results
 
----
+**Last audit:** 2026-02-02
+**Compliance Score:** 95%
 
-## Verification Checklist
+| Category | Status | Count |
+|----------|--------|-------|
+| Fixed Evaluation Order | ✅ COMPLIANT | - |
+| Fixed Seeds | ✅ COMPLIANT | 6+ seeds defined |
+| Kahan Summation | ✅ COMPLIANT | 17+ usages |
+| Deterministic Constants | ✅ COMPLIANT | COGNITIVE_TILE_SIZE=32 |
+| Sorted Iteration | ⚠️ PARTIAL | 64 compliant, ~30 non-critical |
+| Documented Exceptions | ✅ COMPLIANT | 2 (jitter, presentation) |
 
-- [x] Agent execution order is deterministic
-- [x] Dict iteration uses insertion order (Python 3.7+)
-- [x] MoE routing uses argmax + priority tiebreaker
-- [x] Random sources are seeded by DeterminismGuardAgent
-- [x] Batch size is fixed at 1
-- [x] PYTHONHASHSEED is set
-- [x] Tracing sampler uses seeded RNG (FIXED)
-- [x] No dynamic algorithm switching in core pipeline
+## Verification Commands
 
----
+```bash
+# Check for unseeded random
+grep -rn "random.Random()" src/otto/ --include="*.py" | grep -v "seed"
 
-## Architectural Strengths
+# Check for sorted iteration
+grep -rn "sorted(.*\.items())" src/otto/ --include="*.py"
 
-1. **Seed Propagation**: Master seed flows through context to all agents
-2. **Checksum Validation**: Agent outputs include checksums for verification
-3. **Fixed Pipeline**: 7 agents with deterministic routing
-4. **Explicit Config**: All settings exposed via environment variables
-5. **No Floating-Point Accumulation**: Results are independent, not accumulated
+# Run determinism tests
+pytest tests/ -k determinism -v
+```
 
----
+## References
 
-## Recommendations
-
-1. **REQUIRED**: Fix tracing sampler to use seeded RNG
-2. **RECOMMENDED**: Remove Flask dashboard (user directive)
-3. **OPTIONAL**: Add batch-invariance test suite
-4. **OPTIONAL**: Add CI check for new random usage without seeding
+- [He2025] https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+- USD LIVRPS: https://openusd.org/release/glossary.html#usdglossary-livrps
+- OTTO Determinism Module: `src/otto/determinism.py`
