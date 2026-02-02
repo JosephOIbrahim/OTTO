@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "otto-trails": {
+      "command": "python",
+      "args": ["-m", "otto_trails_mcp.server"],
+      "env": {
+        "PYTHONPATH": "C:\\Users\\User\\OTTO_OS\\packages\\otto-trails-mcp\\src;C:\\Users\\User\\OTTO_OS\\src"
+      }
+    },
+    "otto-orchestra": {
+      "command": "python",
+      "args": ["-m", "otto_mcp.server"],
+      "env": {
+        "PYTHONPATH": "C:\\Users\\User\\OTTO_OS\\packages\\orchestra-mcp\\src;C:\\Users\\User\\OTTO_OS\\src"
+      }
+    }
+  }
+}

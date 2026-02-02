@@ -1,0 +1,130 @@
+{
+  "accuracy": 0.977876,
+  "confusion_matrix": {
+    "depleted": {
+      "depleted": 37,
+      "exploring": 0,
+      "focused": 0,
+      "frustrated": 0,
+      "overwhelmed": 0,
+      "stuck": 0
+    },
+    "exploring": {
+      "depleted": 0,
+      "exploring": 36,
+      "focused": 2,
+      "frustrated": 0,
+      "overwhelmed": 0,
+      "stuck": 0
+    },
+    "focused": {
+      "depleted": 0,
+      "exploring": 0,
+      "focused": 39,
+      "frustrated": 0,
+      "overwhelmed": 0,
+      "stuck": 0
+    },
+    "frustrated": {
+      "depleted": 0,
+      "exploring": 0,
+      "focused": 1,
+      "frustrated": 38,
+      "overwhelmed": 0,
+      "stuck": 0
+    },
+    "overwhelmed": {
+      "depleted": 0,
+      "exploring": 0,
+      "focused": 1,
+      "frustrated": 0,
+      "overwhelmed": 36,
+      "stuck": 0
+    },
+    "stuck": {
+      "depleted": 0,
+      "exploring": 0,
+      "focused": 1,
+      "frustrated": 0,
+      "overwhelmed": 0,
+      "stuck": 35
+    }
+  },
+  "dataset_path": "C:\\Users\\User\\OTTO_OS\\benchmarks\\state_detection\\dataset.json",
+  "error_count": 5,
+  "he2025_compliant": true,
+  "macro_f1": 0.97866,
+  "macro_precision": 0.981061,
+  "macro_recall": 0.97782,
+  "per_class_metrics": {
+    "depleted": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 37
+    },
+    "exploring": {
+      "f1": 0.972973,
+      "precision": 1.0,
+      "recall": 0.947368,
+      "support": 38
+    },
+    "focused": {
+      "f1": 0.939759,
+      "precision": 0.886364,
+      "recall": 1.0,
+      "support": 39
+    },
+    "frustrated": {
+      "f1": 0.987013,
+      "precision": 1.0,
+      "recall": 0.974359,
+      "support": 39
+    },
+    "overwhelmed": {
+      "f1": 0.986301,
+      "precision": 1.0,
+      "recall": 0.972973,
+      "support": 37
+    },
+    "stuck": {
+      "f1": 0.985915,
+      "precision": 1.0,
+      "recall": 0.972222,
+      "support": 36
+    }
+  },
+  "sample_count": 226,
+  "sample_errors": [
+    {
+      "actual": "stuck",
+      "id": "edge_ambig_001",
+      "message": "I don't know...",
+      "predicted": "focused"
+    },
+    {
+      "actual": "frustrated",
+      "id": "edge_ambig_002",
+      "message": "This is hard",
+      "predicted": "focused"
+    },
+    {
+      "actual": "exploring",
+      "id": "edge_ambig_003",
+      "message": "I need to think",
+      "predicted": "focused"
+    },
+    {
+      "actual": "overwhelmed",
+      "id": "edge_mixed_002",
+      "message": "Finally fixed it but now there's more",
+      "predicted": "focused"
+    },
+    {
+      "actual": "exploring",
+      "id": "edge_short_003",
+      "message": "hmm",
+      "predicted": "focused"
+    }
+  ]
+}
