@@ -194,7 +194,6 @@ def create_whatsapp_adapter(
     whatsapp_config = WhatsAppConfig(
         access_token=os.environ.get("WHATSAPP_TOKEN", ""),
         phone_number_id=os.environ.get("WHATSAPP_PHONE_NUMBER_ID", ""),
-        verify_token=os.environ.get("WHATSAPP_VERIFY_TOKEN", "otto_verify"),
     )
 
     adapter_config = VoiceAdapterConfig(
