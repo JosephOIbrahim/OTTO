@@ -326,9 +326,14 @@ class OTTOMemory:
             episode: The episode to record
         """
         start = datetime.now()
+        logger.info(
+            f"[MEMORY DEBUG] record_episode called. "
+            f"trail_store type: {type(self._trail_store).__name__}"
+        )
         try:
             from otto.trails.models import Trail, TrailType
 
+            logger.info("[MEMORY DEBUG] Using REAL Trail path for deposit")
             trail = Trail(
                 id=None,
                 trail_type=TrailType.PATTERN,
@@ -343,14 +348,19 @@ class OTTOMemory:
             )
 
             self._trail_store.deposit(trail)
-            logger.debug(f"Episode recorded: {episode.type} -> {episode.outcome}")
+            logger.info(f"[MEMORY DEBUG] Episode deposited via REAL path: {episode.type}")
 
-        except ImportError:
+        except ImportError as e:
             # Fallback to mock
+            logger.info(f"[MEMORY DEBUG] Using MOCK deposit path (ImportError: {e})")
             self._trail_store.deposit_mock(
                 episode.type,
                 episode.to_trail_signal(),
                 episode.to_trail_metadata()
+            )
+            logger.info(
+                f"[MEMORY DEBUG] Episode deposited via MOCK path. "
+                f"Trail count now: {len(getattr(self._trail_store, '_trails', []))}"
             )
 
         # Track metrics
@@ -374,16 +384,25 @@ class OTTOMemory:
         if self._metrics:
             self._metrics.episodes_queried += 1
 
+        logger.info(
+            f"[MEMORY DEBUG] query_episodes called. "
+            f"trail_store type: {type(self._trail_store).__name__}, "
+            f"trail count: {len(getattr(self._trail_store, '_trails', []))}"
+        )
+
         try:
             from otto.trails.models import TrailQuery, TrailType
 
+            logger.info("[MEMORY DEBUG] Using REAL TrailQuery path for query")
+            # Use path_prefix for prefix matching (episodes have unique timestamps in path)
             trail_query = TrailQuery(
                 trail_type=TrailType.PATTERN,
-                path=query.type,
+                path_prefix=query.type,  # Prefix match, not exact match
                 min_strength=query.min_strength,
             )
 
             trails = self._trail_store.query(trail_query)
+            logger.info(f"[MEMORY DEBUG] REAL query returned {len(trails)} trails")
 
             episodes = []
             for trail in trails[:query.limit]:
@@ -401,7 +420,8 @@ class OTTOMemory:
 
             return sorted(episodes, key=lambda e: e.timestamp, reverse=True)
 
-        except ImportError:
+        except ImportError as e:
+            logger.info(f"[MEMORY DEBUG] Using MOCK query path (ImportError: {e})")
             return self._trail_store.query_mock(query)
 
     # =========================================================================
@@ -1007,7 +1027,58 @@ class MockTrailStore:
         return [t for t in self._trails if t.get("path", "").startswith(query.path or "")]
 
     def query_mock(self, query: EpisodeQuery) -> List[Episode]:
-        return []
+        """
+        Query stored episodes from mock trail storage.
+
+        [He2025] Fixed order: sorted by timestamp, newest first.
+        """
+        logger.info(f"[MEMORY DEBUG] query_mock called. Total trails in store: {len(self._trails)}")
+        for i, t in enumerate(self._trails):
+            logger.info(f"[MEMORY DEBUG] Trail {i}: path={t.get('path')}, has_metadata={bool(t.get('metadata'))}")
+
+        # Filter by type/path if specified
+        matching = self._trails
+        if query.type:
+            matching = [t for t in matching if t.get("path", "").startswith(query.type)]
+
+        # Filter by service if specified
+        if query.service:
+            matching = [
+                t for t in matching
+                if t.get("metadata", {}).get("service") == query.service
+            ]
+
+        # Filter by min_strength
+        matching = [t for t in matching if t.get("strength", 0.0) >= query.min_strength]
+
+        # Sort by timestamp, newest first
+        matching = sorted(matching, key=lambda t: t.get("deposited_at", datetime.min), reverse=True)
+
+        # Apply limit
+        matching = matching[:query.limit]
+
+        # Convert to Episode objects
+        episodes = []
+        for trail in matching:
+            metadata = trail.get("metadata", {})
+            signal = trail.get("signal", "success")
+            try:
+                outcome = Outcome(signal)
+            except ValueError:
+                outcome = Outcome.SUCCESS
+
+            episodes.append(Episode(
+                type=trail.get("path", ""),
+                data=metadata.get("data", {}),
+                outcome=outcome,
+                timestamp=trail.get("deposited_at", datetime.now()),
+                actor=metadata.get("actor", "otto"),
+                service=metadata.get("service"),
+                resource=metadata.get("resource"),
+                context=metadata.get("context"),
+            ))
+
+        return episodes
 
     def get_strength_mock(self, action: str) -> TrailStrength:
         matching = [t for t in self._trails if t["path"] == action and t["signal"] == "success"]

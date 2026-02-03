@@ -23,7 +23,7 @@ import logging
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any, Dict, Final, Optional, Union
+from typing import Any, Dict, Final, List, Optional, Union
 
 from ..cognitive_orchestrator import (
     CognitiveOrchestrator,
@@ -38,18 +38,20 @@ from ..cognitive_state import (
     CognitiveMode,
 )
 from ..parameter_locker import ThinkDepth
-from ..memory import get_memory, Episode, Outcome, OTTOMemory
+from ..memory import get_memory, Episode, EpisodeQuery, Outcome, OTTOMemory
 from ..substrate.protection import get_protection, SubstrateProtectionError
 
 # Optional LLM imports
 try:
     from ..llm import ResponseGenerator, GenerationContext, create_response_generator
+    from ..llm.response_generator import ConversationTurn
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
     ResponseGenerator = None
     GenerationContext = None
     create_response_generator = None
+    ConversationTurn = None
 
 logger = logging.getLogger(__name__)
 
@@ -672,12 +674,22 @@ class DiscordAdapter:
         Generate response text using LLM.
 
         Uses ResponseGenerator if available, falls back to sync render.
+
+        [He2025] Compliance:
+        - Retrieves conversation history in fixed order (oldest to newest)
+        - Deterministic context building
         """
         if not self.response_generator or not LLM_AVAILABLE:
             # Fall back to sync version
             return self._render_response(result, session)
 
         expert = result.routing.expert.value
+
+        # Retrieve conversation history from memory backbone
+        conversation_history = self._get_conversation_history(
+            user_id=session.user_id,
+            limit=10,  # Last 10 exchanges provides good context
+        )
 
         # Build generation context from session state
         from ..llm.response_generator import GenerationContext
@@ -690,6 +702,7 @@ class DiscordAdapter:
             platform="discord",
             user_id=session.user_id,
             session_id=session.session_id,
+            conversation_history=conversation_history,
         )
 
         try:
@@ -877,9 +890,21 @@ class DiscordAdapter:
 
         [He2025] Fixed data structure for deterministic recording.
         """
+        # Generate unique episode type including timestamp for uniqueness
+        # This ensures each message gets its own trail entry (not reinforced)
+        from datetime import datetime
+        timestamp_ms = int(datetime.now().timestamp() * 1000)
+        unique_episode_type = f"surface.discord.message.{message.user_id}.{timestamp_ms}"
+
+        logger.info(
+            f"[MEMORY DEBUG] Recording episode: user_id={message.user_id}, "
+            f"type={unique_episode_type}, "
+            f"user_msg='{message.text[:50]}...', "
+            f"asst_response='{response.text[:50]}...'"
+        )
         try:
             episode = Episode(
-                type="surface.discord.message",
+                type=unique_episode_type,
                 data={
                     "user_id": message.user_id,
                     "guild_id": message.guild_id,
@@ -890,6 +915,9 @@ class DiscordAdapter:
                     "burnout_level": session.burnout_level,
                     "energy_level": session.energy_level,
                     "momentum_phase": session.momentum_phase,
+                    # Store conversation content for history retrieval
+                    "user_message": message.text,
+                    "assistant_response": response.text,
                 },
                 outcome=Outcome.SUCCESS,
                 actor="discord_adapter",
@@ -913,6 +941,103 @@ class DiscordAdapter:
             self._memory.deposit_trail(action=action, outcome=outcome)
         except Exception as e:
             logger.warning(f"Failed to deposit trail: {e}")
+
+    def _get_conversation_history(
+        self,
+        user_id: int,
+        limit: int = 10,
+    ) -> List["ConversationTurn"]:
+        """
+        Retrieve recent conversation history for a user.
+
+        Queries memory backbone for recent episodes and builds
+        ConversationTurn list for multi-turn context.
+
+        [He2025] Compliance:
+        - Fixed order: oldest to newest for proper conversation flow
+        - Deterministic filtering and sorting
+        - No random selection of history
+
+        Args:
+            user_id: Discord user ID to retrieve history for
+            limit: Maximum number of conversation exchanges to return
+
+        Returns:
+            List of ConversationTurn objects, oldest first
+        """
+        if not self._memory or not LLM_AVAILABLE or ConversationTurn is None:
+            return []
+
+        try:
+            # Query recent Discord message episodes
+            # Note: EpisodeQuery doesn't filter by user_id directly,
+            # so we query more and filter post-hoc
+            # Use prefix "surface.discord.message" to match all unique episode types
+            query = EpisodeQuery(
+                type="surface.discord.message",  # Prefix match in query_mock
+                service="discord",
+                limit=limit * 3,  # Over-fetch to account for other users
+                min_strength=0.0,  # Include all episodes
+            )
+            episodes = self._memory.query_episodes(query)
+
+            logger.info(
+                f"[MEMORY DEBUG] query_episodes returned {len(episodes)} episodes"
+            )
+            for ep in episodes:
+                logger.info(
+                    f"[MEMORY DEBUG] Episode: type={ep.type}, "
+                    f"user_id={ep.data.get('user_id')}, "
+                    f"has_user_msg={bool(ep.data.get('user_message'))}, "
+                    f"has_asst_msg={bool(ep.data.get('assistant_response'))}"
+                )
+
+            # Filter by user_id (stored in episode.data)
+            user_episodes = [
+                ep for ep in episodes
+                if ep.data.get("user_id") == user_id
+            ]
+            logger.info(
+                f"[MEMORY DEBUG] After user_id filter ({user_id}): {len(user_episodes)} episodes"
+            )
+
+            # [He2025] Sort by timestamp ascending (oldest first)
+            # This ensures conversation flows naturally to the LLM
+            user_episodes = sorted(
+                user_episodes,
+                key=lambda e: e.timestamp,
+            )
+
+            # Take only the most recent N episodes
+            user_episodes = user_episodes[-limit:]
+
+            # Build conversation turns
+            turns: List[ConversationTurn] = []
+            for ep in user_episodes:
+                # Add user message if stored
+                user_msg = ep.data.get("user_message")
+                if user_msg:
+                    turns.append(ConversationTurn(
+                        role="user",
+                        content=user_msg,
+                    ))
+
+                # Add assistant response if stored
+                assistant_msg = ep.data.get("assistant_response")
+                if assistant_msg:
+                    turns.append(ConversationTurn(
+                        role="assistant",
+                        content=assistant_msg,
+                    ))
+
+            logger.debug(
+                f"Retrieved {len(turns)} conversation turns for user {user_id}"
+            )
+            return turns
+
+        except Exception as e:
+            logger.warning(f"Failed to retrieve conversation history: {e}")
+            return []
 
     def cleanup_expired_sessions(self) -> int:
         """

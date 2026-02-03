@@ -22,6 +22,21 @@ DEFAULT_TOP_P: Final[float] = 0.9
 
 
 @dataclass
+class Message:
+    """
+    A single message in a conversation.
+
+    [He2025] Fixed role values for deterministic serialization.
+    """
+    role: str  # "user" or "assistant"
+    content: str
+
+    def to_dict(self) -> Dict[str, str]:
+        """Convert to API format."""
+        return {"role": self.role, "content": self.content}
+
+
+@dataclass
 class LLMConfig:
     """
     Configuration for LLM provider.
@@ -92,17 +107,23 @@ class LLMProvider(Protocol):
         prompt: str,
         system: Optional[str] = None,
         config: Optional[LLMConfig] = None,
+        messages: Optional[List["Message"]] = None,
     ) -> LLMResponse:
         """
         Generate a response.
 
         Args:
-            prompt: User message/prompt
+            prompt: User message/prompt (used if messages not provided)
             system: System prompt (optional)
             config: Generation config (uses defaults if None)
+            messages: Conversation history (optional, for multi-turn)
 
         Returns:
             LLMResponse with generated text
+
+        Note:
+            If messages is provided, prompt is appended as the final user message.
+            If messages is None, a single-turn conversation is created from prompt.
         """
         ...
 
@@ -145,8 +166,9 @@ class BaseLLMProvider(ABC):
         prompt: str,
         system: Optional[str] = None,
         config: Optional[LLMConfig] = None,
+        messages: Optional[List["Message"]] = None,
     ) -> LLMResponse:
-        """Generate response."""
+        """Generate response with optional conversation history."""
         ...
 
     @abstractmethod

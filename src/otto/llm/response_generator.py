@@ -12,10 +12,10 @@ Generates responses using LLM provider with cognitive context.
 """
 
 import logging
-from dataclasses import dataclass
-from typing import Any, Dict, Final, Optional
+from dataclasses import dataclass, field
+from typing import Any, Dict, Final, List, Optional
 
-from .provider import LLMProvider, LLMConfig, LLMResponse
+from .provider import LLMProvider, LLMConfig, LLMResponse, Message
 from .model_router import (
     CognitiveModelRouter,
     ModelRoutingContext,
@@ -125,11 +125,30 @@ Guidelines:
 
 
 @dataclass
+class ConversationTurn:
+    """
+    A single turn in a conversation.
+
+    [He2025] Fixed structure for deterministic serialization.
+    """
+    role: str  # "user" or "assistant"
+    content: str
+
+    def to_message(self) -> Message:
+        """Convert to LLM Message format."""
+        return Message(role=self.role, content=self.content)
+
+
+@dataclass
 class GenerationContext:
     """
     Context for response generation.
 
-    Contains cognitive state and routing info.
+    Contains cognitive state, routing info, and conversation history.
+
+    [He2025] Compliance:
+    - Conversation history in fixed order (oldest to newest)
+    - Deterministic serialization
     """
     expert: str = "Direct"
     burnout_level: str = "GREEN"
@@ -141,6 +160,10 @@ class GenerationContext:
     platform: str = "discord"
     user_id: Optional[int] = None
     session_id: Optional[str] = None
+
+    # Conversation history for multi-turn context
+    # [He2025] Ordered list: oldest first, newest last
+    conversation_history: List[ConversationTurn] = field(default_factory=list)
 
     def to_context_string(self) -> str:
         """Build context string for system prompt."""
@@ -261,6 +284,14 @@ class ResponseGenerator:
         )
 
         # =================================================================
+        # STEP 4b: Build conversation history
+        # =================================================================
+        messages = None
+        if ctx.conversation_history:
+            messages = [turn.to_message() for turn in ctx.conversation_history]
+            logger.debug(f"Including {len(messages)} turns of conversation history")
+
+        # =================================================================
         # STEP 5: Generate response
         # =================================================================
         try:
@@ -268,6 +299,7 @@ class ResponseGenerator:
                 prompt=message,
                 system=system_prompt,
                 config=routed_config,
+                messages=messages,
             )
 
             logger.info(
@@ -421,6 +453,7 @@ def create_response_generator(
 __all__ = [
     "ResponseGenerator",
     "GenerationContext",
+    "ConversationTurn",
     "create_response_generator",
     "EXPERT_PROMPTS",
     "DEFAULT_PROMPT",

@@ -20,7 +20,8 @@ import logging
 import os
 from typing import Final, Optional
 
-from .provider import BaseLLMProvider, LLMConfig, LLMResponse
+from .provider import BaseLLMProvider, LLMConfig, LLMResponse, Message
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -96,14 +97,16 @@ class ClaudeProvider(BaseLLMProvider):
         prompt: str,
         system: Optional[str] = None,
         config: Optional[LLMConfig] = None,
+        messages: Optional[List[Message]] = None,
     ) -> LLMResponse:
         """
         Generate response using Claude.
 
         Args:
-            prompt: User message
+            prompt: User message (appended to messages if provided)
             system: System prompt
             config: Generation config
+            messages: Conversation history for multi-turn
 
         Returns:
             LLMResponse with Claude's response
@@ -111,6 +114,10 @@ class ClaudeProvider(BaseLLMProvider):
         Raises:
             ImportError: If anthropic not installed
             ValueError: If no API key configured
+
+        [He2025] Compliance:
+        - Fixed message ordering (history + current prompt)
+        - Deterministic conversation construction
         """
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
@@ -128,8 +135,19 @@ class ClaudeProvider(BaseLLMProvider):
         model = cfg.model or self._model
 
         try:
-            # Build messages
-            messages = [{"role": "user", "content": prompt}]
+            # Build messages array
+            # [He2025] Fixed order: conversation history + current prompt
+            api_messages = []
+
+            # Add conversation history if provided
+            if messages:
+                for msg in messages:
+                    api_messages.append(msg.to_dict())
+
+            # Add current prompt as final user message
+            api_messages.append({"role": "user", "content": prompt})
+
+            logger.debug(f"Sending {len(api_messages)} messages to Claude")
 
             # Call Claude API with voice-aware parameters
             response = await self._client.messages.create(
@@ -138,7 +156,7 @@ class ClaudeProvider(BaseLLMProvider):
                 temperature=cfg.temperature,
                 top_p=cfg.top_p,  # Nucleus sampling
                 system=system or "",
-                messages=messages,
+                messages=api_messages,
                 stop_sequences=cfg.stop_sequences if cfg.stop_sequences else anthropic.NOT_GIVEN,
             )
 
