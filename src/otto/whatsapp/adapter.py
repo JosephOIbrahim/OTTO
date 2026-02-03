@@ -7,8 +7,9 @@ Main integration point connecting WhatsApp to OTTO voice processing.
 import asyncio
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
-from typing import Optional, Callable, Awaitable
+from typing import List, Optional, Callable, Awaitable
 
 from .api import WhatsAppAPI, WhatsAppConfig
 from .webhook import WhatsAppWebhook, WebhookConfig
@@ -29,6 +30,16 @@ from ..voice_core import (
     record_voice_interaction,
     DEFAULT_IDENTITY,
 )
+
+from ..memory import get_memory, Episode, EpisodeQuery, Outcome, OTTOMemory
+
+# Optional LLM imports (for conversation history)
+try:
+    from ..llm.response_generator import ConversationTurn
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    ConversationTurn = None
 
 
 logger = logging.getLogger(__name__)
@@ -108,6 +119,9 @@ class WhatsAppVoiceAdapter:
             config=self.config.queue_config,
             processor=self._process_voice_message,
         )
+
+        # Memory backbone for conversation history
+        self._memory: OTTOMemory = get_memory()
 
         # Webhook (created on demand)
         self._webhook: Optional[WhatsAppWebhook] = None
@@ -190,11 +204,29 @@ class WhatsAppVoiceAdapter:
 
         # Process text directly (no STT needed)
         if self._otto_processor and message.text:
+            user_text = message.text.body
+
+            # Retrieve conversation history before processing
+            conversation_history = self._get_conversation_history(
+                phone_number=contact.phone_number,
+                limit=10,
+            )
+
             response = await self._otto_processor(
-                message.text.body,
-                {"phone_number": contact.phone_number}
+                user_text,
+                {
+                    "phone_number": contact.phone_number,
+                    "conversation_history": conversation_history,
+                }
             )
             await self._send_response(contact.phone_number, response)
+
+            # Record episode for future retrieval
+            self._record_episode(
+                phone_number=contact.phone_number,
+                user_message=user_text,
+                assistant_response=response,
+            )
 
     async def _process_voice_message(self, voice_message: VoiceMessage):
         """
@@ -221,6 +253,12 @@ class WhatsAppVoiceAdapter:
             logger.info(f"STT: '{transcription.text[:50]}...' ({latency.stt_ms:.0f}ms)")
 
             # === Phase 2: OTTO Processing ===
+            # Retrieve conversation history before processing
+            conversation_history = self._get_conversation_history(
+                phone_number=source_id,
+                limit=10,
+            )
+
             with LatencyTimer() as proc_timer:
                 if self._otto_processor:
                     response_text = await self._otto_processor(
@@ -229,6 +267,7 @@ class WhatsAppVoiceAdapter:
                             "phone_number": source_id,
                             "voice_message": True,
                             "message_id": voice_message.metadata.get("message_id"),
+                            "conversation_history": conversation_history,
                         }
                     )
                 else:
@@ -236,6 +275,13 @@ class WhatsAppVoiceAdapter:
                     response_text = f"I heard: {transcription.text}"
             latency.processing_ms = proc_timer.elapsed_ms
             logger.info(f"Processing: {latency.processing_ms:.0f}ms")
+
+            # Record episode for future retrieval
+            self._record_episode(
+                phone_number=source_id,
+                user_message=transcription.text,
+                assistant_response=response_text,
+            )
 
             # === Phase 3: Prepare for Speech ===
             with LatencyTimer() as prep_timer:
@@ -327,6 +373,100 @@ class WhatsAppVoiceAdapter:
             await self.api.send_audio(phone_number, media_id=media_id)
         else:
             await self.api.send_text(phone_number, response)
+
+    def _record_episode(
+        self,
+        phone_number: str,
+        user_message: str,
+        assistant_response: str,
+    ) -> None:
+        """
+        Record a conversation episode to memory backbone.
+
+        [He2025] Fixed data structure for deterministic recording.
+        """
+        timestamp_ms = int(datetime.now().timestamp() * 1000)
+        unique_episode_type = f"surface.whatsapp.message.{phone_number}.{timestamp_ms}"
+
+        try:
+            episode = Episode(
+                type=unique_episode_type,
+                data={
+                    "phone_number": phone_number,
+                    "user_message": user_message,
+                    "assistant_response": assistant_response,
+                },
+                outcome=Outcome.SUCCESS,
+                actor="whatsapp_adapter",
+                service="whatsapp",
+            )
+            self._memory.record_episode(episode)
+            logger.debug(f"Recorded WhatsApp episode: {unique_episode_type}")
+        except Exception as e:
+            logger.warning(f"Failed to record WhatsApp episode: {e}")
+
+    def _get_conversation_history(
+        self,
+        phone_number: str,
+        limit: int = 10,
+    ) -> List["ConversationTurn"]:
+        """
+        Retrieve recent conversation history for a WhatsApp user.
+
+        [He2025] Compliance:
+        - Fixed order: oldest to newest
+        - Deterministic filtering and sorting
+
+        Args:
+            phone_number: WhatsApp phone number
+            limit: Maximum number of conversation exchanges
+
+        Returns:
+            List of ConversationTurn objects, oldest first
+        """
+        if not self._memory or not LLM_AVAILABLE or ConversationTurn is None:
+            return []
+
+        try:
+            query = EpisodeQuery(
+                type="surface.whatsapp.message",
+                service="whatsapp",
+                limit=limit * 3,
+                min_strength=0.0,
+            )
+            episodes = self._memory.query_episodes(query)
+
+            # Filter by phone_number
+            user_episodes = [
+                ep for ep in episodes
+                if ep.data.get("phone_number") == phone_number
+            ]
+
+            # [He2025] Sort oldest first
+            user_episodes = sorted(
+                user_episodes,
+                key=lambda e: e.timestamp,
+            )[-limit:]
+
+            # Build conversation turns
+            turns: List[ConversationTurn] = []
+            for ep in user_episodes:
+                user_msg = ep.data.get("user_message")
+                if user_msg:
+                    turns.append(ConversationTurn(role="user", content=user_msg))
+
+                assistant_msg = ep.data.get("assistant_response")
+                if assistant_msg:
+                    turns.append(ConversationTurn(role="assistant", content=assistant_msg))
+
+            logger.debug(
+                f"Retrieved {len(turns)} WhatsApp conversation turns for {phone_number}"
+            )
+            return turns
+
+        except Exception as e:
+            logger.warning(f"Failed to retrieve WhatsApp conversation history: {e}")
+            return []
 
     def get_stats(self) -> dict:
         """Get adapter statistics."""

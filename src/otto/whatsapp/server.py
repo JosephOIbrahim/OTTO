@@ -46,6 +46,18 @@ from .api import WhatsAppConfig
 
 from ..cognitive_orchestrator import CognitiveOrchestrator, create_orchestrator
 
+# Optional LLM imports
+try:
+    from ..llm import ResponseGenerator, GenerationContext, create_response_generator
+    from ..llm.response_generator import ConversationTurn
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    ResponseGenerator = None
+    GenerationContext = None
+    create_response_generator = None
+    ConversationTurn = None
+
 
 # =============================================================================
 # OTTO Processor Callback
@@ -54,16 +66,20 @@ from ..cognitive_orchestrator import CognitiveOrchestrator, create_orchestrator
 async def otto_processor(
     text: str,
     context: dict,
-    orchestrator: CognitiveOrchestrator
+    orchestrator: CognitiveOrchestrator,
+    response_generator: Optional["ResponseGenerator"] = None,
 ) -> str:
     """
-    Process text through OTTO's cognitive orchestrator.
+    Process text through OTTO's cognitive orchestrator and generate response.
 
     This is the callback wired to WhatsAppVoiceAdapter.
 
     Args:
         text: User message text (transcribed from voice or text input)
-        context: Message context (phone_number, voice_message flag, etc.)
+        context: Message context (phone_number, voice_message flag,
+                 conversation_history, etc.)
+        orchestrator: Cognitive orchestrator instance
+        response_generator: LLM response generator (optional)
 
     Returns:
         OTTO's response text
@@ -71,25 +87,31 @@ async def otto_processor(
     # Process through NEXUS pipeline
     result = orchestrator.process_message(text, context)
 
-    # The orchestrator returns routing parameters, but we need to generate
-    # the actual response. In production, this would go through the full
-    # Claude pipeline. For now, we return a placeholder that would be
-    # replaced by the actual LLM call.
-
-    # Extract routing info for response generation
+    # Extract routing info
     if hasattr(result, 'routing'):
         expert = result.routing.expert.value
         anchor = result.to_anchor()
 
-        # In production: call Claude API with locked params
-        # For now: return acknowledgment with routing info
-        response = f"[{expert}] Message received and processed. {anchor}"
+        # Generate response via LLM if available
+        if response_generator and LLM_AVAILABLE:
+            try:
+                # Extract conversation history from context
+                conversation_history = context.get("conversation_history", [])
 
-        # Add voice-specific acknowledgment
-        if context.get("voice_message"):
-            response = f"I heard your voice message. {response}"
+                gen_context = GenerationContext(
+                    expert=expert,
+                    platform="whatsapp",
+                    user_id=context.get("phone_number"),
+                    conversation_history=conversation_history,
+                )
 
-        return response
+                response = await response_generator.generate(text, gen_context)
+                return response.text
+            except Exception as e:
+                logger.error(f"LLM generation failed, using fallback: {e}")
+
+        # Fallback: routing info (no LLM available)
+        return f"[{expert}] Message received. {anchor}"
     else:
         # KnowledgeResult (fast path)
         if result.found:
@@ -104,15 +126,17 @@ async def otto_processor(
 
 _adapter: Optional[WhatsAppVoiceAdapter] = None
 _orchestrator: Optional[CognitiveOrchestrator] = None
+_response_generator: Optional["ResponseGenerator"] = None
 
 
 def get_adapter() -> WhatsAppVoiceAdapter:
     """Get or create the WhatsApp adapter singleton."""
-    global _adapter, _orchestrator
+    global _adapter, _orchestrator, _response_generator
 
     if _adapter is None:
         _orchestrator = create_orchestrator()
-        _adapter = create_whatsapp_adapter(_orchestrator)
+        _response_generator = _create_response_generator()
+        _adapter = create_whatsapp_adapter(_orchestrator, _response_generator)
 
     return _adapter
 
@@ -127,24 +151,44 @@ def get_orchestrator() -> CognitiveOrchestrator:
     return _orchestrator
 
 
+def _create_response_generator() -> Optional["ResponseGenerator"]:
+    """Create LLM response generator if available."""
+    if not LLM_AVAILABLE:
+        logger.warning("LLM not available for WhatsApp. Responses will be placeholder.")
+        return None
+
+    try:
+        gen = create_response_generator()
+        logger.info("Created WhatsApp response generator")
+        return gen
+    except Exception as e:
+        logger.warning(f"Failed to create response generator: {e}")
+        return None
+
+
 # =============================================================================
 # Factory Functions
 # =============================================================================
 
 def create_whatsapp_adapter(
-    orchestrator: Optional[CognitiveOrchestrator] = None
+    orchestrator: Optional[CognitiveOrchestrator] = None,
+    response_gen: Optional["ResponseGenerator"] = None,
 ) -> WhatsAppVoiceAdapter:
     """
     Create a WhatsApp voice adapter wired to OTTO.
 
     Args:
         orchestrator: Cognitive orchestrator instance (creates default if None)
+        response_gen: LLM response generator (creates default if None)
 
     Returns:
         Configured WhatsAppVoiceAdapter
     """
     if orchestrator is None:
         orchestrator = create_orchestrator()
+
+    if response_gen is None and LLM_AVAILABLE:
+        response_gen = _create_response_generator()
 
     # Read configuration from environment
     whatsapp_config = WhatsAppConfig(
@@ -159,9 +203,9 @@ def create_whatsapp_adapter(
         send_typing_indicator=True,
     )
 
-    # Create processor closure that captures orchestrator
+    # Create processor closure that captures orchestrator and response generator
     async def processor(text: str, context: dict) -> str:
-        return await otto_processor(text, context, orchestrator)
+        return await otto_processor(text, context, orchestrator, response_gen)
 
     adapter = WhatsAppVoiceAdapter(adapter_config, processor)
 
