@@ -60,8 +60,14 @@ async def detect_commitment(message: str, chat_name: str) -> Commitment | None:
         print(f"OTTO detector API error: {e}", file=sys.stderr)
         return None
 
-    raw_text = response.content[0].text
-    print(f"OTTO detector raw: {raw_text}", file=sys.stderr)
+    raw_text = response.content[0].text.strip()
+
+    # Claude sometimes wraps JSON in markdown code fences
+    if raw_text.startswith("```"):
+        lines = raw_text.split("\n")
+        # Drop first line (```json) and last line (```)
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        raw_text = "\n".join(lines).strip()
 
     try:
         data = json.loads(raw_text)

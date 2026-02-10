@@ -137,6 +137,28 @@ async def test_null_deadline_stays_none():
 
 
 @pytest.mark.asyncio
+async def test_markdown_fenced_json_stripped():
+    """Claude sometimes wraps JSON in ```json ... ``` code fences."""
+    inner = json.dumps({
+        "found": True,
+        "commitment_text": "send the deck",
+        "who_to": "Alice",
+        "deadline": None,
+        "deadline_source": "none",
+        "confidence": 0.92,
+    })
+    fenced = f"```json\n{inner}\n```"
+    with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
+        mock_cls.return_value.messages.create = AsyncMock(
+            return_value=_mock_response(fenced)
+        )
+        result = await detect_commitment("I'll send the deck", "Work")
+
+    assert result is not None
+    assert result.commitment_text == "send the deck"
+
+
+@pytest.mark.asyncio
 async def test_invalid_json_returns_none():
     with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
         mock_cls.return_value.messages.create = AsyncMock(
