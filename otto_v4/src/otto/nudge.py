@@ -56,7 +56,7 @@ _REPEATED_TEMPLATE: str = (
 # Constants
 # ---------------------------------------------------------------------------
 
-MAX_NUDGES = 5
+MAX_NUDGES = 3
 COOLDOWN_HOURS = 24
 
 

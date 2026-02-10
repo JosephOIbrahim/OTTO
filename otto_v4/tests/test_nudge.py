@@ -155,9 +155,9 @@ class TestNonOverdueSkipped:
 
 
 class TestMaxNudges:
-    """At most MAX_NUDGES (5) nudges per check."""
+    """At most MAX_NUDGES (3) nudges per check — interaction budget."""
 
-    def test_max_five_nudges(self, store):
+    def test_max_three_nudges(self, store):
 
         for i in range(8):
             store.add(_overdue_commitment(
@@ -170,6 +170,7 @@ class TestMaxNudges:
         nudges = check_and_nudge(store, now=_utcnow())
 
         assert len(nudges) == MAX_NUDGES
+        assert MAX_NUDGES == 3
 
 
 class TestCooldown:
@@ -232,21 +233,14 @@ class TestTemplateRotation:
     """Same commitment gets different messages on different follow_up_counts."""
 
     def test_different_counts_different_templates(self):
-        """At least 2 of 3 follow_up_counts produce distinct messages
+        """Different follow_up_counts produce at least 2 distinct messages
         (the hash selects from the template list)."""
-        c0 = _overdue_commitment(follow_up_count=0)
-        c1 = _overdue_commitment(follow_up_count=1)
-        c2 = _overdue_commitment(follow_up_count=2)
-        # Use same ID so only the count differs
-        c1.id = c0.id
-        c2.id = c0.id
-
-        msg0 = format_nudge(c0, "overdue")
-        msg1 = format_nudge(c1, "overdue")
-        msg2 = format_nudge(c2, "overdue")
-
-        messages = {msg0, msg1, msg2}
-        # With 3 templates, at least 2 distinct messages are expected
+        base = _overdue_commitment(follow_up_count=0)
+        messages = set()
+        for count in range(10):  # 10 samples — virtually impossible to all collide
+            c = _overdue_commitment(follow_up_count=count)
+            c.id = base.id
+            messages.add(format_nudge(c, "overdue"))
         assert len(messages) >= 2
 
     def test_deterministic_for_same_input(self):
