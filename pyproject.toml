@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "otto-os"
-version = "0.7.0"
-description = "Personal OS with cognitive protection - Built on Orchestra foundations"
+version = "3.0.0-dev"
+description = "Neurodivergent-native cognitive operating system"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
@@ -77,7 +77,7 @@ otto-status = "otto.cli.status:main"
 otto-intake = "otto.intake.game:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = [".", "src"]
 
 [tool.setuptools.package-data]
 otto = ["py.typed"]
@@ -88,7 +88,7 @@ asyncio_mode = "auto"
 addopts = "-v --tb=short"
 
 [tool.coverage.run]
-source = ["src/otto"]
+source = ["otto", "src/otto"]
 branch = true
 
 [tool.coverage.report]
