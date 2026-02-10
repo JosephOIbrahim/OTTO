@@ -71,7 +71,7 @@ EXPERT_VOICES: dict[str, str] = dict(sorted({
     ),
     "restorer": (
         "You give permission to rest and recover. "
-        "Suggest easy wins if the user wants to stay productive. "
+        "Suggest small, achievable wins if the user wants to stay productive. "
         "Normalize rest as productive. Never guilt-trip."
     ),
 }.items()))
