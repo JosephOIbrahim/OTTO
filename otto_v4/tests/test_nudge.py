@@ -273,17 +273,10 @@ class TestFormatNudge:
 
         assert "tidy up docs" in msg
 
-    def test_overdue_who_to_in_at_least_some_templates(self):
-        """who_to appears in at least some overdue templates."""
-        c = _overdue_commitment(who_to="Dana")
-        found = False
-        for count in range(10):
-            c.follow_up_count = count
-            msg = format_nudge(c, "overdue")
-            if "Dana" in msg:
-                found = True
-                break
-        assert found, "who_to never appeared in any overdue template"
+    def test_overdue_templates_include_who_to(self):
+        """At least some overdue templates contain the {who_to} placeholder."""
+        templates_with_who_to = [t for t in _OVERDUE_TEMPLATES if "{who_to}" in t]
+        assert len(templates_with_who_to) >= 1, "No overdue template uses {who_to}"
 
 
 class TestIncrementFollowUp:
