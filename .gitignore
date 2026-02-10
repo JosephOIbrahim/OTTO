@@ -45,6 +45,9 @@ HANDOFF_QUICK.md
 data/trails.db
 nul
 
+# Claude Code local settings
+.claude/
+
 # Encrypted data (user-specific)
 data/*.enc
 data/*.bak
