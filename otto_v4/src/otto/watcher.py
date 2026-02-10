@@ -19,8 +19,11 @@ import hashlib
 import hmac
 import json
 import os
-import sys
 from datetime import datetime, timezone, timedelta
+
+from .log import get_logger
+
+_log = get_logger(__name__)
 
 from fastapi import FastAPI, Request, Response, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
@@ -117,7 +120,7 @@ async def receive_webhook(request: Request):
     try:
         payload = WebhookPayload(**json.loads(body))
     except Exception as e:
-        print(f"[watcher] Failed to parse payload: {e}", file=sys.stderr)
+        _log.warning("Failed to parse payload: %s", e)
         raise HTTPException(status_code=400, detail="Invalid payload")
 
     # Process messages
@@ -150,13 +153,13 @@ async def _handle_message(contact: WhatsAppContact, message: IncomingMessage):
     # Skip old messages (catch-up protection)
     age = datetime.now(timezone.utc) - message.message_time
     if age > MAX_MESSAGE_AGE:
-        print(f"[watcher] Skipping old message ({age})", file=sys.stderr)
+        _log.debug("Skipping old message (age=%s)", age)
         return
 
     text = message.text.body
     chat_name = contact.name
 
-    print(f"[watcher] Message from {chat_name}: {text[:80]}")
+    _log.info("Message from %s: %s", chat_name, text[:80])
 
     # Detect commitment
     commitment = await detect_commitment(text, chat_name)
@@ -164,10 +167,10 @@ async def _handle_message(contact: WhatsAppContact, message: IncomingMessage):
     if commitment:
         commitment.source_chat = f"WhatsApp/{chat_name}"
         store.add(commitment)
-        print(f"  Commitment detected: {commitment.commitment_text}")
-        print(f"  To: {commitment.who_to} | By: {commitment.deadline or 'no deadline'}")
+        _log.info("Commitment detected: %s", commitment.commitment_text)
+        _log.info("  To: %s | By: %s", commitment.who_to, commitment.deadline or "no deadline")
     else:
-        print(f"  No commitment detected.")
+        _log.debug("No commitment detected.")
 
 
 def main():
@@ -175,11 +178,10 @@ def main():
     import uvicorn
 
     port = int(os.environ.get("OTTO_WATCHER_PORT", "8000"))
-    print(f"OTTO Watcher starting on port {port}")
-    print(f"Webhook URL: http://localhost:{port}/webhook/whatsapp")
-    print(f"Verify token: {VERIFY_TOKEN}")
-    print(f"Signature validation: {'enabled' if APP_SECRET else 'disabled'}")
-    print()
+    _log.info("OTTO Watcher starting on port %d", port)
+    _log.info("Webhook URL: http://localhost:%d/webhook/whatsapp", port)
+    _log.info("Verify token: %s", VERIFY_TOKEN)
+    _log.info("Signature validation: %s", "enabled" if APP_SECRET else "disabled")
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")
 
 

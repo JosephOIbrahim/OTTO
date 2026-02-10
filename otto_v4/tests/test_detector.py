@@ -1,6 +1,7 @@
 """Tests for commitment detector -- mocked unit tests + real integration tests."""
 
 import json
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -167,6 +168,33 @@ async def test_invalid_json_returns_none():
         result = await detect_commitment("I'll do it", "Chat")
 
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_api_error_logged(caplog):
+    """API errors should be logged at WARNING, not just printed."""
+    with caplog.at_level(logging.WARNING, logger="otto.detector"):
+        with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
+            mock_cls.return_value.messages.create = AsyncMock(
+                side_effect=Exception("API down")
+            )
+            await detect_commitment("I'll do it", "Chat")
+
+    assert any("API" in r.message for r in caplog.records)
+    assert all(r.levelname == "WARNING" for r in caplog.records if "API" in r.message)
+
+
+@pytest.mark.asyncio
+async def test_json_parse_error_logged(caplog):
+    """JSON parse errors should be logged at WARNING."""
+    with caplog.at_level(logging.WARNING, logger="otto.detector"):
+        with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
+            mock_cls.return_value.messages.create = AsyncMock(
+                return_value=_mock_response("not json")
+            )
+            await detect_commitment("I'll do it", "Chat")
+
+    assert any("JSON" in r.message for r in caplog.records)
 
 
 # ---------------------------------------------------------------------------

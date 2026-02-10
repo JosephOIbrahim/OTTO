@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 
 import anthropic
+
+from .log import get_logger
+
+_log = get_logger(__name__)
 
 from .models import Commitment
 
@@ -57,7 +60,7 @@ async def detect_commitment(message: str, chat_name: str) -> Commitment | None:
             ],
         )
     except Exception as e:
-        print(f"OTTO detector API error: {e}", file=sys.stderr)
+        _log.warning("API error: %s", e)
         return None
 
     raw_text = response.content[0].text.strip()
@@ -72,7 +75,7 @@ async def detect_commitment(message: str, chat_name: str) -> Commitment | None:
     try:
         data = json.loads(raw_text)
     except json.JSONDecodeError:
-        print(f"OTTO detector JSON parse failed: {raw_text}", file=sys.stderr)
+        _log.warning("JSON parse failed: %s", raw_text)
         return None
 
     if not data.get("found"):
