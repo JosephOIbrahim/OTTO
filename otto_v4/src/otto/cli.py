@@ -197,12 +197,28 @@ def add(text: str, who_to: str, deadline_str: str | None) -> None:
 
 @main.command()
 @click.option("--port", default=8000, help="Port for webhook server")
-def watch(port: int) -> None:
+@click.option("--schedule", is_flag=True, help="Enable automatic nudge checks")
+@click.option("--interval", default=60, help="Nudge check interval in seconds")
+def watch(port: int, schedule: bool, interval: int) -> None:
     """Start WhatsApp watcher (webhook server)."""
     try:
         from .watcher import main as watcher_main
         import os
         os.environ.setdefault("OTTO_WATCHER_PORT", str(port))
+
+        if schedule:
+            from .scheduler import NudgeScheduler
+            scheduler = NudgeScheduler(
+                store=_get_store(),
+                state_store=_get_state_store(),
+                interval_seconds=interval,
+            )
+            scheduler.start()
+            click.echo(
+                f"Nudge scheduler active (every {interval}s, "
+                f"constitutional gating on)"
+            )
+
         watcher_main()
     except ImportError as e:
         click.echo(f"Watcher not available: {e}")
@@ -213,8 +229,18 @@ def nudge() -> None:
     """Run follow-up check now."""
     try:
         from .nudge import check_and_nudge  # type: ignore[import-not-found]
+        from .constitutional import should_suppress
     except ImportError:
         click.echo("Nudge module not ready yet.")
+        return
+
+    # Constitutional gate: check cognitive state before nudging
+    state_store = _get_state_store()
+    state = state_store.load()
+    suppression = should_suppress(state, "nudge")
+    if suppression is not None:
+        click.echo(click.style(suppression.reason, fg="yellow"))
+        state_store.increment_suppressed()
         return
 
     store = _get_store()

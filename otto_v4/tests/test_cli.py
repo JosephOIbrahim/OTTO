@@ -411,3 +411,75 @@ class TestEnergy:
         runner.invoke(main, ["energy", "low"])
         result = runner.invoke(main, ["energy"])
         assert "Energy:   low" in result.output
+
+
+# ------------------------------------------------------------------
+# Constitutional gating of nudge command
+# ------------------------------------------------------------------
+
+
+@pytest.fixture()
+def tmp_both(tmp_path):
+    """Patch both _get_store and _get_state_store to share one temp DB."""
+    db_path = str(tmp_path / "test_both.db")
+
+    def _make_store():
+        return CommitmentStore(db_path=db_path)
+
+    def _make_state_store():
+        return StateStore(db_path=db_path)
+
+    with (
+        patch("otto.cli._get_store", side_effect=_make_store),
+        patch("otto.cli._get_state_store", side_effect=_make_state_store),
+    ):
+        yield _make_store, _make_state_store
+
+
+class TestNudgeConstitutional:
+    """Constitutional layer gates the nudge command."""
+
+    def test_nudge_suppressed_in_red(self, runner, tmp_both):
+        _, make_state = tmp_both
+        state_store = make_state()
+        state_store.set_burnout("RED")
+        result = runner.invoke(main, ["nudge"])
+        assert result.exit_code == 0
+        assert "RED" in result.output
+
+    def test_nudge_suppressed_in_orange_depleted(self, runner, tmp_both):
+        _, make_state = tmp_both
+        state_store = make_state()
+        state_store.set_burnout("ORANGE")
+        state_store.set_energy("depleted")
+        result = runner.invoke(main, ["nudge"])
+        assert result.exit_code == 0
+        assert "ORANGE" in result.output
+
+    def test_nudge_allowed_in_green(self, runner, tmp_both):
+        _, make_state = tmp_both
+        state_store = make_state()
+        state_store.set_burnout("GREEN")
+        state_store.set_energy("high")
+        result = runner.invoke(main, ["nudge"])
+        assert result.exit_code == 0
+        assert "Nothing to nudge" in result.output
+
+    def test_nudge_suppression_increments_counter(self, runner, tmp_both):
+        _, make_state = tmp_both
+        state_store = make_state()
+        state_store.set_burnout("RED")
+        runner.invoke(main, ["nudge"])
+        state = state_store.load()
+        assert state.suppressed_count == 1
+
+    def test_nudge_suppressed_low_effectiveness(self, runner, tmp_both):
+        _, make_state = tmp_both
+        state_store = make_state()
+        state = state_store.load()
+        state.nudges_sent_today = 5
+        state.nudges_completed_today = 0
+        state_store.save(state)
+        result = runner.invoke(main, ["nudge"])
+        assert result.exit_code == 0
+        assert "effectiveness" in result.output
