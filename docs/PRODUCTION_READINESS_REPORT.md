@@ -135,7 +135,7 @@
 
 Otto v4.3.0 has solid foundations:
 - Work/Delegate/Protect model works
-- ThinkingMachines Determinism routing
+- Deterministic routing (inspired by [He2025])
 - Good resilience patterns
 
 **Recommendation:** Complete Phase 1 (3 days), then staging deployment. Full production after Phase 2 (~2 weeks).

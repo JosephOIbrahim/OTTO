@@ -296,7 +296,7 @@ class IdempotencyMiddleware(Middleware):
 
 def create_api_middleware(...) -> MiddlewareChain:
     """
-    Order is FIXED (per ThinkingMachines):
+    Order is FIXED (per [He2025]):
     1. Metrics - Record timing (must be first)
     2. Security Headers - Add security headers
     3. Idempotency - Check/cache responses

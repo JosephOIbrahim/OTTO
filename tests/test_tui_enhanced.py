@@ -118,7 +118,7 @@ class TestDashboardState:
 
 
 class TestDisplayConstants:
-    """Tests for ThinkingMachines-compliant display constants."""
+    """Tests for determinism-compliant display constants."""
 
     def test_burnout_styles_fixed(self):
         """Burnout styles are fixed (no runtime variation)."""
@@ -363,8 +363,8 @@ class TestLayoutCreation:
         assert layout2.children is not None
 
 
-class TestThinkingMachinesCompliance:
-    """Tests for ThinkingMachines Determinism."""
+class TestDeterminismCompliance:
+    """Tests for determinism ([He2025])."""
 
     def test_fixed_color_mappings(self):
         """Color mappings are fixed at import time."""

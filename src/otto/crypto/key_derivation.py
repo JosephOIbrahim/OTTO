@@ -44,7 +44,7 @@ from argon2.low_level import Type, hash_secret_raw
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 # Key output size (for AES-256)
@@ -70,7 +70,7 @@ class KeyDerivationParams:
     """
     Parameters for key derivation.
 
-    Frozen to ensure immutability (ThinkingMachines compliance).
+    Frozen to ensure immutability.
     """
     time_cost: int = ARGON2_TIME_COST
     memory_cost: int = ARGON2_MEMORY_COST
@@ -127,7 +127,7 @@ def generate_salt(size: int = SALT_SIZE) -> bytes:
     Returns:
         Random salt bytes
 
-    ThinkingMachines: FIXED size (32 bytes default), random generation.
+    Determinism: FIXED size (32 bytes default), random generation.
     """
     return secrets.token_bytes(size)
 
@@ -151,7 +151,7 @@ def derive_key(
     Raises:
         KeyDerivationError: If derivation fails
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED algorithm: Argon2id
     - FIXED parameters: time, memory, parallelism
     - DETERMINISTIC: same password + salt → same key
@@ -259,7 +259,7 @@ def estimate_derivation_time_ms(params: KeyDerivationParams = DEFAULT_PARAMS) ->
     Returns:
         Estimated time in milliseconds
 
-    ThinkingMachines: FIXED formula, deterministic output.
+    Determinism: FIXED formula, deterministic output.
     """
     # Rough estimate: ~8ms per iteration per 1MiB at 4 parallelism
     memory_mb = params.memory_cost / 1024

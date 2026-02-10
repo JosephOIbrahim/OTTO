@@ -3,7 +3,7 @@ Tests for [He2025]-inspired determinism
 =========================================
 
 Verifies that OTTO OS routing and aggregation operations are deterministic
-per ThinkingMachines [He2025] principles.
+per [He2025] principles.
 
 These tests ensure:
 1. sorted_max() has deterministic tie-breaking

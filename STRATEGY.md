@@ -128,7 +128,7 @@ Answer: **It already is one.** The substrate has been running for months.
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Determinism Metrics (ThinkingMachines Compliance)
+### Determinism Metrics ([He2025] Compliance)
 
 | Metric | Traditional LLM (temp=0) | With Batch-Invariant Kernels |
 |--------|-------------------------|------------------------------|
@@ -228,7 +228,7 @@ This requires:
 | Moat | Difficulty to Replicate | Strength |
 |------|-------------------------|----------|
 | USD composition semantics | High (non-obvious, requires VFX background) | Strong |
-| Batch-invariant determinism | Medium (ThinkingMachines is public) | Medium |
+| Batch-invariant determinism | Medium ([He2025] is public) | Medium |
 | Calibrated signal detection | High (requires data, iteration) | Grows over time |
 | 796-test cognitive engine | High (years of development) | Strong |
 

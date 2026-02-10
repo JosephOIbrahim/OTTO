@@ -5,7 +5,7 @@ Tests for Cryptography Module
 Comprehensive tests for OTTO OS encryption, key derivation,
 keyring integration, and secure file operations.
 
-ThinkingMachines Determinism Tests:
+Determinism Tests:
 - Fixed algorithm parameters
 - Deterministic operations
 - Bounded memory usage
@@ -91,7 +91,7 @@ from otto.crypto.recovery import (
 # =============================================================================
 
 class TestEncryptionConstants:
-    """Tests for encryption constants (ThinkingMachines compliance)."""
+    """Tests for encryption constants (determinism compliance)."""
 
     def test_key_size_fixed(self):
         """Key size is fixed at 256 bits."""
@@ -791,11 +791,11 @@ class TestCryptoIntegration:
 
 
 # =============================================================================
-# ThinkingMachines Compliance Tests
+# Determinism Compliance Tests
 # =============================================================================
 
-class TestThinkingMachinesCompliance:
-    """Tests verifying ThinkingMachines Determinism."""
+class TestDeterminismCompliance:
+    """Tests verifying determinism ([He2025])."""
 
     def test_fixed_algorithm_parameters(self):
         """Algorithm parameters are fixed at module level."""

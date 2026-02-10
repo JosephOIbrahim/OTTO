@@ -6,7 +6,7 @@ Provides:
 - Heartbeat/keepalive for connection monitoring
 - Graceful reconnection support
 
-ThinkingMachines Determinism:
+Determinism:
 - Deterministic state serialization
 - Fixed update intervals
 - Pre-computed state mappings

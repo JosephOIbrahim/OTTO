@@ -217,7 +217,7 @@ class TestOpinionStack:
 
 
 # =============================================================================
-# Test: Determinism (ThinkingMachines Compliance)
+# Test: Determinism ([He2025] Compliance)
 # =============================================================================
 
 class TestDeterminism:

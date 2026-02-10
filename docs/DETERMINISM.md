@@ -2,13 +2,13 @@
 
 ## Overview
 
-Framework Ottotor achieves deterministic behavior through batch-invariant design principles. This document explains how determinism is enforced and its relationship to the ThinkingMachines research on defeating nondeterminism in LLM inference.
+Framework Ottotor achieves deterministic behavior through batch-invariant design principles. This document explains how determinism is enforced and its relationship to [He2025] research on defeating nondeterminism in LLM inference.
 
 ## The Problem: Why LLMs Are Non-Deterministic
 
 Common belief: "LLM randomness comes from temperature and sampling."
 
-**Reality**: Even at temperature=0, LLMs produce different outputs. ThinkingMachines (2025) demonstrated **80 unique completions from 1000 identical requests** at temperature=0.
+**Reality**: Even at temperature=0, LLMs produce different outputs. [He2025] demonstrated **80 unique completions from 1000 identical requests** at temperature=0.
 
 ### Root Cause: Batch Invariance Failure
 
@@ -62,9 +62,9 @@ With `batch_size=1`, there's no reduction variance—each inference is independe
 | State updates | **YES** | LIVRPS priority resolution |
 | Checksum computation | **YES** | Sorted JSON serialization |
 
-### What Requires ThinkingMachines Kernels
+### What Requires Batch-Invariant Kernels [He2025]
 
-| Component | Without TM | With ThinkingMachines |
+| Component | Without Batch-Invariance | With Batch-Invariant Kernels [He2025] |
 |-----------|------------|----------------------|
 | LLM signal detection | Partial | **Fully deterministic** |
 | LLM generation | **NO** | **YES** |
@@ -94,7 +94,7 @@ GUARANTEE:
   ✓ Identical state update
   ✓ Identical checksum
 
-REQUIRES ThinkingMachines:
+REQUIRES batch-invariant kernels [He2025]:
   ✓ Identical LLM response
   ✓ Identical signal detection
 ```
@@ -137,9 +137,9 @@ master_checksum = hashlib.sha256(combined.encode()).hexdigest()[:32]
 
 The master checksum changes if ANY agent's output changes.
 
-## ThinkingMachines Integration
+## Batch-Invariant Kernel Integration [He2025]
 
-### What ThinkingMachines Provides
+### What Batch-Invariant Kernels [He2025] Provide
 
 Batch-invariant kernels for:
 - **RMSNorm**: Data-parallel strategies (one batch element per core)
@@ -151,16 +151,16 @@ Batch-invariant kernels for:
 | Configuration | Performance | Determinism |
 |---------------|-------------|-------------|
 | Standard vLLM | Baseline | Non-deterministic |
-| TM initial | 2.1× slower | **Deterministic** |
-| TM optimized | 1.6× slower | **Deterministic** |
+| Batch-invariant (initial) [He2025] | 2.1x slower | **Deterministic** |
+| Batch-invariant (optimized) [He2025] | 1.6x slower | **Deterministic** |
 
 The 1.6× overhead is acceptable for applications requiring reproducibility.
 
 ### Integration Pattern
 
 ```python
-# Hypothetical ThinkingMachines integration
-from thinkingmachines import BatchInvariantEngine
+# Hypothetical batch-invariant inference integration [He2025]
+from batch_invariant_engine import BatchInvariantEngine
 
 engine = BatchInvariantEngine(
     model="your-model",
@@ -204,7 +204,7 @@ If checksums differ:
 
 ## Summary
 
-| Aspect | Framework Ottotor | With ThinkingMachines |
+| Aspect | Framework Ottotor | With Batch-Invariant Kernels [He2025] |
 |--------|------------------------|----------------------|
 | Routing | Deterministic | Deterministic |
 | Expert selection | Deterministic | Deterministic |
@@ -212,4 +212,4 @@ If checksums differ:
 | LLM generation | Non-deterministic | **Deterministic** |
 | **Overall** | **Routing deterministic** | **Fully deterministic** |
 
-Framework Ottotor guarantees deterministic *routing and state management*. Full end-to-end determinism (including LLM generation) requires ThinkingMachines batch-invariant kernels.
+Framework Ottotor guarantees deterministic *routing and state management*. Full end-to-end determinism (including LLM generation) requires batch-invariant kernels [He2025].

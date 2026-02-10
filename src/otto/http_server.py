@@ -490,7 +490,7 @@ class OperationalHTTPServer:
         Human-friendly dashboard API - returns cognitive state in
         artist-relatable terms, not engineer jargon.
 
-        ThinkingMachines Determinism:
+        Determinism:
         - Fixed state mappings (pre-computed)
         - Deterministic response structure
         - No runtime variance

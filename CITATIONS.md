@@ -6,7 +6,7 @@ This document provides formal citations for the theoretical foundations and prio
 
 ## Primary Citations
 
-### ThinkingMachines Batch-Invariance
+### Batch-Invariance [He2025]
 
 ```bibtex
 @article{he2025defeating,

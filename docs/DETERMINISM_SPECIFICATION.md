@@ -126,7 +126,7 @@ master_checksum = hashlib.sha256(combined.encode()).hexdigest()[:32]
 
 ---
 
-## 3. ThinkingMachines Compliance
+## 3. Determinism Compliance [He2025]
 
 ### 3.1 [He2025] Principles Applied
 
@@ -336,7 +336,7 @@ The Framework Ottotor achieves **full determinism** when:
 This is verified by:
 - 31 passing tests including determinism tests
 - Checksum-based reproducibility proofs
-- ThinkingMachines [He2025]-inspired determinism
+- [He2025]-inspired determinism
 
 **Determinism is a feature, not an accident.** The architecture is designed from the ground up to guarantee reproducible cognitive routing.
 
@@ -344,4 +344,4 @@ This is verified by:
 
 *Specification Version: 1.0.0*
 *Generated: 2026-01-21*
-*Reference: ThinkingMachines [He2025]*
+*Reference: [He2025]*

@@ -542,11 +542,11 @@ class TestProtectionEngineIntegration:
 
 
 # =============================================================================
-# Test: ThinkingMachines Compliance
+# Test: Determinism Compliance
 # =============================================================================
 
-class TestThinkingMachinesCompliance:
-    """Tests for ThinkingMachines Determinism."""
+class TestDeterminismCompliance:
+    """Tests for determinism ([He2025])."""
 
     def test_adjustment_factors_are_fixed(self):
         """Adjustment factors are constants (not runtime configurable)."""

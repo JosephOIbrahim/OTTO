@@ -24,7 +24,7 @@ import { TOKENS } from '../StatusView/StatusView'
 /**
  * FlowView - React Flow visualization of Orchestra cognitive flow
  *
- * 5-Phase NEXUS Pipeline (ThinkingMachines Determinism):
+ * 5-Phase NEXUS Pipeline ([He2025] determinism):
  * DETECT → CASCADE → LOCK → EXECUTE/PROTECT → UPDATE → (feedback to DETECT)
  *
  * Real-time updates from WebSocket state

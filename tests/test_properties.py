@@ -14,7 +14,7 @@ Determinism:
 
 References:
     Property-Based Testing Guide (skill: property-based-testing)
-    ThinkingMachines batch-invariance
+    [He2025] batch-invariance
 """
 
 import pytest
@@ -124,7 +124,7 @@ class TestRoundtripProperties:
         Property: checksum(state) == checksum(state)
 
         The same state must always produce the same checksum.
-        ThinkingMachines batch-invariance requirement.
+        [He2025] batch-invariance requirement.
         """
         checksum1 = state.checksum()
         checksum2 = state.checksum()
@@ -286,7 +286,7 @@ class TestDeterminismProperties:
         Property: route(state) == route(state)
 
         The same state must always route to the same expert.
-        ThinkingMachines batch-invariance requirement.
+        [He2025] batch-invariance requirement.
         """
         router = create_router()
         detector = create_detector()

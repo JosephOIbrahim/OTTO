@@ -24,8 +24,7 @@ Usage:
     await adapter.upload("path/file.enc", data)
 
 References:
-    He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
-             in LLM Inference", Thinking Machines Lab: Connectionism, Sep 2025.
+    He, Horace (2025), "Defeating Nondeterminism in LLM Inference"
              https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 """
 
@@ -75,7 +74,7 @@ class WebDAVAdapter(StorageAdapter):
     """
     WebDAV storage adapter for Nextcloud/ownCloud/generic WebDAV servers.
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED chunk size for uploads
     - FIXED retry policy
     - DETERMINISTIC operations

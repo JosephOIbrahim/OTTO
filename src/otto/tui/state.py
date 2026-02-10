@@ -10,8 +10,6 @@ This module implements state management following principles:
 3. No hidden state (all state is explicit)
 4. Reproducible state history (event sourcing pattern)
 
-Reference: He, Horace and Thinking Machines Lab,
-"Defeating Nondeterminism in LLM Inference", Sep 2025.
 """
 
 from dataclasses import dataclass, field

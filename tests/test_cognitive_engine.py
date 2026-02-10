@@ -6,7 +6,7 @@ Tests:
 - Parameter locking (MAX3, safety gating)
 - Convergence tracking (RC^+xi)
 - Full pipeline orchestration
-- Determinism guarantees (ThinkingMachines)
+- Determinism guarantees ([He2025])
 - Session reset logic
 """
 

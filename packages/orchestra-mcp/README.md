@@ -196,4 +196,4 @@ MIT License - see [LICENSE](../../LICENSE) for details.
 
 - [MCP Specification](https://modelcontextprotocol.io/)
 - [Otto](https://github.com/JosephOIbrahim/Otto)
-- [ThinkingMachines batch-invariance](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/)
+- [Batch-invariance [He2025]](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/)

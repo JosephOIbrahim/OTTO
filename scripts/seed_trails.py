@@ -217,7 +217,7 @@ def seed_trails(
             if not dry_run:
                 trail = Trail(
                     path=rel_path,
-                    signal=f"he2025_compliant:{compliance}",
+                    signal=f"determinism_check_passed:{compliance}",
                     trail_type=TrailType.QUALITY,
                     deposited_by="seed_trails",
                     strength=1.0,

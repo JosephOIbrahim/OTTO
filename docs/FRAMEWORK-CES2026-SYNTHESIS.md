@@ -3,7 +3,7 @@
 
 **Generated**: Ralph Loop Iteration 3
 **Frameworks Analyzed**: 65 files from `G:\FRAMEWORKS_GDRIVE\FRAMEWORKS_TXT`
-**Cross-Referenced**: NVIDIA CES 2026, ThinkingMachines Determinism Research
+**Cross-Referenced**: NVIDIA CES 2026, Determinism Research [He2025]
 
 ---
 
@@ -111,7 +111,7 @@ Your 67 frameworks form a **cohesive intelligence architecture** that directly m
 
 ## PART 2: DETERMINISM INTEGRATION
 
-### The Core Problem (ThinkingMachines Research)
+### The Core Problem ([He2025] Research)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -157,7 +157,7 @@ class DeterministicInference:
         self.model = model
 
     def infer(self, prompt: str, seed: int = 42) -> str:
-        # The ThinkingMachines fix
+        # The batch-invariance fix [He2025]
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
@@ -296,7 +296,7 @@ class MoE_RouterNode:
 
     def route_query(self, query, experts_to_activate, routing_seed):
         # DETERMINISTIC routing (hash-based, not MCMC)
-        # This is the ThinkingMachines fix applied to MoE
+        # This is the batch-invariance fix [He2025] applied to MoE
 
         query_hash = hashlib.sha256(f"{query}:{routing_seed}".encode()).hexdigest()
 
@@ -324,7 +324,7 @@ class MoE_RouterNode:
 
 
 class DeterministicSampler:
-    """Batch-invariant sampling (ThinkingMachines fix)"""
+    """Batch-invariant sampling (inspired by [He2025])"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -343,7 +343,7 @@ class DeterministicSampler:
     CATEGORY = "Framework/Determinism"
 
     def create_sampler(self, model, seed, steps, cfg, sampler_name):
-        # CRITICAL: The ThinkingMachines batch-invariance fix
+        # CRITICAL: The batch-invariance fix [He2025]
         sampler_config = {
             "seed": seed,
             "steps": steps,
@@ -647,7 +647,7 @@ class USDFrameworkBridge:
 │  5. Code Generator      (MAX 3 + MNO v3)                        │
 │     └── Evolutionary improvement + proposer/solver              │
 │                                                                 │
-│  6. Determinism Guard   (ThinkingMachines)                      │
+│  6. Determinism Guard   (Batch-Invariance [He2025])             │
 │     └── Batch-invariance enforcement + checksum validation      │
 │                                                                 │
 │  7. Self-Reflector      (RESONANCE + MCAW)                      │
@@ -716,7 +716,7 @@ class FrameworkOttotor:
                 "ces_alignment": "AlphaEvolve patterns"
             },
             "determinism_guard": {
-                "framework": "ThinkingMachines",
+                "framework": "Batch-Invariance [He2025]",
                 "function": self._run_determinism_guard,
                 "ces_alignment": "Reproducible inference"
             },
@@ -859,7 +859,7 @@ class FrameworkOttotor:
         }
 
     async def _run_determinism_guard(self, task: str, context: Dict) -> Dict:
-        """ThinkingMachines determinism enforcement"""
+        """Determinism enforcement (inspired by [He2025])"""
         return {
             "batch_size_enforced": 1,
             "cudnn_deterministic": True,

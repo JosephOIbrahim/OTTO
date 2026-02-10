@@ -22,7 +22,6 @@ keywords = [
     "claude",
     "anthropic",
     "llm",
-    "thinkingmachines"
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

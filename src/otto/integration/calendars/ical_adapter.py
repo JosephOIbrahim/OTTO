@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED - determinism compliant)
 # =============================================================================
 
 MAX_EVENTS_PER_FILE = 1000  # Prevent memory issues with huge calendars

@@ -2,7 +2,7 @@
 Orchestra - Cognitive Orchestration System (v5.0)
 
 A production-hardened async orchestration system with cognitive state management
-and ThinkingMachines deterministic (inspired by [He2025]) execution.
+and application-layer deterministic (inspired by [He2025]) execution.
 
 v5.0 Cognitive Engine:
 - 5-Phase NEXUS Pipeline (DETECT → CASCADE → LOCK → EXECUTE → UPDATE)
@@ -19,7 +19,7 @@ v4.0 Hybrid Orchestra (Cognitive Layer):
 - PRISM signal detection with FIXED evaluation order
 - Cognitive support (always active, no toggle)
 - Research and synthesis worker agents
-- ThinkingMachines batch-invariance (inspired by [He2025])
+- Application-layer batch-invariance (inspired by [He2025])
 
 v3.0 Production Excellence:
 - Prometheus-compatible metrics for observability

@@ -66,7 +66,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines Determinism)
+# Constants (FIXED)
 # =============================================================================
 
 # Key sizes

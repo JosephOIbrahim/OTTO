@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED - determinism compliant)
 # =============================================================================
 
 # Budget adjustments based on external context

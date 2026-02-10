@@ -19,7 +19,7 @@ from typing import List, Tuple
 
 from otto.tui.constants import (
     TUI_VERSION,
-    HE2025_COMPLIANT,
+    HE2025_PRINCIPLES_APPLIED,
     BURNOUT_LEVELS,
     BURNOUT_COLORS,
     BURNOUT_ICONS,
@@ -81,7 +81,7 @@ class TestConstants:
 
     def test_he2025_compliance_flag(self):
         """Test Determinism flag is True."""
-        assert HE2025_COMPLIANT is True
+        assert HE2025_PRINCIPLES_APPLIED is True
 
     def test_burnout_levels_complete(self):
         """Test all burnout levels have mappings."""

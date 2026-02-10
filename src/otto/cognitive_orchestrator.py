@@ -445,7 +445,7 @@ class CognitiveOrchestrator:
         """
         Process a message through the 5-Phase NEXUS Pipeline.
 
-        ThinkingMachines [He2025]: Fixed evaluation order, deterministic routing.
+        Determinism: Fixed evaluation order, deterministic routing.
 
         Args:
             message: The user message to process
@@ -459,7 +459,7 @@ class CognitiveOrchestrator:
         context = context or {}
 
         # =================================================================
-        # STEP 0: STATE SNAPSHOT (ThinkingMachines [He2025])
+        # STEP 0: STATE SNAPSHOT (inspired by [He2025])
         # =================================================================
         state = self.state_manager.get_state()
         snapshot = state.snapshot()
@@ -737,7 +737,7 @@ class CognitiveOrchestrator:
         """
         Fire SESSION_START hook for trail-based initialization.
 
-        ThinkingMachines [He2025]: Deterministic hook execution order.
+        Determinism: Deterministic hook execution order.
         """
         # Lazy import to avoid circular dependency
         from .hooks import execute_hooks, HookEvent, HookContext
@@ -771,7 +771,7 @@ class CognitiveOrchestrator:
         - Debugging of routing decisions
         - Learning from successful/failed paths
 
-        ThinkingMachines [He2025]: Trail deposits are idempotent and deterministic.
+        Determinism: Trail deposits are idempotent and deterministic.
 
         Args:
             expert: The expert that was selected

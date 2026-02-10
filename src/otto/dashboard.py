@@ -402,7 +402,7 @@ class Dashboard:
         # Routing table info
         print(self._color("ROUTING TABLE", "bold"))
         print("-" * 40)
-        print(f"  Mode: {self._color('TABLE-DRIVEN', 'green')} (ThinkingMachines)")
+        print(f"  Mode: {self._color('TABLE-DRIVEN', 'green')} (deterministic)")
         print(f"  Deterministic: {self._color('YES', 'green')}")
         print(f"  Decision modes: WORK | DELEGATE | PROTECT")
         print()

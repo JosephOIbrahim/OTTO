@@ -215,7 +215,7 @@ Generates code with locked parameters for reproducibility.
 
 ### 6. Determinism Guard
 
-**Framework**: ThinkingMachines Batch Invariance
+**Framework**: Batch-Invariance [He2025]
 **Purpose**: Enforce reproducibility constraints
 
 Validates determinism requirements before execution.

@@ -4,7 +4,7 @@ Tests for Cloud Sync Module
 
 Comprehensive tests for storage adapters, manifest, and sync engine.
 
-ThinkingMachines Determinism Tests:
+Determinism Tests:
 - Fixed protocol parameters
 - Deterministic operations
 - Bounded sync operations
@@ -65,7 +65,7 @@ from otto.sync.sync_engine import (
 # =============================================================================
 
 class TestStorageAdapterConstants:
-    """Tests for storage adapter constants (ThinkingMachines compliance)."""
+    """Tests for storage adapter constants (determinism compliance)."""
 
     def test_chunk_size_fixed(self):
         """Chunk size is fixed at 5 MiB."""
@@ -246,7 +246,7 @@ class TestStorageAdapterFactory:
 # =============================================================================
 
 class TestManifestConstants:
-    """Tests for manifest constants (ThinkingMachines compliance)."""
+    """Tests for manifest constants (determinism compliance)."""
 
     def test_version_fixed(self):
         """Manifest version is fixed."""
@@ -475,7 +475,7 @@ class TestSyncManifest:
 # =============================================================================
 
 class TestSyncEngineConstants:
-    """Tests for sync engine constants (ThinkingMachines compliance)."""
+    """Tests for sync engine constants (determinism compliance)."""
 
     def test_protocol_version_fixed(self):
         """Protocol version is fixed."""
@@ -720,11 +720,11 @@ class TestSyncIntegration:
 
 
 # =============================================================================
-# ThinkingMachines Compliance Tests
+# Determinism Compliance Tests
 # =============================================================================
 
-class TestThinkingMachinesCompliance:
-    """Tests verifying ThinkingMachines Determinism."""
+class TestDeterminismCompliance:
+    """Tests verifying determinism ([He2025])."""
 
     def test_fixed_protocol_parameters(self):
         """Protocol parameters are fixed."""

@@ -38,7 +38,7 @@ from cryptography.exceptions import InvalidTag
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 KEY_SIZE = 32       # 256 bits
@@ -134,7 +134,7 @@ def generate_nonce() -> bytes:
     Returns:
         12-byte random nonce for AES-GCM
 
-    ThinkingMachines: FIXED size (12 bytes), random generation.
+    Determinism: FIXED size (12 bytes), random generation.
     """
     return os.urandom(NONCE_SIZE)
 
@@ -160,7 +160,7 @@ def encrypt_data(
     Raises:
         EncryptionError: If encryption fails
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED algorithm: AES-256-GCM
     - FIXED key size: 32 bytes
     - FIXED nonce size: 12 bytes
@@ -209,7 +209,7 @@ def decrypt_data(
     Raises:
         DecryptionError: If decryption fails (wrong key, tampered data)
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED algorithm: AES-256-GCM
     - Authentication verified before returning plaintext
     """

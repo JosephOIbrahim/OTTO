@@ -8,7 +8,7 @@
 │   Otto = USD Composition Semantics for Human Cognitive State           │
 │                                                                             │
 │   Same signals → Same routing → Same behavior                               │
-│   (ThinkingMachines batch-invariance)                                       │
+│   (application-layer determinism, inspired by [He2025])                     │
 │                                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ Product:  Otto (this repo)                                             │
@@ -85,7 +85,7 @@ Every message flows through this deterministic pipeline:
 └─────────────────┘
 ```
 
-**ThinkingMachines Determinism**: Same signals → Same routing → Same behavior (98/100 score)
+**Determinism (inspired by [He2025])**: Same signals --> Same routing --> Same behavior (98/100 score)
 
 ---
 
@@ -216,7 +216,7 @@ Otto/
 3. **Weighted Blend, Not Selection** — All frameworks contribute proportionally
 4. **Tension Surfacing** — Conflicts shown to human, not auto-resolved
 5. **Attractor Basin Convergence** — Cognitive state as dynamic system
-6. **ThinkingMachines Compliance** — Deterministic, reproducible behavior
+6. **Determinism Compliance [He2025]** — Deterministic, reproducible behavior
 7. **ADHD-First Universal Design** — Biology-respecting defaults for everyone
 
 ---
@@ -262,7 +262,7 @@ It's not about making Claude smarter. It's about making the human-AI collaborati
 
 ## References
 
-- **ThinkingMachines**: https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+- **[He2025]**: https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 - **Otto GitHub**: https://github.com/JosephOIbrahim/Otto
 - **USD Cognitive Substrate (Research)**: https://github.com/JosephOIbrahim/usd-cognitive-substrate
 - **aiconductor.studio**: https://aiconductor.studio

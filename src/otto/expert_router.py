@@ -169,7 +169,7 @@ class ExpertRouter:
         """
         Route to expert based on signals and state.
 
-        ThinkingMachines [He2025]: Fixed evaluation order, first-match-wins.
+        Determinism: Fixed evaluation order, first-match-wins.
 
         Args:
             signals: PRISM signal vector

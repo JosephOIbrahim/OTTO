@@ -49,7 +49,7 @@ from .manifest import (
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 SYNC_PROTOCOL_VERSION = 1
@@ -92,7 +92,7 @@ class SyncConfig:
     """
     Configuration for sync engine.
 
-    ThinkingMachines: All parameters are FIXED at initialization.
+    All parameters are FIXED at initialization.
     """
     local_data_path: Path
     encryption_key: bytes
@@ -171,7 +171,7 @@ class SyncEngine:
     """
     Orchestrates E2E encrypted cloud synchronization.
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED protocol version
     - DETERMINISTIC conflict resolution
     - BOUNDED operations per sync

@@ -57,8 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Validator, Scaffolder, Restorer, Refocuser, Celebrator, Socratic, Direct
   - First-match-wins semantics for deterministic routing
 
-- **ThinkingMachines [He2025] Compliance**
-  - Batch-invariant kernels (same inputs → same outputs)
+- **Determinism Compliance [He2025]**
+  - Batch-invariant design (same inputs → same outputs)
   - Fixed reduction order across all operations
   - No dynamic switching strategies
   - Reproducible checksums
@@ -122,5 +122,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## References
 
-- [ThinkingMachines [He2025]](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/) - Batch-invariance principles
+- [[He2025]](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/) - Batch-invariance principles
 - [USD](https://graphics.pixar.com/usd/) - Composition semantics inspiration

@@ -36,7 +36,7 @@ STATE_DIR = Path.home() / ".orchestra" / "state"
 AGENT_STATE_FILE = STATE_DIR / "agent_state.json"
 COGNITIVE_STATE_FILE = STATE_DIR / "cognitive_state.json"
 
-# Update rate limiting (ThinkingMachines compliant - bounded frequency)
+# Update rate limiting (determinism compliant - bounded frequency)
 MIN_UPDATE_INTERVAL_MS = 100  # Max 10 Hz
 
 
@@ -100,7 +100,7 @@ class TUIBridge:
     - Agent state aggregation
     - History management (bounded size)
 
-    ThinkingMachines Compliance:
+    Determinism Compliance ([He2025]):
     - FIXED update frequency bounds
     - DETERMINISTIC serialization
     - BOUNDED history (max 50 agents)

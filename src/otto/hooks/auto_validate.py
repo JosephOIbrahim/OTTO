@@ -89,7 +89,7 @@ COMPLIANCE_PATTERNS = [
 # Validation Logic
 # =============================================================================
 
-def check_he2025_compliance(content: str) -> Tuple[List[dict], List[dict]]:
+def check_determinism_patterns(content: str) -> Tuple[List[dict], List[dict]]:
     """
     Check code content for determinism (inspired by [He2025]).
 
@@ -124,6 +124,10 @@ def check_he2025_compliance(content: str) -> Tuple[List[dict], List[dict]]:
             })
 
     return violations, compliances
+
+
+# Backward-compat alias (renamed from check_he2025_compliance)
+check_he2025_compliance = check_determinism_patterns
 
 
 def extract_new_content(tool_output: str) -> Optional[str]:
@@ -162,7 +166,7 @@ class AutoValidateHook(Hook):
 
     Triggers: POST_TOOL_USE on Edit/Write for OTTO files
     Deposits:
-        - QUALITY trails for he2025_compliant or he2025_violation:lineN
+        - QUALITY trails for determinism_check_passed or determinism_violation:lineN
         - Surfaces violations in context injection
     """
 
@@ -184,7 +188,7 @@ class AutoValidateHook(Hook):
 
     @property
     def name(self) -> str:
-        return "auto_validate_he2025"
+        return "auto_validate_determinism"
 
     @property
     def events(self) -> List[HookEvent]:
@@ -248,14 +252,14 @@ class AutoValidateHook(Hook):
             )
 
         # Check compliance
-        violations, compliances = check_he2025_compliance(content)
+        violations, compliances = check_determinism_patterns(content)
 
         trails_deposited = 0
         context_lines = []
 
         # Deposit violation trails
         for violation in violations:
-            signal = f"he2025_violation:{violation['type']}:line{violation['line']}"
+            signal = f"determinism_violation:{violation['type']}:line{violation['line']}"
             self.store.deposit(Trail(
                 trail_type=TrailType.QUALITY,
                 path=path,
@@ -274,7 +278,7 @@ class AutoValidateHook(Hook):
             self.store.deposit(Trail(
                 trail_type=TrailType.QUALITY,
                 path=path,
-                signal="he2025_compliant",
+                signal="determinism_check_passed",
                 deposited_by=self.name,
                 metadata={"patterns": [c["type"] for c in compliances]},
             ))
@@ -284,7 +288,7 @@ class AutoValidateHook(Hook):
             self.store.deposit(Trail(
                 trail_type=TrailType.QUALITY,
                 path=path,
-                signal="he2025_partial",
+                signal="determinism_partial",
                 deposited_by=self.name,
                 metadata={
                     "good_patterns": [c["type"] for c in compliances],
@@ -341,7 +345,7 @@ def validate_file(file_path: str) -> dict:
         return {"error": "Not a Python file"}
 
     content = path.read_text(encoding="utf-8")
-    violations, compliances = check_he2025_compliance(content)
+    violations, compliances = check_determinism_patterns(content)
 
     return {
         "file": str(path),
@@ -358,7 +362,7 @@ def validate_file(file_path: str) -> dict:
 
 __all__ = [
     "AutoValidateHook",
-    "check_he2025_compliance",
+    "check_determinism_patterns",
     "validate_file",
     "VIOLATION_PATTERNS",
     "COMPLIANCE_PATTERNS",

@@ -1020,7 +1020,7 @@ class MoERouterAgent(BaseAgent):
             "selected_config": selected_config,
             "expert_hash": expert_hash,
 
-            # Safety transparency (ThinkingMachines auditability)
+            # Safety transparency (determinism auditability)
             "raw_winner": raw_winner,
             "safety_intervention": safety_intervention,
             "safety_intervention_reason": f"Safety floor elevated {selected} over {raw_winner}" if safety_intervention else None,
@@ -1235,7 +1235,7 @@ def _apply_determinism_settings(seed: int) -> Dict[str, Any]:
 
 class DeterminismGuardAgent(BaseAgent):
     """
-    ThinkingMachines: Reproducibility enforcement.
+    Determinism: Reproducibility enforcement.
 
     This agent APPLIES determinism settings, not just documents them.
     Per [He2025], same inputs must produce same outputs.
@@ -1244,13 +1244,13 @@ class DeterminismGuardAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="determinism_guard",
-            framework="ThinkingMachines",
+            framework="OTTO_determinism",
             ces_alignment="Reproducible inference"
         )
 
     async def execute(self, task: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Enforce determinism constraints per ThinkingMachines batch-invariance.
+        Enforce determinism constraints per application-layer batch-invariance.
 
         Validates and configures determinism settings to ensure reproducible
         outputs across runs with the same inputs.
@@ -1271,7 +1271,7 @@ class DeterminismGuardAgent(BaseAgent):
 
         seed = context.get("seed", 42)
 
-        # ACTUALLY APPLY determinism settings (ThinkingMachines compliance)
+        # ACTUALLY APPLY determinism settings (determinism compliance)
         # Previously this only documented settings without applying them
         applied = _apply_determinism_settings(seed)
         self.logger.info(f"Applied determinism to: {applied['sources']}")
@@ -1973,7 +1973,7 @@ class FrameworkOrchestrator:
         """Internal orchestration implementation with full observability.
 
         v4.3.0 Hybrid Orchestra: Implements 7-phase execution model with
-        work/delegate/protect branching per ThinkingMachines [He2025].
+        work/delegate/protect branching, inspired by [He2025].
 
         Flow (7 Phases):
         1. SNAPSHOT: Take cognitive state snapshot BEFORE processing
@@ -1989,7 +1989,7 @@ class FrameworkOrchestrator:
         checkpoint_id = None
 
         # =====================================================================
-        # PHASE 1: SNAPSHOT - Cognitive State (ThinkingMachines [He2025])
+        # PHASE 1: SNAPSHOT - Cognitive State (inspired by [He2025])
         # =====================================================================
         # Take snapshot BEFORE any processing to ensure all agents see same state
         cognitive_state = self.cognitive_state_manager.get_state()
@@ -2238,7 +2238,7 @@ class FrameworkOrchestrator:
             }
 
             # =====================================================================
-            # Phase 6.5: Cognitive State Batch Update (ThinkingMachines [He2025])
+            # Phase 6.5: Cognitive State Batch Update (inspired by [He2025])
             # =====================================================================
             # Update cognitive state AFTER all processing complete
             cognitive_updates = {}

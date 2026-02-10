@@ -8,10 +8,9 @@ Implements:
 
 These patterns work together to make the orchestrator production-ready.
 
-ThinkingMachines Compliance:
+Determinism:
     Jitter uses seeded random.Random() instance for reproducibility.
     When seed is provided, retry timing is deterministic.
-    See: https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 
 References:
     [1] Nygard, M.T. (2007). "Release It! Design and Deploy Production-Ready Software"
@@ -26,7 +25,7 @@ References:
         https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
         - Jitter prevents thundering herd in distributed retries
 
-    [4] He, Horace and Thinking Machines Lab. (2025). "Defeating Nondeterminism"
+    [4] He, Horace (2025). "Defeating Nondeterminism in LLM Inference"
         https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
         - Seeded RNG for reproducible jitter
 """
@@ -332,7 +331,7 @@ async def with_retry(
     Jitter prevents thundering herd problem when multiple callers retry
     simultaneously after a shared failure.
 
-    ThinkingMachines Compliance:
+    Determinism:
         When seed is provided, jitter is deterministic (reproducible).
         This enables batch-invariant retry behavior for testing.
 
@@ -355,7 +354,7 @@ async def with_retry(
     """
     last_exception = None
 
-    # Create seeded RNG for reproducible jitter (ThinkingMachines compliance)
+    # Create seeded RNG for reproducible jitter
     if seed is not None:
         rng = random.Random(seed)
         logger.debug(f"{operation_name}: Using seeded RNG (seed={seed}) for deterministic jitter")
@@ -363,7 +362,6 @@ async def with_retry(
         # NOTE: Intentionally unseeded for production retry jitter.
         # This is NOT a violation - jitter randomness prevents
         # thundering herd and is outside the deterministic routing path.
-        # principles apply to cognitive routing, not retry timing.
         rng = random.Random()
 
     for attempt in range(1, max_attempts + 1):
@@ -386,7 +384,7 @@ async def with_retry(
 
             # Add jitter to prevent thundering herd
             # Jitter range: [delay * (1 - jitter), delay * (1 + jitter)]
-            # Uses seeded RNG when seed provided (ThinkingMachines compliance)
+            # Uses seeded RNG when seed provided for reproducibility
             jitter_amount = base_calculated * jitter
             delay = base_calculated + rng.uniform(-jitter_amount, jitter_amount)
             delay = max(0.0, delay)  # Ensure non-negative
@@ -406,7 +404,7 @@ async def with_retry(
 class RetryConfig:
     """Configuration for retry behavior.
 
-    ThinkingMachines Compliance:
+    Determinism:
         Set seed for reproducible jitter timing in tests.
     """
     max_attempts: int = 3
@@ -415,7 +413,7 @@ class RetryConfig:
     exponential_base: float = 2.0
     retryable_exceptions: tuple = (Exception,)
     jitter: float = 0.1  # 10% jitter by default to prevent thundering herd
-    seed: Optional[int] = None  # Set for reproducible jitter (ThinkingMachines)
+    seed: Optional[int] = None  # Set for reproducible jitter
 
 
 def with_retry_decorator(
@@ -430,7 +428,7 @@ def with_retry_decorator(
         async def flaky_operation():
             ...
 
-        # For reproducible behavior (ThinkingMachines compliance):
+        # For reproducible behavior:
         @with_retry_decorator(RetryConfig(seed=42))
         async def deterministic_retry():
             ...
@@ -489,7 +487,7 @@ class ResilientExecutor:
         """
         Initialize resilient executor.
 
-        ThinkingMachines Compliance:
+        Determinism:
             When seed is provided, all retry jitter becomes deterministic.
             This enables reproducible failure recovery behavior.
 
@@ -501,7 +499,7 @@ class ResilientExecutor:
             retry_max_delay: Maximum retry delay
             enable_circuit_breaker: Whether to use circuit breaker
             enable_retries: Whether to use retries
-            seed: Random seed for reproducible jitter (ThinkingMachines compliance)
+            seed: Random seed for reproducible jitter
         """
         self.circuit_breaker = circuit_breaker or CircuitBreaker()
         self.default_timeout = default_timeout
@@ -561,7 +559,7 @@ class ResilientExecutor:
                 base_delay=self.retry_base_delay,
                 max_delay=self.retry_max_delay,
                 operation_name=name,
-                seed=self.seed  # ThinkingMachines: pass seed for reproducible jitter
+                seed=self.seed  # Pass seed for reproducible jitter
             )
         else:
             return await attempt()

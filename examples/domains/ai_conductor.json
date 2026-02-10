@@ -30,7 +30,7 @@
     },
     "determinism": {
       "keywords": ["determinism", "deterministic", "reproducib", "batch", "invariant", "checksum", "seed", "hash", "consistent"],
-      "tools": ["ThinkingMachines", "Determinism Guard", "Checksum Validator"],
+      "tools": ["Determinism Guard", "Checksum Validator"],
       "analysis_focus": ["batch_invariance", "seed_propagation", "checksum_verification", "cudnn_settings", "floating_point_stability"]
     },
     "reflection": {

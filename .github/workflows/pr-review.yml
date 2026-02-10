@@ -69,7 +69,7 @@ jobs:
           echo "- [x] Tests passed" >> pr-summary.md
           echo "- [x] Semgrep determinism check" >> pr-summary.md
           echo "" >> pr-summary.md
-          echo "### ThinkingMachines [He2025] Compliance" >> pr-summary.md
+          echo "### Determinism Checks" >> pr-summary.md
           echo "- Fixed evaluation order: ✅" >> pr-summary.md
           echo "- Batch-invariance: ✅" >> pr-summary.md
           cat pr-summary.md

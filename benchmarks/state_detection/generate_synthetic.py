@@ -262,7 +262,7 @@ def save_dataset(samples: list[Sample], output_path: Path) -> None:
         "version": "1.0.0",
         "created": "2026-02-01",
         "determinism_seed": hex(_DETERMINISM_SEED),
-        "he2025_compliant": True,
+        "deterministic": True,
         "sample_count": len(samples),
         "samples": [asdict(s) for s in samples]
     }

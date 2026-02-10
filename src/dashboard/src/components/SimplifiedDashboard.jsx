@@ -23,7 +23,7 @@ const AGENTS = [
   { id: 'moe_router', name: 'MoE Router', short: 'MR', framework: 'V5 Intervention', alignment: 'Safety-floor bounded routing' },
   { id: 'world_modeler', name: 'World Model', short: 'WM', framework: 'CORTEX', alignment: 'Cosmos WFM + Object Permanence' },
   { id: 'code_generator', name: 'Code Gen', short: 'CG', framework: 'MAX 3 + MNO v3', alignment: 'AlphaEvolve patterns' },
-  { id: 'determinism_guard', name: 'Determinism', short: 'DG', framework: 'ThinkingMachines', alignment: 'Reproducible inference' },
+  { id: 'determinism_guard', name: 'Determinism', short: 'DG', framework: '[He2025]', alignment: 'Reproducible inference' },
   { id: 'self_reflector', name: 'Reflector', short: 'SR', framework: 'RESONANCE + MCAW', alignment: 'Constitutional AI' }
 ]
 
@@ -81,7 +81,7 @@ function SimplifiedDashboard() {
   const [status, setStatus] = useState(HEALTH_STATUS.HEALTHY)
   const [agents, setAgents] = useState(AGENTS.map(a => ({ ...a, status: AGENT_STATUS.COMPLETED })))
   const [uptime, setUptime] = useState(0)
-  const [seed] = useState(42) // ThinkingMachines determinism seed
+  const [seed] = useState(42) // determinism seed
 
   // MoE Router state (V5 5-phase)
   const [moeState, setMoeState] = useState({
@@ -132,7 +132,7 @@ function SimplifiedDashboard() {
   // Activity log
   const [activity, setActivity] = useState([
     { time: '21:28:45', agent: 'system', message: 'Orchestrator initialized (seed: 42)' },
-    { time: '21:28:46', agent: 'determinism_guard', message: 'ThinkingMachines settings applied' },
+    { time: '21:28:46', agent: 'determinism_guard', message: 'Determinism settings applied' },
     { time: '21:28:46', agent: 'echo_curator', message: 'LIVRPS memory layers loaded (6 tiers)' },
     { time: '21:28:47', agent: 'moe_router', message: 'V5 5-phase routing ready (safety floors active)' }
   ])
@@ -343,7 +343,7 @@ function SimplifiedDashboard() {
       {/* Header */}
       <header className="maeda-header">
         <h1 className="maeda-title">Orchestra</h1>
-        <span className="maeda-subtitle">7-Agent Cognitive System | ThinkingMachines</span>
+        <span className="maeda-subtitle">7-Agent Cognitive System | [He2025]</span>
       </header>
 
       <main className="maeda-main">
@@ -617,7 +617,7 @@ function SimplifiedDashboard() {
       <footer className="maeda-footer">
         <span>Seed: {seed}</span>
         <span>Uptime: {formatUptime(uptime)}</span>
-        <span>ThinkingMachines</span>
+        <span>[He2025]</span>
       </footer>
     </div>
   )

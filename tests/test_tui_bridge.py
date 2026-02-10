@@ -299,7 +299,7 @@ class TestTUIBridgeProgressTrackerIntegration:
 
 
 class TestTUIBridgeBounds:
-    """Tests for ThinkingMachines-compliant bounds."""
+    """Tests for determinism-compliant bounds."""
 
     @pytest.fixture
     def temp_state_dir(self):

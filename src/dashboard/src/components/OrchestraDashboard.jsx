@@ -14,7 +14,7 @@ import FlowView from './FlowView/FlowView'
  * - STATUS: Original dashboard view (default) - "where we are"
  * - FLOW: React Flow node visualization - "what's happening"
  *
- * ThinkingMachines Determinism
+ * Determinism ([He2025])
  */
 
 // ============================================================================

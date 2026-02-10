@@ -13,7 +13,7 @@ We present the USD Cognitive Substrate, a novel architecture that repurposes Uni
 
 The system comprises two orthogonal hierarchies: a USD Composition Hierarchy for state storage with LIVRPS (Local, Inherits, VariantSets, References, Payloads, Specializes) resolution, and a Runtime Service Stack for processing, routing, and adaptation. A novel "Mycelium" mechanism provides neuroplasticity within constitutional bounds, enabling the system to learn while maintaining safety guarantees.
 
-When integrated with batch-invariant inference engines (ThinkingMachines), the architecture guarantees: **same user input + same state → same response + same state update**. This enables reproducible sessions, behavioral unit testing, complete audit trails, and formally verifiable cognitive systems.
+When integrated with batch-invariant inference engines [He2025], the architecture guarantees: **same user input + same state → same response + same state update**. This enables reproducible sessions, behavioral unit testing, complete audit trails, and formally verifiable cognitive systems.
 
 **Keywords:** Universal Scene Description, cognitive architecture, deterministic AI, state management, neuroplasticity, batch invariance, LIVRPS composition
 
@@ -63,7 +63,7 @@ This paper makes the following contributions:
 
 4. **Determinism Analysis** — Formal identification of stochastic boundaries and requirements for full reproducibility
 
-5. **Integration with Batch-Invariant Inference** — When combined with ThinkingMachines kernels, the architecture achieves full determinism except for irreducible human I/O
+5. **Integration with Batch-Invariant Inference** — When combined with batch-invariant kernels [He2025], the architecture achieves full determinism except for irreducible human I/O
 
 ---
 
@@ -92,7 +92,7 @@ No other configuration format (JSON, YAML, Protobuf, GraphQL) provides all three
 
 **The Key Insight**: Individual LLM forward passes are run-to-run deterministic. The source of user-visible nondeterminism is that **batch size varies with server load**, and most kernels lack batch-invariance.
 
-ThinkingMachines (2025) demonstrated this empirically: **80 unique completions from 1000 identical requests** at temperature=0. The variation occurs because:
+[He2025] demonstrated this empirically: **80 unique completions from 1000 identical requests** at temperature=0. The variation occurs because:
 
 1. **Batch-size-dependent reduction order** — The same matrix operation (`torch.mm(a[:1], b)` vs `torch.mm(a, b)[:1]`) produces different results depending on batch size, even though the mathematical operation is identical
 2. **Load-dependent batching** — Server load determines batch size, introducing runtime variation
@@ -103,7 +103,7 @@ ThinkingMachines (2025) demonstrated this empirically: **80 unique completions f
 - GPU thread scheduling (can be controlled)
 - Sampling randomness (can be seeded)
 
-ThinkingMachines batch-invariant kernels eliminate these sources at a cost of ~1.6-2.1x performance overhead (1.6x with optimized attention kernel, 2.1x unoptimized).
+Batch-invariant kernels [He2025] eliminate these sources at a cost of ~1.6-2.1x performance overhead (1.6x with optimized attention kernel, 2.1x unoptimized).
 
 ### 2.3 Cognitive Architectures
 
@@ -568,9 +568,9 @@ Without batch-invariant inference:
 | 9 | Outcome detection | PARTIAL |
 | 10 | State update | YES |
 
-### 8.2 With ThinkingMachines
+### 8.2 With Batch-Invariant Kernels [He2025]
 
-ThinkingMachines provides batch-invariant kernels that guarantee identical outputs regardless of batch size:
+[He2025] provides batch-invariant kernels that guarantee identical outputs regardless of batch size:
 
 | Operation | Batch-Invariant Strategy | Performance Cost |
 |-----------|-------------------------|------------------|
@@ -621,9 +621,9 @@ STOCHASTIC (Irreducible):
 | L0D Specification | Fixed pattern dictionary, activation matrix, tiebreakers |
 | Canonical Prompt Templates | Same expert + context → same prompt |
 | Fixed Model Version | Model updates change behavior |
-| Fixed Hardware Config | Per ThinkingMachines limitation |
+| Fixed Hardware Config | Per [He2025] limitation |
 | Canonical State Serialization | Deterministic USD → string |
-| ThinkingMachines Kernels | Batch-invariant inference (~1.6x overhead) |
+| Batch-Invariant Kernels [He2025] | Batch-invariant inference (~1.6x overhead) |
 
 ### 8.5 Failure Modes and Recovery
 
@@ -634,7 +634,7 @@ The system is designed to fail gracefully:
 | **FM1: State Corruption** | Disk failure, concurrent write | Checksum mismatch | Load previous snapshot; reset to calibration if all corrupted |
 | **FM2: Signal Conflict** | "frustrated" + "just do it" | Multiple high activations | Priority ordering (Protector wins) |
 | **FM3: Weight Explosion** | Extreme outcomes without decay | Any w_i > 0.95 | Apply decay, re-normalize |
-| **FM4: ThinkingMachines Unavailable** | Fallback to standard inference | Batch-invariance check fails | Mark session non-reproducible, increase logging |
+| **FM4: Batch-Invariant Kernels Unavailable** | Fallback to standard inference | Batch-invariance check fails | Mark session non-reproducible, increase logging |
 | **FM5: Cold Start** | New user, no history | Uniform weights detected | Calibration wizard for initial preferences |
 
 **Recovery Hierarchy:**
@@ -755,7 +755,7 @@ editor.signal(Signal(category="content", content="high keystroke rate"))
 
 **Metric:** Given identical inputs and state, percentage of runs producing identical outputs.
 
-**Target:** 100% with ThinkingMachines; <100% without.
+**Target:** 100% with batch-invariant kernels [He2025]; <100% without.
 
 **Method:** Replay recorded sessions, compare checksums.
 
@@ -795,7 +795,7 @@ editor.signal(Signal(category="content", content="high keystroke rate"))
 
 ### 12.3 Deterministic Inference
 
-- **ThinkingMachines**: Batch-invariant kernels; we build upon this
+- **[He2025]**: Batch-invariant kernels; we build upon this
 - **vLLM**: Optimized serving; not deterministic
 - **TensorRT-LLM**: Compilation; determinism not guaranteed
 
@@ -831,7 +831,7 @@ editor.signal(Signal(category="content", content="high keystroke rate"))
 
 3. **Cold Start Problem**: New users have uniform weights. Initial sessions may have suboptimal routing until Hebbian learning accumulates data. Mitigation: Calibration wizard.
 
-4. **Memory vs. Compute Tradeoff**: ThinkingMachines batch-invariance has performance cost: 2.1x slowdown with unoptimized kernels, 1.6x with optimized attention. MatMul specifically costs ~20% vs cuBLAS. For latency-sensitive applications, this may require hybrid mode (deterministic for routing, probabilistic for generation).
+4. **Memory vs. Compute Tradeoff**: Batch-invariance [He2025] has performance cost: 2.1x slowdown with unoptimized kernels, 1.6x with optimized attention. MatMul specifically costs ~20% vs cuBLAS. For latency-sensitive applications, this may require hybrid mode (deterministic for routing, probabilistic for generation).
 
 5. **USD Ecosystem Maturity**: While USD is an industry standard for VFX, its ecosystem outside VFX is nascent. Python pxr bindings are mature; other languages less so.
 
@@ -847,7 +847,7 @@ The USD Cognitive Substrate thesis would be **FALSIFIED** if:
 
 3. **Safety Floor Violation**: Any execution path exists that allows expert weights to fall below safety floors.
 
-4. **Determinism Failure**: With ThinkingMachines, identical inputs produce different outputs in >0.01% of cases.
+4. **Determinism Failure**: With batch-invariant kernels [He2025], identical inputs produce different outputs in >0.01% of cases.
 
 5. **Practical Inferiority**: A simpler system (JSON + rules) achieves equivalent routing accuracy with <50% of the specification complexity.
 
@@ -868,7 +868,7 @@ The key contributions:
 3. **The Mycelium Arc** enables multi-agent state composition
 4. **Integration with batch-invariant inference** achieves full determinism
 
-When deployed with ThinkingMachines kernels, the system provides a formally verifiable guarantee: **same input + same state → same output**. This transforms LLM applications from probabilistic systems into deterministic functions, enabling reproducibility, testing, auditing, and accountability.
+When deployed with batch-invariant kernels [He2025], the system provides a formally verifiable guarantee: **same input + same state → same output**. This transforms LLM applications from probabilistic systems into deterministic functions, enabling reproducibility, testing, auditing, and accountability.
 
 The only remaining stochasticity is human agency—what users type and how they respond—which is not a limitation but a feature: the system respects human autonomy while providing consistent, learnable, verifiable AI behavior.
 

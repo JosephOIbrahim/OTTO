@@ -334,7 +334,7 @@ class OrchestratorConfig:
         'FO_ENABLE_FALLBACK', True
     ))
 
-    # === Reproducibility / ThinkingMachines Compliance ===
+    # === Reproducibility / Determinism Compliance ===
     # "Control every source of randomness"
     reproducibility_mode: bool = field(default_factory=lambda: _get_env_bool(
         'FO_REPRODUCIBILITY_MODE', False  # Disabled by default for production
@@ -434,7 +434,7 @@ class OrchestratorConfig:
             # Metrics & Tracing
             'metrics_enabled': self.metrics_enabled,
             'tracing_enabled': self.tracing_enabled,
-            # Reproducibility (ThinkingMachines compliance)
+            # Reproducibility (determinism compliance)
             'reproducibility_mode': self.reproducibility_mode,
             'determinism_seed': self.determinism_seed,
             'retry_jitter': self.retry_jitter,

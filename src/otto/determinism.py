@@ -2,7 +2,7 @@
 Determinism Utilities for OTTO OS
 =================================
 
-Implements ThinkingMachines [He2025] principles for application-level determinism.
+Implements application-level determinism inspired by [He2025].
 
 Core insight from [He2025]: The same input should produce the same output,
 regardless of batch size, system load, or other runtime factors.
@@ -85,7 +85,7 @@ def sorted_max(
         >>> sorted_max(d)  # Always returns ("a", 0.5), never ("b", 0.5)
         ('a', 0.5)
 
-    ThinkingMachines [He2025]: Fixed evaluation order ensures reproducibility.
+    Determinism: Fixed evaluation order ensures reproducibility.
     """
     if not d:
         raise ValueError("sorted_max() arg is an empty dict")
@@ -161,7 +161,7 @@ def kahan_sum(values) -> float:
         >>> kahan_sum(values)  # More accurate than sum()
         0.6
 
-    ThinkingMachines [He2025]: Fixed reduction order + compensated accumulation.
+    Determinism: Fixed reduction order + compensated accumulation.
     """
     # Convert to list and sort for deterministic order
     sorted_values = sorted(list(values))
@@ -224,7 +224,7 @@ def sorted_set_to_list(s: set) -> list:
         >>> sorted_set_to_list(s)
         ['a', 'b', 'c']
 
-    ThinkingMachines [He2025]: Sets are non-deterministic by design.
+    Determinism: Sets are non-deterministic by design.
     """
     return sorted(list(s))
 

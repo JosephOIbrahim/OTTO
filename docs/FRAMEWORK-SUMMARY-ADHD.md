@@ -143,8 +143,8 @@ torch.backends.cudnn.benchmark = False   # Disable auto-tuning
 | `MoE_ExpertRouter` | CSQMF-R1 | Deterministic expert selection |
 | `MoE_ExpertExecutor` | CSQMF-R1 | Run with expert parameters |
 | `PRISM_Analyzer` | PRISM | 6-perspective analysis |
-| `DeterministicSampler` | ThinkingMachines | Batch-invariant sampling |
-| `ChecksumValidator` | ThinkingMachines | Reproducibility proof |
+| `DeterministicSampler` | Determinism [He2025] | Batch-invariant sampling |
+| `ChecksumValidator` | Determinism [He2025] | Reproducibility proof |
 | `VFX_ShotAnalyzer` | Phoenix+PRISM | VFX domain detection |
 
 ### Node Flow Example

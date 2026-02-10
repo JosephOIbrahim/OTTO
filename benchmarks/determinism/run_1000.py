@@ -222,7 +222,7 @@ def print_result(result: DeterminismResult) -> None:
 def save_result(result: DeterminismResult, output_path: Path) -> None:
     """Save result to JSON file."""
     output = asdict(result)
-    output["he2025_compliant"] = result.deterministic
+    output["deterministic"] = result.deterministic
     output["test_type"] = "1000_iteration_determinism"
 
     output_path.write_text(json.dumps(output, indent=2, sort_keys=True))

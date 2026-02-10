@@ -2,7 +2,7 @@
 
 **Technical deep-dive into Otto's cognitive ottotion system.**
 
-Based on ThinkingMachines batch-invariance and USD composition semantics.
+Based on batch-invariance principles [He2025] and USD composition semantics.
 
 > **Reference:** He, Horace and Thinking Machines Lab, "Defeating Nondeterminism in LLM Inference",
 > Thinking Machines Lab: Connectionism, Sep 2025.
@@ -10,7 +10,7 @@ Based on ThinkingMachines batch-invariance and USD composition semantics.
 
 ## Overview
 
-Otto v5.0 is a cognitive ottotion system that applies USD (Universal Scene Description) composition semantics to cognitive state management, with ThinkingMachines-compliant deterministic execution.
+Otto v5.0 is a cognitive ottotion system that applies USD (Universal Scene Description) composition semantics to cognitive state management, with deterministic execution (inspired by [He2025]).
 
 ## Core Design Principles
 
@@ -101,7 +101,7 @@ Same input → Same routing → Same output.
 
 ## Data Flow
 
-### 5-Phase NEXUS Pipeline (ThinkingMachines Compliant)
+### 5-Phase NEXUS Pipeline (Determinism-Compliant [He2025])
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -121,7 +121,7 @@ Same input → Same routing → Same output.
 5. UPDATE    → RC^+xi convergence tracking (xi_n = ||A_{n+1} - A_n||_2)
 ```
 
-### ThinkingMachines Determinism
+### Determinism [He2025]
 
 | Guarantee | Implementation |
 |-----------|----------------|

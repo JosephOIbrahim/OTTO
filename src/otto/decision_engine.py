@@ -72,7 +72,7 @@ class FlowState(Enum):
 
 
 # =============================================================================
-# PRE-COMPUTED ROUTING TABLE (ThinkingMachines [He2025] Batch-Invariance)
+# PRE-COMPUTED ROUTING TABLE (Batch-Invariance, inspired by [He2025])
 # =============================================================================
 # Key: (signal_category, complexity_tier, budget_tier, flow_state)
 # Value: (DecisionMode, agent_list, rationale)
@@ -157,7 +157,7 @@ class StateSnapshot:
     """
     Immutable snapshot of cognitive state for deterministic routing.
 
-    ThinkingMachines [He2025]: Snapshot taken BEFORE any decision
+    Determinism: Snapshot taken BEFORE any decision
     to ensure batch-invariance.
     """
     signal_category: str
@@ -266,7 +266,7 @@ class DecisionEngine:
         """
         Create immutable state snapshot for deterministic routing.
 
-        ThinkingMachines [He2025]: Snapshot taken BEFORE any decision.
+        Determinism: Snapshot taken BEFORE any decision.
         """
         context = context or {}
         cog_context = self.coordinator.get_cognitive_context()
@@ -343,7 +343,7 @@ class DecisionEngine:
         """
         Perform deterministic table lookup.
 
-        ThinkingMachines [He2025]: First-match-wins with wildcard support.
+        Determinism: First-match-wins with wildcard support.
 
         Returns:
             (DecisionMode, agent_list, rationale)
@@ -370,7 +370,7 @@ class DecisionEngine:
         Process an incoming task request.
 
         This is the main entry point for all orchestration. It:
-        1. Takes state snapshot (ThinkingMachines [He2025])
+        1. Takes state snapshot (deterministic, inspired by [He2025])
         2. Performs table lookup for deterministic routing
         3. Builds execution plan based on work/delegate/protect decision
 
@@ -384,7 +384,7 @@ class DecisionEngine:
         context = context or {}
 
         # =================================================================
-        # PHASE 1: STATE SNAPSHOT (ThinkingMachines [He2025])
+        # PHASE 1: STATE SNAPSHOT (inspired by [He2025])
         # =================================================================
         snapshot = self._create_state_snapshot(request, context)
 

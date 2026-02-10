@@ -12,7 +12,7 @@
 - ✅ CI/CD with matrix testing (Ubuntu/Windows × Python 3.10-3.12)
 - ✅ Code coverage in CI (50% threshold, Codecov integration)
 - ✅ Branch protection on main
-- ✅ ThinkingMachines Determinism
+- ✅ Determinism [He2025]
 - ✅ Public on GitHub
 
 ### Tier 1 Features (Completed)

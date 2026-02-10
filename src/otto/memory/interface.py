@@ -1388,7 +1388,7 @@ class KnowledgeGraph:
 
         self._register(KnowledgePrim(
             path="/Knowledge/He2025/Determinism",
-            summary="ThinkingMachines determinism principles",
+            summary="Application-layer determinism principles (inspired by [He2025])",
             content="Fixed seeds, fixed evaluation order, sorted iteration, Kahan summation, COGNITIVE_TILE_SIZE=32. Same inputs -> same outputs.",
             triggers=["he2025", "determinism", "thinkingmachines", "batch invariance"],
             confidence=0.95,

@@ -28,7 +28,7 @@ from typing import Optional, Dict, Any, List
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED - determinism compliant)
 # =============================================================================
 
 # Thresholds for learning triggers
@@ -115,7 +115,7 @@ class CalibrationEngine:
     based on patterns. The actual firmness value is stored in profile,
     but this engine provides adjustment recommendations.
 
-    ThinkingMachines Compliance:
+    Determinism:
     - All thresholds are FIXED constants
     - Adjustments are DETERMINISTIC
     - Bounds prevent extreme values

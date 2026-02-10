@@ -105,7 +105,7 @@ print(f"Strategy: {strategy['strategy']}")  # fast/weighted/thorough
 | MoE Router | V5 Intervention Experts | 5-phase routing with safety floors |
 | World Modeler | CORTEX | Context graph construction |
 | Code Generator | MAX 3 + MNO v3 | Deterministic code generation |
-| Determinism Guard | ThinkingMachines | Reproducibility enforcement |
+| Determinism Guard | Batch-Invariance [He2025] | Reproducibility enforcement |
 | Self Reflector | Resonance + RC^+xi | Meta-cognition and convergence tracking |
 
 ### V5 Expert Archetypes

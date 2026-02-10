@@ -35,7 +35,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 # Entropy size: 256 bits = 32 bytes
@@ -162,7 +162,7 @@ def generate_recovery_key() -> RecoveryKey:
     Returns:
         RecoveryKey with 24 words
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED entropy: 256 bits
     - FIXED word count: 24
     - DETERMINISTIC encoding
@@ -196,7 +196,7 @@ def validate_recovery_key(words_input: str) -> bool:
     Returns:
         True if valid
 
-    ThinkingMachines: DETERMINISTIC validation.
+    Determinism: DETERMINISTIC validation.
     """
     try:
         words = _parse_words(words_input)

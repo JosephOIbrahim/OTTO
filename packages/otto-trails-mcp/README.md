@@ -55,7 +55,7 @@ otto-trails-mcp
 | `otto_get_related` | Follow CONTEXT trails to find related files |
 | `otto_decay_trails` | Run decay and prune dead trails |
 
-## ThinkingMachines Determinism
+## Determinism [He2025]
 
 - All queries return results in deterministic order
 - Trail operations are atomic via SQLite transactions

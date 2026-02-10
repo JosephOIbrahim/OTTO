@@ -2,7 +2,7 @@
 
 ## Overview
 
-Otto v4.3.0 introduces `DecisionEngine` as the primary entry point for task routing, implementing the work/delegate/protect model with ThinkingMachines batch-invariance.
+Otto v4.3.0 introduces `DecisionEngine` as the primary entry point for task routing, implementing the work/delegate/protect model with batch-invariance [He2025].
 
 **One-Liner:** "Otto helps you finish projects by knowing when to do the work yourself, when to delegate to agents, and when to protect your flow."
 

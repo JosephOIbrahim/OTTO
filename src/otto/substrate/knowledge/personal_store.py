@@ -25,7 +25,7 @@ from .schemas import KnowledgePrim, RetrievalResult
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED - determinism compliant)
 # =============================================================================
 
 PERSONAL_CONFIDENCE = 0.85  # Personal knowledge confidence
@@ -45,7 +45,7 @@ class PersonalKnowledgeStore:
     Integrates with the KnowledgeRetriever to provide unified search
     across both curated USDA prims and personal memories.
 
-    ThinkingMachines Compliance:
+    Determinism:
     - All confidence values are FIXED
     - Path generation is DETERMINISTIC
     - Storage is BOUNDED by MAX_PERSONAL_ITEMS

@@ -294,11 +294,11 @@ class TestUnifiedSearch:
 
 
 # =============================================================================
-# Test: ThinkingMachines Compliance
+# Test: Determinism Compliance
 # =============================================================================
 
-class TestThinkingMachinesCompliance:
-    """Tests for ThinkingMachines Determinism."""
+class TestDeterminismCompliance:
+    """Tests for determinism ([He2025])."""
 
     def test_confidence_is_fixed(self):
         """Personal confidence is a fixed constant."""

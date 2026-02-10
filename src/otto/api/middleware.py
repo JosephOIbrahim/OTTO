@@ -1504,7 +1504,7 @@ def create_api_middleware(
     """
     Create the standard API middleware chain.
 
-    Order is FIXED (per ThinkingMachines):
+    Order is FIXED (determinism compliance):
     1. CORS - Handle preflight and add CORS headers (wrapper)
     2. Security Headers - Add security headers to ALL responses (wrapper)
     3. Authentication - Who is this?

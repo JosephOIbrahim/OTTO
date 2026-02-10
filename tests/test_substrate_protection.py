@@ -494,7 +494,7 @@ class TestEdgeCases:
 # =============================================================================
 
 class TestDeterminism:
-    """Test deterministic behavior per ThinkingMachines."""
+    """Test deterministic behavior per [He2025]."""
 
     def test_signature_deterministic(self, temp_otto_dir, sample_config):
         """Same content produces same content hash."""

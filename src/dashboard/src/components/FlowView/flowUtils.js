@@ -3,7 +3,7 @@
  *
  * Converts Orchestra WebSocket state to React Flow nodes and edges
  *
- * 5-Phase NEXUS Pipeline (ThinkingMachines):
+ * 5-Phase NEXUS Pipeline ([He2025]):
  * 1. DETECT  - StateNode (PRISM signal extraction)
  * 2. CASCADE - CascadeNode (7-expert Cognitive Safety MoE routing)
  * 3. LOCK    - LockNode (MAX3 + parameter locking)
@@ -20,7 +20,7 @@ export const AGENTS = {
   moe_router: { id: 'moe', label: 'MoE', desc: 'V5 Intervention' },
   world_model: { id: 'world', label: 'WORLD', desc: 'CORTEX Model' },
   code_gen: { id: 'code', label: 'CODE', desc: 'MAX 3 + MNO' },
-  determinism: { id: 'determ', label: 'DETERM', desc: 'ThinkingMachines' },
+  determinism: { id: 'determ', label: 'DETERM', desc: '[He2025]' },
   reflector: { id: 'reflect', label: 'REFLECT', desc: 'RESONANCE' }
 }
 

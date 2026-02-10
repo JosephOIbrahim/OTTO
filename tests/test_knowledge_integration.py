@@ -191,7 +191,7 @@ class TestLowConfidenceContinues:
 
 
 class TestDeterminism:
-    """Tests for deterministic behavior (ThinkingMachines Determinism)."""
+    """Tests for deterministic behavior ([He2025])."""
 
     @pytest.fixture
     def orchestrator(self):

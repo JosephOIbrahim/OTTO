@@ -10,8 +10,6 @@ No runtime variation is permitted. These constants ensure that:
 2. Fixed evaluation order (tuple ordering preserves insertion order)
 3. No batch-variance (widget isolation)
 
-Reference: He, Horace and Thinking Machines Lab,
-"Defeating Nondeterminism in LLM Inference", Sep 2025.
 """
 
 from typing import Tuple, Final
@@ -21,7 +19,8 @@ from typing import Tuple, Final
 # =============================================================================
 
 TUI_VERSION: Final[str] = "1.0.0"
-HE2025_COMPLIANT: Final[bool] = True
+# Application-layer determinism inspired by [He2025], not kernel-level compliance
+HE2025_PRINCIPLES_APPLIED: Final[bool] = True
 
 # =============================================================================
 # BURNOUT LEVEL MAPPINGS

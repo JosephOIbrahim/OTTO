@@ -111,7 +111,7 @@ def "Knowledge" (
         )
         {
             custom string canonical_path = "/Knowledge/OTTO/CloudSync"
-            custom string content = """OTTO cloud sync provides E2E encrypted synchronization. All data encrypted before leaving device using user passphrase. Supported backends: Local (testing), WebDAV (Nextcloud/ownCloud), S3 (AWS/MinIO). Configure via ~/.otto/config/sync.json with provider, credentials, passphrase. Commands: 'otto sync setup' shows options, 'otto sync now' performs sync, 'otto sync status' shows state. Uses vector clocks for conflict detection, deterministic resolution. ThinkingMachines compliant: fixed chunk size (5 MiB), fixed retry limits (3)."""
+            custom string content = """OTTO cloud sync provides E2E encrypted synchronization. All data encrypted before leaving device using user passphrase. Supported backends: Local (testing), WebDAV (Nextcloud/ownCloud), S3 (AWS/MinIO). Configure via ~/.otto/config/sync.json with provider, credentials, passphrase. Commands: 'otto sync setup' shows options, 'otto sync now' performs sync, 'otto sync status' shows state. Uses vector clocks for conflict detection, deterministic resolution. Determinism compliant: fixed chunk size (5 MiB), fixed retry limits (3)."""
             custom string summary = "E2E encrypted sync via WebDAV or S3 - all data encrypted before leaving device"
             custom float confidence = 0.95
             custom string provenance = "otto_sync"
@@ -171,12 +171,12 @@ def "Knowledge" (
             custom string[] triggers = ["otto directory", "otto storage", "otto files", "dot otto"]
         }
 
-        def "ThinkingMachinesCompliance" (
+        def "DeterminismCompliance" (
             prepend apiSchemas = ["KnowledgePrimAPI"]
         )
         {
-            custom string canonical_path = "/Knowledge/OTTO/ThinkingMachinesCompliance"
-            custom string content = """OTTO follows ThinkingMachines Determinism for determinism. Key constraints: FIXED parameters (chunk sizes, retry limits, thresholds), DETERMINISTIC serialization (sorted keys in JSON), BOUNDED operations (max files per sync, max items), FIXED evaluation order (signal > expert > action), REPRODUCIBLE checksums. No time-based routing, no unseeded random, no unordered iteration. All state mutations atomic. This ensures same inputs produce same outputs across sessions."""
+            custom string canonical_path = "/Knowledge/OTTO/DeterminismCompliance"
+            custom string content = """OTTO follows application-layer determinism (inspired by [He2025]). Key constraints: FIXED parameters (chunk sizes, retry limits, thresholds), DETERMINISTIC serialization (sorted keys in JSON), BOUNDED operations (max files per sync, max items), FIXED evaluation order (signal > expert > action), REPRODUCIBLE checksums. No time-based routing, no unseeded random, no unordered iteration. All state mutations atomic. This ensures same inputs produce same outputs across sessions."""
             custom string summary = "Determinism via fixed parameters, bounded operations, deterministic serialization"
             custom float confidence = 0.95
             custom string provenance = "otto_compliance"
@@ -280,7 +280,7 @@ def "Knowledge" (
         )
         {
             custom string canonical_path = "/Knowledge/OTTO/TestSuite"
-            custom string content = """OTTO test suite: 1807+ tests across 67 test files. Categories: Unit tests (800+), Integration tests (500+), Property-based (Hypothesis), Fuzz tests (Atheris on Linux). Coverage: 50%+ threshold, Codecov integration. Key test files: test_cognitive_engine.py, test_protection.py, test_cli_commands.py, test_webdav_adapter.py, test_s3_adapter.py, test_sync.py. Run: 'pytest tests/ -v'. ThinkingMachines compliance tests marked with @pytest.mark.determinism."""
+            custom string content = """OTTO test suite: 1807+ tests across 67 test files. Categories: Unit tests (800+), Integration tests (500+), Property-based (Hypothesis), Fuzz tests (Atheris on Linux). Coverage: 50%+ threshold, Codecov integration. Key test files: test_cognitive_engine.py, test_protection.py, test_cli_commands.py, test_webdav_adapter.py, test_s3_adapter.py, test_sync.py. Run: 'pytest tests/ -v'. Determinism compliance tests marked with @pytest.mark.determinism."""
             custom string summary = "1807+ tests in 67 files - unit, integration, property-based, fuzz testing"
             custom float confidence = 0.95
             custom string provenance = "otto_tests"

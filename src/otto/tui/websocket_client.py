@@ -10,8 +10,6 @@ Principles:
 3. Fixed channel subscription list
 4. Reproducible state dispatch sequence
 
-Reference: He, Horace and Thinking Machines Lab,
-"Defeating Nondeterminism in LLM Inference", Sep 2025.
 """
 
 import asyncio

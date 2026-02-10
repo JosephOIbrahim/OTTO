@@ -66,7 +66,7 @@ import json
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines Determinism)
+# Constants (FIXED)
 # =============================================================================
 
 # 256-bit prime for finite field arithmetic

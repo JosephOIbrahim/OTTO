@@ -42,7 +42,7 @@ from keyring.errors import KeyringError as BaseKeyringError, PasswordDeleteError
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 SERVICE_NAME = "otto-os"

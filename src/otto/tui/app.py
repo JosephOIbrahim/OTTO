@@ -11,8 +11,6 @@ Principles:
 4. No adaptive layout changes based on content
 5. Reproducible rendering (same state → same output)
 
-Reference: He, Horace and Thinking Machines Lab,
-"Defeating Nondeterminism in LLM Inference", Sep 2025.
 """
 
 import asyncio

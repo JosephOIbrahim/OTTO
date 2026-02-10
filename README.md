@@ -400,7 +400,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 - **[Orchestra](https://github.com/JosephOIbrahim/Orchestra)** — Cognitive orchestration foundation
 - **[Pixar USD](https://graphics.pixar.com/usd/)** — Composition semantics inspiration
-- **[ThinkingMachines [He2025]](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/)** — Determinism principles
+- **[[He2025]](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/)** — Determinism principles
 
 ---
 

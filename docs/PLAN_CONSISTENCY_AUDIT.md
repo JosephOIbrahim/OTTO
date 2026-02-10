@@ -3,7 +3,7 @@
 > **Generated**: 2026-02-01
 > **Auditor**: Claude (deep analysis mode)
 > **Source**: Path to 10/10 implementation plan
-> **Reference**: ThinkingMachines blog on defeating nondeterminism
+> **Reference**: [He2025] — Defeating nondeterminism in LLM inference
 
 ---
 

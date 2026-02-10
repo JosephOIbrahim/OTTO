@@ -1,7 +1,7 @@
 rules:
   # =============================================================================
   # Orchestra Determinism Rules
-  # ThinkingMachines [He2025] Compliance Checks
+  # Determinism Pattern Checks
   # =============================================================================
 
   - id: orchestra-unseeded-random
@@ -15,7 +15,7 @@ rules:
           $RNG = random.Random($SEED)
           ...
     message: |
-      Unseeded random usage detected. This violates ThinkingMachines [He2025] batch-invariance.
+      Non-deterministic pattern: Unseeded random usage detected.
       Use a seeded Random instance: `self._rng = random.Random(seed)` and call `self._rng.random()`.
     languages: [python]
     severity: ERROR
@@ -102,7 +102,7 @@ rules:
           def _initialize_state(...):
             ...
     message: |
-      Direct state mutation outside batch_update(). This violates ThinkingMachines [He2025].
+      Non-deterministic pattern: Direct state mutation outside batch_update().
       Use self.state.batch_update({...}) for atomic state changes.
       Exception: reset_session() and __init__() are allowed for full state initialization.
     languages: [python]
@@ -210,7 +210,7 @@ rules:
           EXPERT_PRIORITY = (...)
     message: |
       EXPERT_PRIORITY should be an immutable tuple, not reassigned.
-      ThinkingMachines [He2025] requires fixed evaluation order.
+      Determinism requires fixed evaluation order.
     languages: [python]
     severity: ERROR
     metadata:

@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED - determinism compliant)
 # =============================================================================
 
 MAX_TASKS = 1000         # Prevent memory issues with huge task lists

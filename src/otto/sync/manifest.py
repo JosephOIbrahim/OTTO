@@ -37,7 +37,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 MANIFEST_VERSION = 1
@@ -181,7 +181,7 @@ class SyncManifest:
     """
     Encrypted manifest for tracking synced files.
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED version format
     - DETERMINISTIC serialization (sorted entries)
     - BOUNDED entry count

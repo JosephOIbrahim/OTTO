@@ -1,9 +1,9 @@
-# Ralph Iteration 1: ThinkingMachines Consistency Analysis
+# Ralph Iteration 1: Determinism Consistency Analysis [He2025]
 
 ## Task
-Review V5 implementation for consistency with ThinkingMachines batch-invariance principles.
+Review V5 implementation for consistency with batch-invariance principles [He2025].
 
-## ThinkingMachines Key Principles Applied to V5
+## [He2025] Key Principles Applied to V5
 
 ### 1. Reduction Order Consistency ✅
 **Principle**: "Each operation must perform reductions in identical order regardless of batch size"
@@ -117,6 +117,6 @@ This maintains technical precision while providing human-friendly labels.
 
 ## Summary
 
-- **ThinkingMachines Compliance**: ✅ V5 routing is batch-invariant
+- **Determinism Compliance [He2025]**: ✅ V5 routing is batch-invariant
 - **Determinism**: ✅ Same input → Same output guaranteed
 - **Naming**: Current names are acceptable; suggest adding display names layer

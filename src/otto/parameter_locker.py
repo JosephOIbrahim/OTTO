@@ -88,7 +88,7 @@ class LockedParams:
 
     Once locked, these CANNOT change during generation.
 
-    ThinkingMachines [He2025] Batch-Invariance:
+    Batch-Invariance (inspired by [He2025]):
     - `checksum`: Routing-only checksum (excludes reflection_iteration)
     - `session_checksum`: Full checksum including iteration (for debugging)
     - Same routing params → same checksum regardless of reflection count
@@ -116,7 +116,7 @@ class LockedParams:
         Excludes reflection_iteration to ensure batch-invariance:
         Same routing decision → same checksum regardless of iteration.
 
-        ThinkingMachines [He2025]: Same inputs → same outputs → same checksums
+        Determinism: Same inputs → same outputs → same checksums
         """
         data = json.dumps({
             "expert": self.expert,
@@ -231,7 +231,7 @@ class ParameterLocker:
         """
         Lock parameters for generation.
 
-        ThinkingMachines [He2025]: Parameters locked BEFORE generation.
+        Determinism: Parameters locked BEFORE generation.
         Batch-invariance: reflection_count passed from state snapshot,
         not stored as instance state.
 

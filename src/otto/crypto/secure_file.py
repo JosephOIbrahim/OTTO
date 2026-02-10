@@ -56,7 +56,7 @@ from .key_derivation import (
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED - determinism compliant)
 # =============================================================================
 
 MAGIC = b"OTTO"  # File magic bytes

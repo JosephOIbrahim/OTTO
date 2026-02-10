@@ -162,7 +162,7 @@ C:\Users\User\framework-ottotor-update\     # IMPLEMENTATION REPO
             │                                                │
             ▼                                                │
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                    DETERMINISTIC (With ThinkingMachines)                   │
+│                    DETERMINISTIC (With Batch-Invariant Kernels [He2025])   │
 │                                                                           │
 │   Signal Detection → 5-Phase Routing → Expert Selection → LLM → Update   │
 │                                                                           │
@@ -456,9 +456,9 @@ framework-ottotor/
 
 ---
 
-## PART 6: THINKINGMACHINES VERIFICATION
+## PART 6: [He2025] VERIFICATION
 
-When creating figures that reference ThinkingMachines, use EXACT values:
+When creating figures that reference [He2025], use EXACT values:
 
 | Claim | Value | Use In |
 |-------|-------|--------|

@@ -175,7 +175,7 @@ class CognitiveState:
         Create an immutable snapshot of current state.
 
         Used BEFORE processing to ensure all agents see the same state.
-        ThinkingMachines compliance: state snapshot prevents race conditions.
+        Determinism: state snapshot prevents race conditions.
         """
         return CognitiveState(
             burnout_level=self.burnout_level,
@@ -202,7 +202,7 @@ class CognitiveState:
         """
         Apply updates atomically AFTER all processing complete.
 
-        ThinkingMachines compliance: batch updates prevent mid-processing changes.
+        Determinism: batch updates prevent mid-processing changes.
 
         Args:
             updates: Dict of field names to new values

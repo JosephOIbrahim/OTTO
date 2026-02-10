@@ -369,7 +369,7 @@ config = {
 
 #### Option C: Custom [He2025] Kernel Implementation
 
-The ThinkingMachines paper provides the algorithm. We could implement:
+The [He2025] paper provides the algorithm. We could implement:
 
 ```python
 # pseudo-code for [He2025] RMSNorm

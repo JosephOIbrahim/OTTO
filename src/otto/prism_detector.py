@@ -400,7 +400,7 @@ class PRISMDetector:
     Multi-perspective signal detector with FIXED evaluation order.
 
     Implements the PRISM framework for 6-perspective analysis while
-    maintaining ThinkingMachines [He2025] batch-invariance.
+    maintaining application-layer batch-invariance (inspired by [He2025]).
     """
 
     # FIXED evaluation order - NEVER change
@@ -447,7 +447,7 @@ class PRISMDetector:
         """
         Detect signals in text using FIXED evaluation order.
 
-        ThinkingMachines compliance:
+        Determinism:
         - Evaluation order is FIXED (SIGNAL_PRIORITY)
         - Same input always produces same output
         - No dynamic algorithm switching
@@ -753,7 +753,7 @@ class PRISMDetector:
     # Phase 0: Factual Query Detection (Knowledge Fast Path)
     # =========================================================================
 
-    # FIXED signal list for factual queries - ThinkingMachines [He2025]-inspired determinism
+    # FIXED signal list for factual queries - application-layer determinism (inspired by [He2025])
     FACTUAL_SIGNALS = [
         "what is", "what's", "what are",
         "explain", "define", "describe",

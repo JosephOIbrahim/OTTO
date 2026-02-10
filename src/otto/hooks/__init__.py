@@ -48,7 +48,8 @@ from .base import (
 # Trail-based hooks
 from .auto_validate import (
     AutoValidateHook,
-    check_he2025_compliance,
+    check_determinism_patterns,
+    check_he2025_compliance,  # backward-compat alias
     validate_file,
 )
 from .trail_context import (
@@ -86,7 +87,8 @@ __all__ = [
     'execute_hooks',
     # Validation hook
     'AutoValidateHook',
-    'check_he2025_compliance',
+    'check_determinism_patterns',
+    'check_he2025_compliance',  # backward-compat alias
     'validate_file',
     # Trail context hooks
     'TrailContextHook',

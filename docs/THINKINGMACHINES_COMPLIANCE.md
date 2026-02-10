@@ -1,4 +1,4 @@
-# ThinkingMachines Determinism Audit
+# Determinism Compliance Audit [He2025]
 
 ## Reference
 
@@ -39,7 +39,7 @@ The cognitive routing system produces identical results regardless of:
 
 ## Compliance Matrix
 
-| Principle | ThinkingMachines Requirement | Otto Implementation | Status |
+| Principle | [He2025] Requirement | Otto Implementation | Status |
 |-----------|------------------------------|--------------------------|--------|
 | Fixed Reduction Order | Reduction order must be fixed regardless of batch size | LIVRPS priority order is FIXED (L=1, I=2, V=3, R=4, P=5, S=6) | ✅ |
 | Consistent Strategy | Don't switch algorithms based on load | Same evaluation order always used | ✅ |
@@ -65,7 +65,7 @@ class LayerPriority(Enum):
 
 **Compliance**: The layer priority is encoded as an enum with fixed integer values.
 Resolution always evaluates layers in order 1→6. This is analogous to
-ThinkingMachines' requirement for "fixed reduction order."
+[He2025] requirement for "fixed reduction order."
 
 ### 2. Signal Detection (Fixed Evaluation Order)
 
@@ -81,7 +81,7 @@ SIGNAL_PRIORITY = [
 ```
 
 **Compliance**: Signal categories are evaluated in fixed order. Same signals
-will always produce same detection results. Analogous to ThinkingMachines'
+will always produce same detection results. Analogous to [He2025]
 fixed kernel execution order.
 
 ### 3. Expert Routing (First-Match-Wins)
@@ -125,7 +125,7 @@ class CognitiveState:
 
 **Compliance**: State is snapshotted before processing (all components see
 same state), then batch-updated after (atomic application). This matches
-ThinkingMachines' pattern of consistent state during kernel execution.
+[He2025] pattern of consistent state during kernel execution.
 
 ### 5. Convergence Tracking (RC^+xi)
 
@@ -176,7 +176,7 @@ JSON serialization. Same state → same checksum always.
 ```
 
 **Key Guarantee**: Parameters are LOCKED at phase 3, before any generation.
-This is equivalent to ThinkingMachines' requirement that kernel parameters
+This is equivalent to [He2025] requirement that kernel parameters
 be fixed before execution begins.
 
 ## Anchor Format (Reproducibility)
@@ -221,7 +221,7 @@ def test_deterministic_resolution():
 
 ## Conclusion
 
-Otto's cognitive routing system is **ThinkingMachines Determinism**:
+Otto's cognitive routing system applies determinism principles inspired by [He2025]:
 
 1. ✅ **Batch-invariant**: Same inputs → same outputs regardless of load
 2. ✅ **Fixed reduction order**: LIVRPS priority is fixed
@@ -230,6 +230,8 @@ Otto's cognitive routing system is **ThinkingMachines Determinism**:
 5. ✅ **Seeded RNG**: All random decisions are reproducible
 6. ✅ **Verifiable**: Checksums enable determinism verification
 
-The key insight from ThinkingMachines—that nondeterminism comes from
-variable processing order, not floating point—maps directly to our
-approach: fixed LIVRPS order ensures consistent cognitive state resolution.
+The key insight from [He2025] is that batch-size variance causes different
+GPU kernel strategies, which changes floating-point accumulation order.
+Because FP addition is non-associative, different accumulation orders yield
+different results. Otto applies this principle at the application layer:
+fixed LIVRPS order ensures consistent cognitive state resolution.

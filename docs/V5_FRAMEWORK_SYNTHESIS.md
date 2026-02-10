@@ -244,8 +244,8 @@ Convergence:
 │                          │                                      │
 │                          ▼                                      │
 │               ┌─────────────────────┐                          │
-│               │ ThinkingMachines    │                          │
-│               │ (Determinism)       │                          │
+│               │ Determinism         │                          │
+│               │ [He2025]            │                          │
 │               └─────────────────────┘                          │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -278,7 +278,7 @@ Convergence:
 | 5-Phase Routing | ✅ | ✅ NEXUS | ✅ |
 | Mycelium Foundation | ✅ | ✅ Cortex/Mycelium | ✅ 3 tests |
 | DISPLAY_NAMES | ✅ | Human-friendly layer | - |
-| safety_intervention | ✅ | ThinkingMachines audit | - |
+| safety_intervention | ✅ | Determinism audit [He2025] | - |
 
 ---
 
@@ -292,7 +292,7 @@ Convergence:
 - **RC^+xi Research**: Epistemic tension formula, attractor basin theory
 - **Resonance Framework**: Self-reflection triggers, ancestral wisdom synthesis
 - **PRISM Framework**: 7-perspective signal analysis
-- **ThinkingMachines**: Batch-invariance, determinism guarantees
+- **[He2025]**: Batch-invariance, determinism guarantees
 
 ---
 

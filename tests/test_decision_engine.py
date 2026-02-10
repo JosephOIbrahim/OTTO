@@ -7,7 +7,7 @@ Verification tests for the work/delegate/protect refactoring per the plan:
 3. Safety Gating Test - burnout=RED forces recovery
 4. PROTECT Mode Test - peak flow queues results
 
-ThinkingMachines Determinism Testing
+Determinism Testing ([He2025])
 """
 
 import pytest
@@ -129,7 +129,7 @@ class TestStateSnapshot:
 
 
 class TestDecisionEngineDeterminism:
-    """Tests for ThinkingMachines determinism requirements."""
+    """Tests for determinism requirements ([He2025])."""
 
     @pytest.fixture
     def engine(self):

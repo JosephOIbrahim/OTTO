@@ -10,7 +10,7 @@ Features:
 - Progress bars with ETA calculation
 - Cognitive state visualization
 - Interactive controls
-- ThinkingMachines Determinism status display
+- Determinism status display
 
 Usage:
   python -m otto.cli.tui_enhanced              # Launch enhanced TUI
@@ -55,7 +55,7 @@ except ImportError:
 
 
 # =============================================================================
-# ThinkingMachines Compliance: Fixed Display Constants
+# Determinism Compliance: Fixed Display Constants
 # =============================================================================
 
 class DisplayPhase(Enum):

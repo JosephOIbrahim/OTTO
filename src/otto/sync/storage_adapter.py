@@ -35,7 +35,7 @@ from typing import AsyncIterator, Optional, Union
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines compliant)
+# Constants (FIXED)
 # =============================================================================
 
 CHUNK_SIZE = 5 * 1024 * 1024  # 5 MiB
@@ -138,7 +138,7 @@ class StorageAdapter(ABC):
 
     All operations are async for non-blocking I/O.
 
-    ThinkingMachines Compliance:
+    Determinism:
     - FIXED chunk size for uploads
     - FIXED retry policy
     - DETERMINISTIC file naming via content hash

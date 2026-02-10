@@ -4,7 +4,7 @@ Trail Context Injection Hook
 
 Injects trail context before file operations, providing Claude with
 information about:
-- Quality status (he2025_compliant, violations)
+- Quality status (determinism_check_passed, violations)
 - Related files (dependencies, used_by)
 - Recent work (currently editing, mid_refactor)
 - Historical decisions
@@ -41,9 +41,9 @@ def format_quality_trails(trails: List[Trail]) -> List[str]:
     lines = []
 
     # Check for compliance status
-    compliant = any(t.signal == "he2025_compliant" for t in trails)
+    compliant = any(t.signal in ("determinism_check_passed", "he2025_compliant") for t in trails)
     violations = [t for t in trails if "violation" in t.signal]
-    partial = any(t.signal == "he2025_partial" for t in trails)
+    partial = any(t.signal in ("determinism_partial", "he2025_partial") for t in trails)
 
     if compliant:
         lines.append("- Determinism")

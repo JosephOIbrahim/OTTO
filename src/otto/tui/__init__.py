@@ -10,9 +10,6 @@ Determinism:
 - Deterministic rendering pipeline
 - Fixed widget layout order
 
-Reference: He, Horace and Thinking Machines Lab,
-"Defeating Nondeterminism in LLM Inference", Sep 2025.
-
 Usage:
     from otto.tui import run_dashboard
     asyncio.run(run_dashboard())
@@ -32,7 +29,7 @@ Components:
 
 from .constants import (
     TUI_VERSION,
-    HE2025_COMPLIANT,
+    HE2025_PRINCIPLES_APPLIED,
     BURNOUT_LEVELS,
     BURNOUT_COLORS,
     ENERGY_LEVELS,
@@ -84,7 +81,7 @@ from .websocket_client import (
 __all__ = [
     # Version
     "TUI_VERSION",
-    "HE2025_COMPLIANT",
+    "HE2025_PRINCIPLES_APPLIED",
     # Constants
     "BURNOUT_LEVELS",
     "BURNOUT_COLORS",
