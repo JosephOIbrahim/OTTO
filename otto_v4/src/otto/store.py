@@ -293,6 +293,32 @@ class CommitmentStore:
             conn.close()
         return {status: cnt for status, cnt in rows}
 
+    def get_all(self) -> list[Commitment]:
+        """Return all commitments regardless of status, newest first."""
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT * FROM commitments ORDER BY created_at DESC"
+            )
+            rows = cur.fetchall()
+        finally:
+            conn.close()
+        return [self._row_to_commitment(r) for r in rows]
+
+    def avg_follow_ups_done(self) -> float | None:
+        """Return average follow_up_count across done commitments, or None."""
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT AVG(follow_up_count) FROM commitments WHERE status = 'done'"
+            )
+            row = cur.fetchone()
+        finally:
+            conn.close()
+        if row is None or row[0] is None:
+            return None
+        return row[0]
+
     def nuke(self) -> None:
         """Drop and recreate the commitments table."""
         conn = self._connect()

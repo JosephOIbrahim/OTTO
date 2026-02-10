@@ -23,7 +23,7 @@ import sys
 from datetime import datetime, timezone, timedelta
 
 from fastapi import FastAPI, Request, Response, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 from .detector import detect_commitment
@@ -50,8 +50,7 @@ class IncomingMessage(BaseModel):
     type: str = "text"
     text: Optional[TextContent] = None
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
     @property
     def message_time(self) -> datetime:

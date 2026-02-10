@@ -68,7 +68,7 @@ def list_commitments(show_all: bool, due: bool) -> None:
         commitments = store.get_due()
         label = "Overdue Commitments"
     elif show_all:
-        commitments = _get_all_commitments(store)
+        commitments = store.get_all()
         label = "All Commitments"
     else:
         commitments = store.get_active()
@@ -108,18 +108,6 @@ def list_commitments(show_all: bool, due: bool) -> None:
         click.echo(click.style(line3, dim=True))
         click.echo()
 
-
-def _get_all_commitments(store: CommitmentStore) -> list[Commitment]:
-    """Get all commitments regardless of status."""
-    conn = store._connect()
-    try:
-        cur = conn.execute(
-            "SELECT * FROM commitments ORDER BY created_at DESC"
-        )
-        rows = cur.fetchall()
-    finally:
-        conn.close()
-    return [store._row_to_commitment(r) for r in rows]
 
 
 @main.command()
@@ -240,7 +228,8 @@ def stats() -> None:
     done_count = counts.get("done", 0)
     parked = counts.get("parked", 0)
 
-    avg_follow = _compute_avg_follow_ups(store, done_count)
+    avg_raw = store.avg_follow_ups_done()
+    avg_follow = f"{avg_raw:.1f}" if avg_raw is not None else "n/a"
 
     click.echo()
     click.echo(click.style("OTTO Stats", bold=True))
@@ -250,22 +239,6 @@ def stats() -> None:
     click.echo(f"  Avg follow-ups before done: {avg_follow}")
     click.echo()
 
-
-def _compute_avg_follow_ups(store: CommitmentStore, done_count: int) -> str:
-    """Compute average follow-up count across done commitments."""
-    if done_count == 0:
-        return "n/a"
-    conn = store._connect()
-    try:
-        cur = conn.execute(
-            "SELECT AVG(follow_up_count) FROM commitments WHERE status = 'done'"
-        )
-        row = cur.fetchone()
-    finally:
-        conn.close()
-    if row is None or row[0] is None:
-        return "n/a"
-    return f"{row[0]:.1f}"
 
 
 @main.command()

@@ -75,10 +75,20 @@ async def detect_commitment(message: str, chat_name: str) -> Commitment | None:
     if data.get("confidence", 0) < _CONFIDENCE_THRESHOLD:
         return None
 
+    deadline = None
+    deadline_raw = data.get("deadline")
+    if deadline_raw:
+        try:
+            from datetime import datetime
+            deadline = datetime.fromisoformat(deadline_raw)
+        except (ValueError, TypeError):
+            pass
+
     return Commitment(
         raw_message=message,
         commitment_text=data["commitment_text"],
         who_to=data.get("who_to", "unknown"),
         source_chat=chat_name,
+        deadline=deadline,
         deadline_source=data.get("deadline_source", "none"),
     )

@@ -25,12 +25,6 @@ def _make_commitment(**overrides) -> Commitment:
     return Commitment(**defaults)
 
 
-@pytest.fixture()
-def store(tmp_path) -> CommitmentStore:
-    """Provide a CommitmentStore backed by a temp directory."""
-    db_path = str(tmp_path / "test_commitments.db")
-    return CommitmentStore(db_path=db_path)
-
 
 # ------------------------------------------------------------------
 # add + get round-trip
@@ -320,6 +314,64 @@ class TestCount:
 
     def test_empty_store(self, store: CommitmentStore) -> None:
         assert store.count() == {}
+
+
+# ------------------------------------------------------------------
+# get_all
+# ------------------------------------------------------------------
+
+class TestGetAll:
+
+    def test_returns_all_statuses(self, store: CommitmentStore) -> None:
+        store.add(_make_commitment(commitment_text="active"))
+        store.add(_make_commitment(commitment_text="done", status="done"))
+        store.add(_make_commitment(commitment_text="parked", status="parked"))
+
+        results = store.get_all()
+        assert len(results) == 3
+        texts = {r.commitment_text for r in results}
+        assert texts == {"active", "done", "parked"}
+
+    def test_ordered_newest_first(self, store: CommitmentStore) -> None:
+        from datetime import timedelta
+        now = datetime.now(timezone.utc)
+        store.add(_make_commitment(
+            commitment_text="old",
+            created_at=now - timedelta(days=5),
+            updated_at=now - timedelta(days=5),
+        ))
+        store.add(_make_commitment(
+            commitment_text="new",
+            created_at=now,
+            updated_at=now,
+        ))
+
+        results = store.get_all()
+        assert results[0].commitment_text == "new"
+        assert results[1].commitment_text == "old"
+
+
+# ------------------------------------------------------------------
+# avg_follow_ups_done
+# ------------------------------------------------------------------
+
+class TestAvgFollowUpsDone:
+
+    def test_returns_average(self, store: CommitmentStore) -> None:
+        c1 = _make_commitment(follow_up_count=2, status="done")
+        c2 = _make_commitment(follow_up_count=4, status="done")
+        store.add(c1)
+        store.add(c2)
+
+        avg = store.avg_follow_ups_done()
+        assert avg == 3.0
+
+    def test_no_done_returns_none(self, store: CommitmentStore) -> None:
+        store.add(_make_commitment())  # active, not done
+        assert store.avg_follow_ups_done() is None
+
+    def test_empty_store_returns_none(self, store: CommitmentStore) -> None:
+        assert store.avg_follow_ups_done() is None
 
 
 # ------------------------------------------------------------------

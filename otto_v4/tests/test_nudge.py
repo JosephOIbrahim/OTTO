@@ -15,7 +15,6 @@ from otto.nudge import (
     check_and_nudge,
     format_nudge,
 )
-from otto.store import CommitmentStore
 
 
 # ---------------------------------------------------------------------------
@@ -25,11 +24,6 @@ from otto.store import CommitmentStore
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
-
-def _make_store(tmp_path) -> CommitmentStore:
-    """Create a fresh store backed by a temp database."""
-    db = str(tmp_path / "test.db")
-    return CommitmentStore(db_path=db)
 
 
 def _overdue_commitment(**overrides) -> Commitment:
@@ -92,8 +86,8 @@ def _future_commitment(**overrides) -> Commitment:
 class TestOverdueNudge:
     """Overdue commitments produce nudge messages."""
 
-    def test_overdue_produces_nudge(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_overdue_produces_nudge(self, store):
+
         store.add(_overdue_commitment())
 
         nudges = check_and_nudge(store, now=_utcnow())
@@ -102,8 +96,8 @@ class TestOverdueNudge:
         assert isinstance(nudges[0], str)
         assert len(nudges[0]) > 0
 
-    def test_overdue_nudge_contains_commitment_text(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_overdue_nudge_contains_commitment_text(self, store):
+
         c = _overdue_commitment(commitment_text="email the slides")
         store.add(c)
 
@@ -115,8 +109,8 @@ class TestOverdueNudge:
 class TestStaleNudge:
     """Stale commitments (no deadline, 3+ days old) produce nudge messages."""
 
-    def test_stale_produces_nudge(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_stale_produces_nudge(self, store):
+
         store.add(_stale_commitment())
 
         nudges = check_and_nudge(store, now=_utcnow())
@@ -125,8 +119,8 @@ class TestStaleNudge:
         assert isinstance(nudges[0], str)
         assert len(nudges[0]) > 0
 
-    def test_stale_nudge_contains_commitment_text(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_stale_nudge_contains_commitment_text(self, store):
+
         c = _stale_commitment(commitment_text="clean up the repo")
         store.add(c)
 
@@ -138,17 +132,17 @@ class TestStaleNudge:
 class TestNonOverdueSkipped:
     """Commitments that are not yet due should NOT produce nudges."""
 
-    def test_future_deadline_no_nudge(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_future_deadline_no_nudge(self, store):
+
         store.add(_future_commitment())
 
         nudges = check_and_nudge(store, now=_utcnow())
 
         assert nudges == []
 
-    def test_recent_stale_no_nudge(self, tmp_path):
+    def test_recent_stale_no_nudge(self, store):
         """A commitment without deadline, created only 1 day ago, is not stale."""
-        store = _make_store(tmp_path)
+
         c = _stale_commitment(
             created_at=_utcnow() - timedelta(days=1),
             updated_at=_utcnow() - timedelta(days=1),
@@ -163,8 +157,8 @@ class TestNonOverdueSkipped:
 class TestMaxNudges:
     """At most MAX_NUDGES (5) nudges per check."""
 
-    def test_max_five_nudges(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_max_five_nudges(self, store):
+
         for i in range(8):
             store.add(_overdue_commitment(
                 commitment_text=f"task {i}",
@@ -181,8 +175,8 @@ class TestMaxNudges:
 class TestCooldown:
     """Commitments followed up < 24 hours ago are skipped."""
 
-    def test_recently_followed_up_skipped(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_recently_followed_up_skipped(self, store):
+
         # updated_at is only 1 hour ago -- within cooldown
         c = _overdue_commitment(updated_at=_utcnow() - timedelta(hours=1))
         store.add(c)
@@ -191,8 +185,8 @@ class TestCooldown:
 
         assert nudges == []
 
-    def test_exactly_24h_ago_is_nudged(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_exactly_24h_ago_is_nudged(self, store):
+
         # updated_at is exactly 24 hours ago -- on the boundary (<=)
         c = _overdue_commitment(updated_at=_utcnow() - timedelta(hours=24))
         store.add(c)
@@ -201,8 +195,8 @@ class TestCooldown:
 
         assert len(nudges) == 1
 
-    def test_past_cooldown_is_nudged(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_past_cooldown_is_nudged(self, store):
+
         c = _overdue_commitment(updated_at=_utcnow() - timedelta(hours=48))
         store.add(c)
 
@@ -214,8 +208,8 @@ class TestCooldown:
 class TestRepeatedFollowUp:
     """Commitments with follow_up_count > 2 use the escalation template."""
 
-    def test_escalation_template_used(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_escalation_template_used(self, store):
+
         c = _overdue_commitment(follow_up_count=3)
         store.add(c)
 
@@ -224,8 +218,8 @@ class TestRepeatedFollowUp:
         assert len(nudges) == 1
         assert "third time" in nudges[0]
 
-    def test_escalation_template_mentions_park(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_escalation_template_mentions_park(self, store):
+
         c = _overdue_commitment(follow_up_count=4)
         store.add(c)
 
@@ -301,8 +295,8 @@ class TestFormatNudge:
 class TestIncrementFollowUp:
     """check_and_nudge increments follow_up_count via the store."""
 
-    def test_follow_up_count_incremented(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_follow_up_count_incremented(self, store):
+
         c = _overdue_commitment()
         store.add(c)
 
@@ -312,8 +306,8 @@ class TestIncrementFollowUp:
         assert refreshed is not None
         assert refreshed.follow_up_count == 1
 
-    def test_multiple_nudges_increment_each(self, tmp_path):
-        store = _make_store(tmp_path)
+    def test_multiple_nudges_increment_each(self, store):
+
         c1 = _overdue_commitment(commitment_text="task A")
         c2 = _stale_commitment(commitment_text="task B")
         store.add(c1)

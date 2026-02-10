@@ -93,6 +93,50 @@ async def test_low_confidence_returns_none():
 
 
 @pytest.mark.asyncio
+async def test_deadline_parsed():
+    payload = json.dumps({
+        "found": True,
+        "commitment_text": "send the report",
+        "who_to": "Alice",
+        "deadline": "2026-03-15T00:00:00",
+        "deadline_source": "explicit",
+        "confidence": 0.9,
+    })
+    with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
+        mock_cls.return_value.messages.create = AsyncMock(
+            return_value=_mock_response(payload)
+        )
+        result = await detect_commitment("I'll send the report by March 15", "Work")
+
+    assert result is not None
+    assert result.deadline is not None
+    assert result.deadline.year == 2026
+    assert result.deadline.month == 3
+    assert result.deadline.day == 15
+    assert result.deadline_source == "explicit"
+
+
+@pytest.mark.asyncio
+async def test_null_deadline_stays_none():
+    payload = json.dumps({
+        "found": True,
+        "commitment_text": "handle it",
+        "who_to": "Bob",
+        "deadline": None,
+        "deadline_source": "none",
+        "confidence": 0.85,
+    })
+    with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
+        mock_cls.return_value.messages.create = AsyncMock(
+            return_value=_mock_response(payload)
+        )
+        result = await detect_commitment("I'll handle it", "Chat")
+
+    assert result is not None
+    assert result.deadline is None
+
+
+@pytest.mark.asyncio
 async def test_invalid_json_returns_none():
     with patch("otto.detector.anthropic.AsyncAnthropic") as mock_cls:
         mock_cls.return_value.messages.create = AsyncMock(
