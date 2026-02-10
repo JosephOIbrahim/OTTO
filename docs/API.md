@@ -494,7 +494,7 @@ This can be imported into tools like:
 
 ## Determinism Compliance
 
-The API is designed per [He2025] "Defeating Nondeterminism in LLM Inference" principles.
+The API is designed "Defeating Nondeterminism in LLM Inference" principles.
 
 ### Guarantees
 
@@ -617,4 +617,4 @@ curl -X PATCH \
 - OpenAPI 3.0 specification
 - CLI key management
 - Audit logging
-- [He2025] determinism compliance
+- Determinism

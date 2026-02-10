@@ -9,7 +9,7 @@ through the 5-Phase NEXUS Pipeline, with integrated Pheromone Trail support.
 Usage:
     python -m orchestra.hooks < input.json
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Same message -> same signals -> same routing -> same params
 - Deterministic execution anchor
 - FIXED evaluation order (5 phases)
@@ -175,7 +175,7 @@ def process_message(user_prompt, context=None):
     3. Build execution anchor with trail context
     4. Queue trail deposits (applied in FLUSH phase)
 
-    [He2025] Compliance:
+    Determinism:
     - Trail context is deterministically ordered (path ASC, signal ASC)
     - Hook execution order is fixed by priority
     - Trail deposits are queued, not applied during processing

@@ -4,7 +4,7 @@ Protection Calibration Learning
 
 Learns from user overrides to adjust protection firmness over time.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED adjustment amounts (deterministic)
 - BOUNDED firmness range (0.0 to 1.0)
 - DETERMINISTIC learning rules

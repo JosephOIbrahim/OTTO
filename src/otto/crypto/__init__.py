@@ -4,7 +4,7 @@ OTTO OS Cryptography Module
 
 End-to-end encryption for privacy-first data protection.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed algorithm parameters (no runtime variation)
 - Deterministic key derivation (same password → same key)
 - Bounded operations (memory limits, iteration counts)

@@ -10,7 +10,7 @@ These tests verify:
 - Cross-instance persistence
 - Decay mechanisms
 
-[He2025] Compliance:
+Determinism:
 - Tests use real instances (no mocking)
 - Verify deterministic ordering
 - Verify persistence
@@ -150,7 +150,7 @@ class TestMemoryInterface:
 
 
 class TestMemoryDeterminism:
-    """Test [He2025] determinism requirements."""
+    """Test determinism requirements."""
 
     def test_episode_query_ordering(self, memory_with_history: OTTOMemory):
         """Episode queries should return deterministic ordering."""

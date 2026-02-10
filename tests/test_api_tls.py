@@ -3,7 +3,7 @@ Tests for TLS Configuration
 
 Tests TLS/HTTPS configuration for secure API communication.
 
-[He2025] Compliance: Verifies FIXED cipher suites, FIXED TLS version.
+Determinism: Verifies FIXED cipher suites, FIXED TLS version.
 """
 
 import pytest
@@ -104,11 +104,11 @@ class TestTLSConfigBasic:
 
 
 # =============================================================================
-# Test: [He2025] Fixed Cipher Suites
+# Test: Fixed Cipher Suites
 # =============================================================================
 
 class TestCipherSuites:
-    """Test cipher suite configuration for [He2025] compliance."""
+    """Test cipher suite configuration for determinism."""
 
     def test_tls13_ciphers_are_fixed(self):
         """TLS 1.3 cipher suites are fixed (no runtime variation)."""
@@ -447,11 +447,11 @@ class TestFactoryFunctions:
 
 
 # =============================================================================
-# Test: [He2025] Determinism
+# Test: Determinism
 # =============================================================================
 
 class TestDeterminism:
-    """Test [He2025] determinism compliance."""
+    """Test Determinism."""
 
     def test_cipher_suites_deterministic(self):
         """Cipher suites are identical across instantiations."""

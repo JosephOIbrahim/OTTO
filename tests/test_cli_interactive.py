@@ -192,8 +192,9 @@ class TestInteractiveSession:
         assert response is not None
         assert len(response) > 0
 
-    def test_process_request_task_types(self, otto_dir_with_profile):
-        """Test task type responses."""
+    @patch('otto.cli.interactive.create_response_generator', side_effect=ImportError("test"))
+    def test_process_request_task_types(self, mock_gen, otto_dir_with_profile):
+        """Test task type fallback responses (no LLM)."""
         from otto.prism_detector import SignalVector, SignalCategory
 
         session = InteractiveSession(otto_dir_with_profile)

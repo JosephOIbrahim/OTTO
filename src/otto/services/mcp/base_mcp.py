@@ -6,7 +6,7 @@ Base class for all OTTO MCP servers.
 Provides standardized tool registration, approval integration,
 and audit logging.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic tool registration order
 - Fixed response schemas
 - Sorted iteration
@@ -27,7 +27,7 @@ from typing import Any, Callable, Dict, Final, List, Optional, TypeVar, Awaitabl
 logger = logging.getLogger(__name__)
 
 
-# === Constants (Fixed per [He2025]) ===
+# === Constants (Fixed) ===
 
 MCP_VERSION: Final[str] = "1.0.0"
 TOOL_HASH_ALGORITHM: Final[str] = "sha256"
@@ -242,7 +242,7 @@ class MCPServer(ABC):
         """
         Register a tool.
 
-        Per [He2025]: Tools are stored in deterministic order.
+        Tools are stored in deterministic order.
         """
         if tool.name in self._tools:
             raise MCPServerError(f"Tool already registered: {tool.name}")
@@ -266,7 +266,7 @@ class MCPServer(ABC):
         """
         List all tools.
 
-        Per [He2025]: Returns in deterministic order (sorted by name).
+        Returns in deterministic order (sorted by name).
         """
         return [self._tools[k] for k in sorted(self._tools.keys())]
 
@@ -505,7 +505,7 @@ class MCPServer(ABC):
         """
         Log tool invocation to audit log and memory.
 
-        Per [He2025]: Deterministic logging - no timing randomness.
+        Deterministic logging - no timing randomness.
         """
         try:
             from ..audit import AuditAction
@@ -532,7 +532,7 @@ class MCPServer(ABC):
             # Create episode for episodic memory
             episode = Episode(
                 type=f"{self.server_name}.{tool.name}",
-                data={"arguments_keys": sorted(arguments.keys())},  # Sorted per [He2025]
+                data={"arguments_keys": sorted(arguments.keys())},  # Sorted
                 outcome=Outcome.SUCCESS if success else Outcome.FAILURE,
                 actor=self.actor_id,
                 service=self.server_name,

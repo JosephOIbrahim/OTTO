@@ -11,7 +11,7 @@ import { EXPERT_COLORS } from './CascadeNode'
  * - All locked parameters with lock icons
  * - Deterministic checksum for verification
  *
- * ThinkingMachines [He2025]: Parameters LOCKED before generation
+ * Parameters LOCKED before generation
  * Same inputs → Same locked params → Same checksum
  */
 

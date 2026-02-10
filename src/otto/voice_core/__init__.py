@@ -9,7 +9,7 @@ Provides voice processing capabilities for OTTO OS:
 - Async processing queue with persistence
 - Metrics collection
 
-[He2025] Compliance:
+Determinism:
 - Fixed seeds for all randomness
 - Fixed 5-phase pipeline in prepare_for_speech
 - Deterministic text normalization

@@ -9,7 +9,7 @@ Components:
 - HandoffManager: Session end detection, cross-session continuity
 - StateResult: Operation result with metadata
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic checksums (SHA256, sorted keys)
 - Consistent default handling
 - Reproducible backup timestamps (microsecond precision)

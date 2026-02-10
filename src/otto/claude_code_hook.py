@@ -10,7 +10,7 @@ This module provides:
 2. Maps orchestrator output to hookify systemMessage format
 3. Persists state to ~/.orchestra/state/ for dashboard sync
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Same message → same signals → same routing → same params
 - Deterministic execution anchor in every response
 - FIXED evaluation order (5 phases)

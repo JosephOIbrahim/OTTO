@@ -19,7 +19,7 @@ Real-time security health monitoring and scoring:
    - Prioritized remediation steps
    - Auto-generated security advice
 
-[He2025] Compliance:
+Determinism:
 - FIXED scoring weights
 - DETERMINISTIC assessment
 - Pre-computed thresholds
@@ -51,7 +51,7 @@ class PostureStatus(Enum):
     """
     Overall security posture status.
 
-    [He2025] FIXED: Status thresholds are immutable.
+    FIXED: Status thresholds are immutable.
     """
     CRITICAL = "critical"    # Score 0-39: Immediate action required
     WARNING = "warning"      # Score 40-59: Issues need attention
@@ -63,7 +63,7 @@ class PostureStatus(Enum):
         """
         Determine status from score.
 
-        [He2025] FIXED thresholds.
+        FIXED thresholds.
         """
         if score < 40:
             return cls.CRITICAL
@@ -100,7 +100,7 @@ class ComponentAssessment:
     """
     Assessment of a single security component.
 
-    [He2025] Compliance: Deterministic structure.
+    Determinism: Deterministic structure.
     """
     name: str
     health: ComponentHealth
@@ -128,7 +128,7 @@ class SecurityRecommendation:
     """
     A security improvement recommendation.
 
-    [He2025] Compliance: Deterministic structure.
+    Determinism: Deterministic structure.
     """
     id: str
     priority: RecommendationPriority
@@ -158,7 +158,7 @@ class PostureReport:
     """
     Complete security posture report.
 
-    [He2025] Compliance: Deterministic structure.
+    Determinism: Deterministic structure.
     """
     timestamp: float
     overall_score: float
@@ -223,7 +223,7 @@ class CryptographyAssessor(ComponentAssessor):
     - Certificate validity
     """
 
-    # [He2025] FIXED thresholds
+    # FIXED thresholds
     KEY_AGE_WARNING_DAYS = 90
     KEY_AGE_CRITICAL_DAYS = 180
     CERT_EXPIRY_WARNING_DAYS = 30
@@ -345,7 +345,7 @@ class AuthenticationAssessor(ComponentAssessor):
     - Replay protection
     """
 
-    # [He2025] FIXED thresholds
+    # FIXED thresholds
     FAILURE_RATE_WARNING = 0.05  # 5%
     FAILURE_RATE_CRITICAL = 0.10  # 10%
     ROTATION_COMPLIANCE_TARGET = 0.90  # 90% keys rotated on schedule
@@ -683,10 +683,10 @@ class RecommendationGenerator:
     """
     Generate security recommendations based on assessments.
 
-    [He2025] Compliance: Deterministic recommendation generation.
+    Determinism: Deterministic recommendation generation.
     """
 
-    # [He2025] FIXED recommendation templates
+    # FIXED recommendation templates
     RECOMMENDATIONS = {
         "enable_pq": SecurityRecommendation(
             id="REC-001",
@@ -874,7 +874,7 @@ class SecurityPostureEngine:
     - Trend tracking
     - Automated recommendations
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED assessor weights
     - DETERMINISTIC scoring algorithm
     - Pre-computed thresholds

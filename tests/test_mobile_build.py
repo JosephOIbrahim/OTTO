@@ -305,7 +305,7 @@ class TestBuildManifest:
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_get_capabilities_deterministic(self, clean_env):
         """get_capabilities returns same result each time."""

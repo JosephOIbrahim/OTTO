@@ -132,7 +132,7 @@ nav:
     - Implementation Index: API_IMPLEMENTATION_INDEX.md
   - Security:
     - Checklist: SECURITY_CHECKLIST.md
-    - [He2025] Compliance: THINKINGMACHINES_COMPLIANCE.md
+    - Determinism: THINKINGMACHINES_COMPLIANCE.md
     - Audit Reports: HE2025_DEEP_CONSISTENCY_AUDIT.md
   - Integration:
     - Integration Guide: INTEGRATION_GUIDE.md

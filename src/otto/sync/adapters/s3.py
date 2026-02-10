@@ -4,7 +4,7 @@ S3 Storage Adapter
 
 Storage adapter for AWS S3 and S3-compatible services (MinIO, etc.).
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED chunk size (5 MiB)
 - FIXED retry limits (3 attempts)
 - DETERMINISTIC file naming
@@ -25,7 +25,7 @@ Usage:
     await adapter.upload("path/file.enc", data)
 
 References:
-    [He2025] He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
+    He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
              in LLM Inference", Thinking Machines Lab: Connectionism, Sep 2025.
              https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 """

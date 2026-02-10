@@ -10,7 +10,7 @@ This module provides:
 - Environment configuration
 - Excluded module lists
 
-[He2025] Compliance:
+Determinism:
 - Fixed feature flag order
 - Deterministic capability detection
 - No runtime variation in configuration
@@ -46,7 +46,7 @@ def is_mobile_build() -> bool:
     2. OTTO_BUILD_TYPE environment variable
     3. Platform detection heuristics
 
-    [He2025]: Fixed detection order, explicit values take precedence.
+    Fixed detection order, explicit values take precedence.
     """
     # Explicit environment variable (highest priority)
     mobile_env = os.environ.get("OTTO_MOBILE_BUILD", "").lower()
@@ -105,7 +105,7 @@ def get_capabilities() -> PlatformCapabilities:
     """
     Detect platform capabilities.
 
-    [He2025]: Fixed detection order, deterministic results.
+    Fixed detection order, deterministic results.
     """
     if is_mobile_build():
         return PlatformCapabilities(
@@ -212,7 +212,7 @@ def configure_mobile_environment() -> None:
 
     Sets appropriate defaults for mobile operation.
 
-    [He2025]: Fixed configuration order.
+    Fixed configuration order.
     """
     if not is_mobile_build():
         return
@@ -269,7 +269,7 @@ def get_build_manifest() -> BuildManifest:
     """
     Get the build manifest for current build type.
 
-    [He2025]: Deterministic manifest generation.
+    Deterministic manifest generation.
     """
     if is_mobile_build():
         return BuildManifest(

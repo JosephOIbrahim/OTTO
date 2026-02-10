@@ -4,7 +4,7 @@ OTTO OS Discord Integration
 
 Discord bot adapter for OTTO cognitive system.
 
-[He2025] Compliance:
+Determinism:
 - Deterministic session state per user_id
 - Fixed evaluation order in message processing
 - Sorted key iteration for session management

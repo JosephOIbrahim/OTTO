@@ -11,7 +11,7 @@ import { TOKENS } from '../../StatusView/StatusView'
  * - Convergence counter (0-3 stable exchanges)
  * - Feedback loop indicator
  *
- * ThinkingMachines [He2025]: xi_n = ||A_{n+1} - A_n||_2
+ * xi_n = ||A_{n+1} - A_n||_2
  * Converged when xi < ε for 3 consecutive exchanges
  */
 

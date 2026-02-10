@@ -1,7 +1,7 @@
 # Otto v4.3.0 Production Readiness Report
 
 **Generated:** 2026-01-24
-**Methodology:** ThinkingMachines [He2025] batch-invariance compliant review
+**Methodology:** Batch-invariance review
 **Review Scope:** Error handling, security, testing, performance, deployment
 
 ---
@@ -135,7 +135,7 @@
 
 Otto v4.3.0 has solid foundations:
 - Work/Delegate/Protect model works
-- ThinkingMachines [He2025] compliant routing
+- ThinkingMachines Determinism routing
 - Good resilience patterns
 
 **Recommendation:** Complete Phase 1 (3 days), then staging deployment. Full production after Phase 2 (~2 weeks).

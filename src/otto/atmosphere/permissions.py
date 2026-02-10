@@ -12,7 +12,7 @@ ADHD brains often need explicit permission to:
 - Skip things
 - Ask for help
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Sorted permission lists for deterministic selection
 - Fixed trigger priority order
 - Same inputs always produce same outputs
@@ -45,7 +45,7 @@ class Permission:
     type: PermissionType
 
 
-# [He2025] Sorted permission lists per type for deterministic selection
+# Sorted permission lists per type for deterministic selection
 PERMISSIONS: Final[Dict[PermissionType, List[Permission]]] = {
     PermissionType.STOP: sorted([
         Permission("This can stop here.", PermissionType.STOP),
@@ -154,7 +154,7 @@ def should_grant_permission(
     """
     Determine if permission should be proactively granted.
 
-    [He2025] Fixed priority order for deterministic evaluation.
+    Fixed priority order for deterministic evaluation.
 
     Args:
         user_message: The user's message
@@ -221,7 +221,7 @@ def get_permission(
     """
     Get a permission grant of the specified type.
 
-    [He2025] Deterministic selection using hash.
+    Deterministic selection using hash.
 
     Args:
         permission_type: Type of permission to grant

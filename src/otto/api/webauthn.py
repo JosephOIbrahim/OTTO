@@ -10,7 +10,7 @@ Features:
 - Passkey registration and verification
 - Challenge-response authentication
 
-[He2025] Compliance:
+Determinism:
 - FIXED challenge generation algorithm
 - DETERMINISTIC: credential verification
 """
@@ -228,7 +228,7 @@ class WebAuthnManager:
     """
     Manages WebAuthn credential registration and authentication.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED RP ID and origin
     - DETERMINISTIC challenge generation (via secrets)
     - FIXED credential verification algorithm

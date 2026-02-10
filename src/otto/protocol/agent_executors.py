@@ -19,7 +19,7 @@ Available Executors:
 - reflection_executor: Self-assessment (uses ReflectionAgent)
 - general_executor: General-purpose task handling
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed return structure per executor
 - Deterministic error handling
 - Logging for reproducibility

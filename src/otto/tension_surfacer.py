@@ -15,7 +15,7 @@ Types of Tension:
 3. Safety Tension: User requests conflict with safety floors
 4. Epistemic Tension: High uncertainty in state prediction
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed tension detection order
 - Deterministic threshold evaluation
 - Surfacing decision is reproducible
@@ -196,7 +196,7 @@ class TensionSurfacer:
 
     Tensions are surfaced for user decision rather than guessed.
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism:
     - Fixed detection order (attribute → mode → safety → epistemic)
     - Deterministic thresholds (from constitutional layer)
     - Reproducible surfacing decisions

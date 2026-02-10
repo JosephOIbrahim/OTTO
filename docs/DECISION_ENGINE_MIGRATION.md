@@ -2,7 +2,7 @@
 
 ## Overview
 
-Otto v4.3.0 introduces `DecisionEngine` as the primary entry point for task routing, implementing the work/delegate/protect model with ThinkingMachines [He2025] batch-invariance compliance.
+Otto v4.3.0 introduces `DecisionEngine` as the primary entry point for task routing, implementing the work/delegate/protect model with ThinkingMachines batch-invariance.
 
 **One-Liner:** "Otto helps you finish projects by knowing when to do the work yourself, when to delegate to agents, and when to protect your flow."
 
@@ -183,6 +183,6 @@ assert len(set(r.checksum for r in results)) == 1
 
 ## References
 
-- [He2025] He, Horace and Thinking Machines Lab, "Defeating Nondeterminism in LLM Inference"
+- He, Horace and Thinking Machines Lab, "Defeating Nondeterminism in LLM Inference"
 - Architecture plan: `docs/architecture/decision_engine_plan.md`
 - Tests: `tests/test_decision_engine.py`

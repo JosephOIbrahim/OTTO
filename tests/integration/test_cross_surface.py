@@ -7,7 +7,7 @@ Tests that state flows correctly across surfaces.
 This is THE core value proposition of OTTO's memory backbone:
 Actions in one surface (CLI) are visible in another (Telegram).
 
-[He2025] Compliance:
+Determinism:
 - Tests use real memory instances
 - Verify state consistency across surfaces
 - Verify trail strength is shared
@@ -218,7 +218,7 @@ class TestCrossSurfaceScenarios:
 
 
 class TestCrossSurfaceDeterminism:
-    """Test [He2025] determinism across surfaces."""
+    """Test determinism across surfaces."""
 
     def test_same_actions_same_trust(self, temp_data_dir, mock_surface):
         """Same sequence of actions should produce same trust level."""

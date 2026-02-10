@@ -4,7 +4,7 @@ Tests for Storage Abstraction Layer
 
 Tests the storage provider, config, and manager.
 
-[He2025] Compliance:
+Determinism:
 - Tests verify deterministic behavior
 - Same inputs → same outputs
 """
@@ -405,11 +405,11 @@ class TestGlobalInstance:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestDeterminism:
-    """Tests verifying [He2025] compliant determinism."""
+    """Tests verifying Determinism determinism."""
 
     def test_same_input_same_output(self, local_provider):
         """Test that same operations produce same results."""

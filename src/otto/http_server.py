@@ -79,13 +79,13 @@ class OperationalHTTPServer:
 
     Does not use external dependencies - pure asyncio for minimal footprint.
 
-    Production Safety [He2025]:
+    Production Safety:
     - Request size limits to prevent DoS
     - Timeout on request reads
     - Content-Length validation
     """
 
-    # Production safety limits [He2025]
+    # Production safety limits
     MAX_REQUEST_SIZE = 1_000_000  # 1MB max request body
     MAX_HEADER_SIZE = 8192  # 8KB max headers
     REQUEST_TIMEOUT = 30.0  # 30 seconds timeout
@@ -237,7 +237,7 @@ class OperationalHTTPServer:
                     key, value = line.decode().strip().split(':', 1)
                     headers[key.strip().lower()] = value.strip()
 
-            # Read body if present with size validation [He2025]
+            # Read body if present with size validation
             body = b''
             if 'content-length' in headers:
                 try:
@@ -490,7 +490,7 @@ class OperationalHTTPServer:
         Human-friendly dashboard API - returns cognitive state in
         artist-relatable terms, not engineer jargon.
 
-        ThinkingMachines [He2025] compliant:
+        ThinkingMachines Determinism:
         - Fixed state mappings (pre-computed)
         - Deterministic response structure
         - No runtime variance

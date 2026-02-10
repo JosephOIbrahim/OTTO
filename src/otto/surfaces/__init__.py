@@ -7,7 +7,7 @@ Adapters for different interaction surfaces (CLI, desktop, voice, etc.).
 Each surface implements the same interface but adapts to its specific
 interaction paradigm.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed input normalization
 - Deterministic output formatting
 - Sorted iteration for context presentation

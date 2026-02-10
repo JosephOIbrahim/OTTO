@@ -10,7 +10,7 @@ Provides abstraction over hardware security modules:
 - Key never leaves the HSM
 - Mock implementation for development
 
-[He2025] Compliance:
+Determinism:
 - FIXED key slot assignments
 - FIXED algorithm selection
 - Deterministic interface (same operations → same behavior)
@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - [He2025] Compliant)
+# Constants (FIXED - Determinism)
 # =============================================================================
 
 # Default PKCS#11 library paths by platform

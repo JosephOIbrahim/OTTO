@@ -5,7 +5,7 @@ Deterministic API Wrapper
 The main entry point for deterministic inference. Wraps LLM API calls
 with caching, deterministic configuration, verification, and metrics.
 
-[He2025] Principles Applied:
+Principles Applied:
 - Fixed evaluation order
 - Response caching for guaranteed reproducibility
 - No dynamic algorithm switching
@@ -154,7 +154,7 @@ class DeterministicAPIWrapper:
     3. Multiple backend support with fallback
     4. Metrics and instrumentation
 
-    [He2025] Compliance (Tier 1):
+    Determinism (Tier 1):
     - Same prompt + params → Same cached result (after first call)
     - Fixed evaluation order for all operations
     - No dynamic algorithm switching
@@ -418,7 +418,7 @@ class DeterministicAPIWrapper:
         """
         Perform batch inference with controlled concurrency.
 
-        [He2025] Compliance: Results are returned in request order,
+        Determinism: Results are returned in request order,
         regardless of completion order.
 
         Args:

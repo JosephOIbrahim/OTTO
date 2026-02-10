@@ -4,7 +4,7 @@ OTTO Telegram Bot
 
 Telegram bot runner using python-telegram-bot library.
 
-[He2025] Compliance:
+Determinism:
 - Deterministic message processing order
 - Fixed evaluation sequence in handlers
 - Session state managed by TelegramAdapter
@@ -56,7 +56,7 @@ except ImportError:
     )
 
 
-# [He2025] Fixed constants
+# Fixed constants
 _DEFAULT_SESSION_PATH: Final[str] = "data/telegram_sessions.json"
 _CLEANUP_INTERVAL_SECONDS: Final[int] = 3600  # 1 hour
 
@@ -65,7 +65,7 @@ class OTTOTelegramBot:
     """
     Telegram bot for OTTO cognitive support.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed handler registration order
     - Deterministic message processing
     - Session cleanup on fixed interval
@@ -170,7 +170,7 @@ class OTTOTelegramBot:
         """
         Handle /approve command - show pending approvals and stats.
 
-        [He2025] Fixed output format.
+        Fixed output format.
         """
         from ..services.approval import get_approval_gate
 
@@ -215,7 +215,7 @@ class OTTOTelegramBot:
         """
         Handle /services command - list available MCP services.
 
-        [He2025] Fixed output format.
+        Fixed output format.
         """
         services = self._service_router.list_services()
 
@@ -274,7 +274,7 @@ class OTTOTelegramBot:
         """
         Handle incoming text messages.
 
-        [He2025] Processing order:
+        Processing order:
         1. Convert to normalized message
         2. Process through adapter (-> orchestrator)
         3. Send response
@@ -294,7 +294,7 @@ class OTTOTelegramBot:
         """
         Handle callback queries from inline buttons.
 
-        [He2025] Fixed processing order:
+        Fixed processing order:
         1. Check if approval callback
         2. Delegate to approval handler
         3. Log result
@@ -406,7 +406,7 @@ class OTTOTelegramBot:
             )
         self._approval_handler.set_send_message(send_approval_message)
 
-        # [He2025] Fixed handler registration order
+        # Fixed handler registration order
         # 1. Command handlers (highest priority)
         self._application.add_handler(CommandHandler("start", self.start))
         self._application.add_handler(CommandHandler("help", self.help_command))

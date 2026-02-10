@@ -20,7 +20,7 @@ Methods:
 
 JSON-RPC 2.0 Spec: https://www.jsonrpc.org/specification
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed method names and parameter schemas
 - Deterministic error codes
 - Ordered evaluation of batch requests

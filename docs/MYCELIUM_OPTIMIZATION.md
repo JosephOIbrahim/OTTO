@@ -7,7 +7,7 @@
 1. **Determinism**: Same signals → Same routing → Same behavior
 2. **Auditability**: Weights don't change unexpectedly
 3. **User Control**: Calibration is explicit, not automatic
-4. **ThinkingMachines Compliance** [He2025]: Batch-invariant execution
+4. **Determinism**: Batch-invariant execution
 
 The Mycelium provides:
 - Static weight storage (manually calibrated)

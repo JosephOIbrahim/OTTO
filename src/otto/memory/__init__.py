@@ -9,7 +9,7 @@ Wraps existing memory systems:
 - LIVRPS Layers (contextual)
 - EWM Manager (session state)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic trail deposits
 - Fixed LIVRPS priority resolution
 - Sorted iteration for all queries

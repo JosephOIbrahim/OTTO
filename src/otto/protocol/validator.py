@@ -10,7 +10,7 @@ Provides:
 - Enum value validation
 - Custom validation rules
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed schema definitions (never change at runtime)
 - Deterministic validation order
 - Consistent error reporting

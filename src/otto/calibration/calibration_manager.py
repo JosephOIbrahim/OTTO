@@ -14,7 +14,7 @@ Architecture:
                                        ↓
                               calibration.usda (persistence)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed learning pipeline
 - Deterministic weight updates
 - Reproducible calibration state

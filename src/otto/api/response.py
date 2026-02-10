@@ -16,7 +16,7 @@ Response Format:
         }
     }
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED response structure
 - DETERMINISTIC: same input → same output format
 """
@@ -138,7 +138,7 @@ class APIResponse:
         """
         Convert to JSON string.
 
-        [He2025] Compliance: sort_keys=True ensures deterministic serialization.
+        Deterministic: sort_keys=True ensures deterministic serialization.
         """
         return json.dumps(self.to_dict(), sort_keys=True, indent=indent)
 

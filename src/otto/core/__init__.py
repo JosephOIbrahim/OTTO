@@ -5,7 +5,7 @@ OTTO OS Core Module
 Integration layer providing LIVRPS composition, cognitive state management,
 and profile resolution.
 
-[He2025] Compliance:
+Determinism:
 - All composition uses deterministic evaluation order
 - Float comparisons use round(value, 6)
 - Aggregations use Kahan summation with sorted input

@@ -9,7 +9,7 @@ Supports:
 - JSON (structured data for APIs)
 - ANSI colors (terminal only, loaded conditionally)
 
-[He2025] Compliance:
+Determinism:
 - Fixed formatter selection order
 - Deterministic output (same state → same formatted string)
 - No runtime variation in formatting logic
@@ -354,7 +354,7 @@ def _create_default_formatter() -> OutputFormatter:
     """
     Create default formatter based on environment.
 
-    [He2025] Fixed selection order: env var → plain
+    Fixed selection order: env var → plain
     """
     format_env = os.environ.get("OTTO_OUTPUT_FORMAT", "").lower()
 

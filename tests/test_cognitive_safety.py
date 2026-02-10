@@ -4,7 +4,7 @@ Tests for Cognitive Safety Module.
 Tests burnout cascade, recovery options, working memory limits,
 and other cognitive safety constraints.
 
-ThinkingMachines [He2025] compliance:
+Determinism:
 - Fixed constraint values
 - Deterministic behavior
 - Binary toggle (ON/OFF)
@@ -302,7 +302,7 @@ class TestDepthLimiting:
 
 
 class TestDeterminism:
-    """Test determinism requirements [He2025]."""
+    """Test determinism requirements."""
 
     def test_same_input_same_output(self):
         """Same inputs produce same results."""

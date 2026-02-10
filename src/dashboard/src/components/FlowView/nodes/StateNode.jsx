@@ -10,7 +10,7 @@ import { TOKENS, STATES } from '../../StatusView/StatusView'
  * - Color-coded border by burnout level
  * - Glow animation when highlighted (active phase)
  *
- * ThinkingMachines [He2025]: FIXED signal priority
+ * FIXED signal priority
  * emotional > mode > domain > task
  */
 

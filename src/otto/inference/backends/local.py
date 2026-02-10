@@ -4,7 +4,7 @@ Local Inference Backends
 
 Backend implementations for local model inference.
 
-These backends enable Tier 3 [He2025] compliance through:
+These backends enable Tier 3 Determinism through:
 - Batch size = 1 (eliminates batch-variance)
 - Deterministic CUDA configuration
 - Full control over kernel execution
@@ -36,7 +36,7 @@ VLLM_CAPABILITIES = BackendCapabilities(
     supports_stop_sequences=True,
     supports_temperature_zero=True,
     max_context_window=128000,
-    determinism_level="kernel",  # True [He2025] compliance!
+    determinism_level="kernel",  # True Determinism!
 )
 
 # Capabilities for Ollama backend
@@ -56,7 +56,7 @@ class LocalVLLMBackend(InferenceBackend):
     """
     Local vLLM inference backend.
 
-    This backend provides TRUE [He2025] kernel-level determinism when
+    This backend provides TRUE kernel-level determinism when
     configured with batch_size=1 and deterministic CUDA settings.
 
     Configuration for determinism:
@@ -141,7 +141,7 @@ class LocalVLLMBackend(InferenceBackend):
         """
         Perform inference using local vLLM.
 
-        [He2025] Compliance: With proper server configuration, this provides
+        Determinism: With proper server configuration, this provides
         TRUE kernel-level determinism.
         """
         if self._session is None:

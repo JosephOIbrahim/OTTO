@@ -15,7 +15,7 @@ Use Cases:
 3. Local/offline calendar files
 4. Testing and development
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC: Same file → Same events → Same context
 - FIXED: Parsing rules are immutable
 - BOUNDED: Max events limit prevents memory issues

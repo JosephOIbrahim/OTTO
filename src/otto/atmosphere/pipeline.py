@@ -7,7 +7,7 @@ Pipeline position: Step 6b in response_generator.py
 - After voice adapter: Foundation transformations done
 - Before return: Atmosphere adds final polish
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Fixed transformation order (6 phases)
 - Deterministic selection via seed
 - Same inputs always produce same outputs
@@ -38,7 +38,7 @@ class TransformPhase:
     CLEANUP = "cleanup"          # Phase 6: Final cleanup
 
 
-# [He2025] Sorted expert bypass rules for deterministic matching
+# Sorted expert bypass rules for deterministic matching
 # Key = expert name, Value = set of phases to BYPASS (skip)
 EXPERT_BYPASS_RULES: Final[Dict[str, FrozenSet[str]]] = {
     # Celebrator has its own celebratory tone - skip affirmations
@@ -95,7 +95,7 @@ class AtmosphereContext:
         """
         Check if a transformation phase should be bypassed.
 
-        [He2025] Deterministic: uses sorted expert rules.
+        Deterministic: uses sorted expert rules.
 
         Args:
             phase: The transformation phase to check
@@ -127,7 +127,7 @@ class AtmospherePipeline:
     """
     Transforms responses through the atmosphere pipeline.
 
-    [He2025] Fixed transformation order (6 phases):
+    Fixed transformation order (6 phases):
     1. transform_language() - Remove rigid/instructional
     2. match_energy() - Adjust length and tone
     3. maybe_add_affirmation() - If earned
@@ -153,7 +153,7 @@ class AtmospherePipeline:
         """
         Apply atmosphere transformations to response.
 
-        [He2025] Fixed transformation order ensures determinism.
+        Fixed transformation order ensures determinism.
         Expert bypass rules are checked at each phase.
 
         Args:

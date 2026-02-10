@@ -10,7 +10,7 @@ Features:
 - Tamper detection with detailed reporting
 - Root hash for quick full-substrate verification
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED hash algorithm: SHA-256
 - DETERMINISTIC tree construction (sorted paths)
 - BOUNDED operations
@@ -554,14 +554,14 @@ class SubstrateIntegrity:
         root = self.build_merkle_tree(refresh=True)
 
         # Verify all configuration files
-        # [He2025] Use sorted() for deterministic iteration order
+        # Use sorted() for deterministic iteration order
         for config_path in sorted(CONFIG_SCHEMAS.keys()):
             is_valid, config_issues = self.verify_config(config_path)
             issues.extend(config_issues)
             verified_count += 1
 
         # Check safety constraints
-        # [He2025] Use sorted() for deterministic iteration order
+        # Use sorted() for deterministic iteration order
         for config_path in sorted(SAFETY_CONSTRAINTS.keys()):
             file_path = self.substrate_dir / config_path
             if file_path.exists():

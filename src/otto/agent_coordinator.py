@@ -9,7 +9,7 @@ Implements the work/delegate/protect decision model:
 Philosophy: Agents are energy investments. Every spawn costs cognitive budget.
 The coordinator decides when that investment pays off vs. when direct work is better.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed decision order (work -> delegate -> protect)
 - Deterministic routing based on state
 - State snapshot before any decision
@@ -163,7 +163,7 @@ class AgentCoordinator:
     do the work yourself, when to delegate to agents, and when to protect your flow.
     """
 
-    # Production-ready limits [He2025]
+    # Production-ready limits
     MAX_DECISION_HISTORY = 1000
     MAX_RESULT_QUEUE = 500
     RESULT_TTL_SECONDS = 3600  # 1 hour
@@ -171,7 +171,7 @@ class AgentCoordinator:
     def __init__(self, cognitive_stage=None, state_dir: Path = None):
         self.cognitive_stage = cognitive_stage
         self.active_agents: Dict[str, Dict[str, Any]] = {}
-        # Bounded queues for production safety [He2025]
+        # Bounded queues for production safety
         self.result_queue: Deque[QueuedResult] = deque(maxlen=self.MAX_RESULT_QUEUE)
         self.decision_history: Deque[Decision] = deque(maxlen=self.MAX_DECISION_HISTORY)
         self.flow_protection_active: bool = False
@@ -420,7 +420,7 @@ class AgentCoordinator:
 
         Respects working memory limit - don't overwhelm with results.
         """
-        # Sort by priority, then timestamp, then agent_id for determinism [He2025]
+        # Sort by priority, then timestamp, then agent_id for determinism
         pending = [r for r in self.result_queue if not r.presented]
         pending.sort(key=lambda r: (r.priority, r.timestamp, r.agent_id))
 
@@ -515,7 +515,7 @@ class AgentCoordinator:
                 self.result_queue = []
 
     def _save_queue(self):
-        """Persist queue to disk with secure atomic write [He2025]."""
+        """Persist queue to disk with secure atomic write."""
         from .file_ops import atomic_write_json
 
         try:
@@ -576,7 +576,7 @@ class AgentCoordinator:
         if not pending:
             return []
 
-        # Sort by priority (1=high) then timestamp, then agent_id for determinism [He2025]
+        # Sort by priority (1=high) then timestamp, then agent_id for determinism
         pending.sort(key=lambda r: (r.priority, r.timestamp, r.agent_id))
 
         # Respect working memory limit

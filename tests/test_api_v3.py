@@ -73,7 +73,7 @@ class MockMessagesClient:
 # EffortLevel
 # ═══════════════════════════════════════════════════════════════════
 
-from otto.api.effort import EffortLevel, EffortController, CostEstimate
+from otto_v3.api.effort import EffortLevel, EffortController, CostEstimate
 
 
 class TestEffortLevel:
@@ -198,7 +198,7 @@ class TestCostEstimate:
 # ModelConfig + APIResponse
 # ═══════════════════════════════════════════════════════════════════
 
-from otto.api.client import ModelConfig, OPUS_46_CONFIG, APIResponse, OTTOClient
+from otto_v3.api.client import ModelConfig, OPUS_46_CONFIG, APIResponse, OTTOClient
 
 
 class TestModelConfig:
@@ -358,14 +358,14 @@ class TestOTTOClient:
 # Expert Voices
 # ═══════════════════════════════════════════════════════════════════
 
-from otto.api.nexus import (
+from otto_v3.api.nexus import (
     EXPERT_VOICES,
     build_system_prompt,
     NEXUSPipeline,
     PipelineResult,
     _BASE_SYSTEM_PREFIX,
 )
-from otto.core.experts.base import ExpertWeight, ExpertSelection
+from otto_v3.core.experts.base import ExpertWeight, ExpertSelection
 
 
 class TestExpertVoices:
@@ -380,7 +380,7 @@ class TestExpertVoices:
 
     def test_sorted_keys(self) -> None:
         keys = list(EXPERT_VOICES.keys())
-        assert keys == sorted(keys), "EXPERT_VOICES must be sorted [He2025]"
+        assert keys == sorted(keys), "EXPERT_VOICES must be sorted"
 
     def test_no_clinical_language(self) -> None:
         """Constitutional: no clinical language in user-facing strings."""
@@ -584,7 +584,7 @@ class TestNEXUSPipeline:
 # CompactionManager
 # ═══════════════════════════════════════════════════════════════════
 
-from otto.api.compaction import (
+from otto_v3.api.compaction import (
     CompactionConfig, CompactionManager, CompactionStatus,
 )
 
@@ -693,7 +693,7 @@ class TestCompactionManager:
 
 
 class TestAPIDeterminism:
-    """Same inputs must produce identical outputs [He2025]."""
+    """Same inputs must produce identical outputs."""
 
     def test_same_input_same_pipeline_result_100x(self) -> None:
         """100 identical runs produce identical routing results."""
@@ -744,14 +744,14 @@ class TestAPIImports:
     """Verify all public API exports are accessible."""
 
     def test_all_exports_importable(self) -> None:
-        from otto.api import __all__
-        import otto.api as api_module
+        from otto_v3.api import __all__
+        import otto_v3.api as api_module
 
         for name in __all__:
             assert hasattr(api_module, name), f"Missing export: {name}"
 
     def test_key_types_importable(self) -> None:
-        from otto.api import (
+        from otto_v3.api import (
             OTTOClient,
             APIResponse,
             ModelConfig,

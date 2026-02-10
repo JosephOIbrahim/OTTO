@@ -16,7 +16,7 @@ Features:
 - Batched delivery
 - Delivery tracking
 
-[He2025] Compliance:
+Determinism:
 - FIXED notification format
 - DETERMINISTIC: template → notification mapping
 """
@@ -216,7 +216,7 @@ class MockPushProvider(PushProviderInterface):
         """Mock send - always succeeds unless failure_rate set."""
         self.sent_notifications.append((token, notification))
 
-        # [He2025] Use seeded random for deterministic test behavior
+        # Use seeded random for deterministic test behavior
         import random
         import hashlib
         # Deterministic seed based on notification id for reproducibility

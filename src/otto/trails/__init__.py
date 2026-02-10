@@ -28,7 +28,7 @@ Usage:
     # Follow the strongest quality trail
     best = store.follow_strongest("src/otto/expert_router.py", TrailType.QUALITY)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - All queries return results in deterministic order
 - Strength aggregations use sorted order before computation
 - No race conditions through SQLite transactions

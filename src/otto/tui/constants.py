@@ -2,7 +2,7 @@
 OTTO TUI Constants
 ==================
 
-[He2025] Compliance: All mappings are FIXED at module load time.
+Determinism: All mappings are FIXED at module load time.
 
 This module defines all constant mappings used throughout the TUI.
 No runtime variation is permitted. These constants ensure that:
@@ -25,7 +25,7 @@ HE2025_COMPLIANT: Final[bool] = True
 
 # =============================================================================
 # BURNOUT LEVEL MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 # Ordered tuple (not dict) to ensure deterministic iteration
@@ -65,7 +65,7 @@ BURNOUT_STATUS_TEXT: Final[dict] = {
 
 # =============================================================================
 # ENERGY LEVEL MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 ENERGY_LEVELS: Final[Tuple[str, ...]] = ("high", "medium", "low", "depleted")
@@ -93,7 +93,7 @@ ENERGY_PERCENTAGES: Final[dict] = {
 
 # =============================================================================
 # MOMENTUM PHASE MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 MOMENTUM_PHASES: Final[Tuple[str, ...]] = (
@@ -130,7 +130,7 @@ MOMENTUM_DESCRIPTIONS: Final[dict] = {
 
 # =============================================================================
 # MODE MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 MODES: Final[Tuple[str, ...]] = (
@@ -156,7 +156,7 @@ MODE_ICONS: Final[dict] = {
 
 # =============================================================================
 # ALTITUDE MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 ALTITUDES: Final[Tuple[str, ...]] = (
@@ -182,7 +182,7 @@ ALTITUDE_COLORS: Final[dict] = {
 
 # =============================================================================
 # PROJECT STATUS MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 PROJECT_STATUSES: Final[Tuple[str, ...]] = (
@@ -211,7 +211,7 @@ PROJECT_STATUS_ICONS: Final[dict] = {
 
 # =============================================================================
 # ALERT SEVERITY MAPPINGS
-# [He2025]: Fixed mapping, no runtime variation
+# Fixed mapping, no runtime variation
 # =============================================================================
 
 ALERT_SEVERITIES: Final[Tuple[str, ...]] = (
@@ -237,7 +237,7 @@ ALERT_ICONS: Final[dict] = {
 
 # =============================================================================
 # LAYOUT CONSTANTS
-# [He2025]: Fixed layout, no adaptive computation
+# Fixed layout, no adaptive computation
 # =============================================================================
 
 # Fixed widget order (never changes)
@@ -259,7 +259,7 @@ ALERT_FEED_MAX_ITEMS: Final[int] = 5
 
 # =============================================================================
 # KEYBOARD SHORTCUTS
-# [He2025]: Fixed mapping, deterministic command dispatch
+# Fixed mapping, deterministic command dispatch
 # =============================================================================
 
 # Ordered tuple of (key, command, description)
@@ -274,7 +274,7 @@ KEYBOARD_SHORTCUTS: Final[Tuple[Tuple[str, str, str], ...]] = (
 
 # =============================================================================
 # REFRESH INTERVALS (milliseconds)
-# [He2025]: Fixed intervals, no adaptive timing
+# Fixed intervals, no adaptive timing
 # =============================================================================
 
 WEBSOCKET_RECONNECT_INTERVAL_MS: Final[int] = 5000
@@ -289,7 +289,7 @@ def verify_constants_integrity() -> bool:
     """
     Verify all constant mappings are complete and consistent.
 
-    [He2025] Compliance: This function verifies that all mappings
+    Determinism: This function verifies that all mappings
     are properly defined for all enum values, preventing runtime
     KeyError exceptions that could cause nondeterministic behavior.
 
@@ -339,5 +339,5 @@ def verify_constants_integrity() -> bool:
 
 
 # Run verification at module load time
-# [He2025]: Fail fast if constants are misconfigured
+# Fail fast if constants are misconfigured
 assert verify_constants_integrity(), "Constants integrity check failed"

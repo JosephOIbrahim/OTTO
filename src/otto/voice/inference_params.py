@@ -6,7 +6,7 @@ Adjusts temperature, top_p, max_tokens based on:
 - Register (casual, formal, venting)
 - Expert mode (Validator, Direct, Socratic, etc.)
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - All mappings are fixed dictionaries
 - Calculations use deterministic arithmetic
 - Same inputs always produce same outputs
@@ -107,7 +107,7 @@ def get_inference_params(
     """
     Get inference parameters for context.
 
-    [He2025] Deterministic: same inputs always produce same outputs.
+    Deterministic: same inputs always produce same outputs.
 
     Args:
         detected_state: Cognitive state (focused, stuck, etc.)

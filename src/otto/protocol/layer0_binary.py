@@ -14,7 +14,7 @@ Wire Format:
 
 Performance Target: <1ms per message encode/decode
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed wire format (version byte prevents breaking changes)
 - Deterministic serialization via msgpack
 - Length-prefixed for safe streaming

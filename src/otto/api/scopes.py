@@ -14,7 +14,7 @@ Sensitive fields (requiring read:state:full):
 - epistemic_tension, convergence_attractor
 - rapid_exchange_count
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED scope names and values
 - DETERMINISTIC: scope → permission mapping
 """

@@ -4,7 +4,7 @@ Profile Integration Tests
 
 Tests for intake-to-profile mapping and ProfileManager integration.
 
-[He2025] Compliance Tests:
+Determinism Tests:
 - Deterministic trait conversion
 - Sorted key iteration
 - Float precision
@@ -298,7 +298,7 @@ class TestConvertIntakeToProfile:
         assert result["intervention_style"] == "gentle"
 
     def test_keys_are_sorted(self):
-        """Result keys are sorted for [He2025] determinism."""
+        """Result keys are sorted for determinism."""
         result = convert_intake_to_profile({
             "chronotype": "night_owl",
             "work_style": "deep_work",
@@ -309,11 +309,11 @@ class TestConvertIntakeToProfile:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_conversion_deterministic(self):
         """Same inputs produce same outputs (100 trials)."""

@@ -5,7 +5,7 @@ Status Renderer - Mobile-Compatible Output
 Platform-agnostic status rendering using OutputFormatter abstraction.
 Separates data logic from terminal-specific display code.
 
-[He2025] Compliance:
+Determinism:
 - Fixed rendering order
 - Deterministic output for same state
 - No runtime variation
@@ -84,7 +84,7 @@ class StatusRenderer:
     Uses OutputFormatter abstraction for rendering, separating
     data logic from terminal-specific display code.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed data extraction order
     - Deterministic state conversion
     - No runtime variation in rendering
@@ -121,7 +121,7 @@ class StatusRenderer:
 
         Returns default state if file doesn't exist or is invalid.
 
-        [He2025]: Fixed default values, deterministic fallback.
+        Fixed default values, deterministic fallback.
         """
         default = {
             "burnout_level": "GREEN",
@@ -152,7 +152,7 @@ class StatusRenderer:
         """
         Convert raw state dict to StatusData.
 
-        [He2025]: Fixed field extraction order.
+        Fixed field extraction order.
         """
         return StatusData(
             burnout=state.get("burnout_level", "GREEN"),
@@ -274,7 +274,7 @@ class StatusRenderer:
         """
         Render state as JSON.
 
-        [He2025]: Deterministic key ordering via sort_keys.
+        Deterministic key ordering via sort_keys.
         """
         if state is None:
             state = self.read_state()
@@ -285,7 +285,7 @@ class StatusRenderer:
         """
         Get state as dict (for API responses).
 
-        [He2025]: Returns copy to prevent mutation.
+        Returns copy to prevent mutation.
         """
         if state is None:
             state = self.read_state()

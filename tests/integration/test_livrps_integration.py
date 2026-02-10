@@ -5,7 +5,7 @@ LIVRPS Integration Tests
 Integration tests for LIVRPS (Local > Inherits > Variants > References > Payloads > Specializes)
 composition engine with memory backbone integration.
 
-[He2025] Compliance Testing:
+Determinism Testing:
 - Fixed evaluation order (L → I → V → R → P → S)
 - Deterministic resolution (100 runs produce identical output)
 - Safety floor enforcement
@@ -230,7 +230,7 @@ class TestSafetyFloors:
 
 
 class TestDeterminism:
-    """Test [He2025] determinism requirements."""
+    """Test determinism requirements."""
 
     def test_same_inputs_produce_same_outputs(self):
         """Verify determinism: same inputs → same outputs over 100 runs."""
@@ -321,7 +321,7 @@ class TestDeterminism:
 
 
 class TestKahanSummation:
-    """Test [He2025] batch-invariant summation."""
+    """Test batch-invariant summation."""
 
     def test_kahan_sum_basic(self):
         """Kahan sum should work for basic cases."""

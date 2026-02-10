@@ -27,7 +27,7 @@ Use Cases:
 3. Manual task tracking
 4. Testing and development
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC: Same file → Same tasks → Same context
 - FIXED: Parsing rules are immutable
 - BOUNDED: Max tasks limit prevents memory issues

@@ -10,7 +10,7 @@ Tests:
 - Cognitive safety gating (burnout/energy → depth caps)
 - MAX3 bounded reflection
 - Paradigm selection (Cortex vs Mycelium)
-- Deterministic checksum computation [He2025]
+- Deterministic checksum computation
 """
 
 import pytest
@@ -90,7 +90,7 @@ class TestLockedParams:
         """
         Same params should produce same checksum.
 
-        ThinkingMachines [He2025]: Same inputs → same outputs
+        Same inputs → same outputs
         """
         params1 = LockedParams(
             expert="direct",
@@ -112,7 +112,7 @@ class TestLockedParams:
         """
         Checksum should exclude reflection_iteration for batch-invariance.
 
-        ThinkingMachines [He2025]: Same routing → same checksum regardless of iteration
+        Same routing → same checksum regardless of iteration
         """
         params1 = LockedParams(
             expert="direct",
@@ -750,7 +750,7 @@ class TestDeterminism:
     """
     Test deterministic behavior.
 
-    ThinkingMachines [He2025]: Same inputs → same outputs
+    Same inputs → same outputs
     """
 
     def test_same_inputs_same_output(self):

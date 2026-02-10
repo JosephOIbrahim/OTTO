@@ -3,24 +3,24 @@
 > **Generated**: 2026-02-01
 > **Auditor**: Claude (deep analysis mode)
 > **Source**: Path to 10/10 implementation plan
-> **Reference**: [He2025] ThinkingMachines blog on defeating nondeterminism
+> **Reference**: ThinkingMachines blog on defeating nondeterminism
 
 ---
 
 ## Executive Summary
 
-The plan is **structurally sound** but contains **12 consistency issues** that must be fixed before execution. Most issues are import path mismatches and [He2025] violations in the proposed code.
+The plan is **structurally sound** but contains **12 consistency issues** that must be fixed before execution. Most issues are import path mismatches and violations in the proposed code.
 
 | Category | Issues Found | Severity |
 |----------|-------------|----------|
-| [He2025] Violations | 4 | **CRITICAL** |
+| Violations | 4 | **CRITICAL** |
 | Import Path Errors | 3 | HIGH |
 | Factual Inaccuracies | 3 | MEDIUM |
 | Missing Context | 2 | LOW |
 
 ---
 
-## Critical: [He2025] Violations in Plan Code
+## Critical: Violations in Plan Code
 
 ### Issue 1: Non-deterministic shuffle in `generate_synthetic.py`
 
@@ -28,14 +28,14 @@ The plan is **structurally sound** but contains **12 consistency issues** that m
 
 **Problem**:
 ```python
-random.shuffle(samples)  # ❌ No seed - violates [He2025]
+random.shuffle(samples)  # ❌ No seed - violates
 ```
 
-**[He2025] Principle Violated**: Fixed reduction order. Different runs produce different orderings.
+**Principle Violated**: Fixed reduction order. Different runs produce different orderings.
 
 **Fix**:
 ```python
-random.seed(0xCAFEBABE)  # [He2025] deterministic seed
+random.seed(0xCAFEBABE)  # deterministic seed
 random.shuffle(samples)
 ```
 
@@ -55,7 +55,7 @@ def generate_message(state: str) -> str:
 **Fix**:
 ```python
 # At module level
-_rng = random.Random(0xCAFEBABE)  # [He2025] fixed seed generator
+_rng = random.Random(0xCAFEBABE)  # fixed seed generator
 
 def generate_message(state: str, seed_offset: int = 0) -> str:
     local_rng = random.Random(0xCAFEBABE + seed_offset)
@@ -78,7 +78,7 @@ This is actually **OK** in Python 3.7+ (insertion order preserved), but for extr
 
 **Recommendation**:
 ```python
-for state in sorted(results.keys()):  # [He2025] explicit determinism
+for state in sorted(results.keys()):  # explicit determinism
     counts = results[state]
 ```
 
@@ -191,14 +191,14 @@ The 4 skipped tests are conditional on optional dependencies.
 
 ---
 
-### Issue 9: Inference layer already exists with [He2025] compliance
+### Issue 9: Inference layer already exists with Determinism
 
 **Plan says**: "Verify inference layer works with Claude API before building Telegram adapter"
 
 **Reality**: The inference layer is already **extensively implemented** with 4 tiers:
 - Tier 1: API-Maximized Determinism
 - Tier 2: Multi-trial Verification
-- Tier 3: Kernel-Level ([He2025] strict)
+- Tier 3: Kernel-Level (strict)
 - Tier 4: Cryptographic Proofs
 
 **Documentation**: `docs/HE2025_KERNEL_COMPLIANCE_STRATEGY.md`
@@ -207,7 +207,7 @@ The 4 skipped tests are conditional on optional dependencies.
 ```markdown
 ### 1.1 Validate Existing Inference Layer
 
-The inference layer already implements 4-tier [He2025] compliance.
+The inference layer already implements 4-tier Determinism.
 
 **Task**: Run integration tests to verify Claude backend works.
 
@@ -266,7 +266,7 @@ argon2-cffi>=23.1.0
 
 ---
 
-## [He2025] Compliance Checklist for Plan Code
+## Determinism Checklist for Plan Code
 
 | File | Pattern | Status | Fix Needed |
 |------|---------|--------|------------|
@@ -302,7 +302,7 @@ pytest -v --tb=short 2>&1 | tail -20
 
 **Conditional skips are OK** if they're for optional features.
 
-### 0.3 Fix [He2025] Violations in Benchmark Code
+### 0.3 Fix Violations in Benchmark Code
 
 Before writing benchmark code, apply these patterns:
 
@@ -349,7 +349,7 @@ from otto.core.prism_detector import PRISMDetector  # Wrong path
 
 ### In Plan Phase 0:
 1. Update "fix skipped tests" to "verify conditional skips"
-2. Add [He2025] compliance checklist
+2. Add Determinism checklist
 
 ### In Plan Phase 1:
 1. Update inference layer section to "validate existing"
@@ -362,7 +362,7 @@ from otto.core.prism_detector import PRISMDetector  # Wrong path
 
 ### Throughout Plan:
 1. Fix all import paths from `otto.core.*` to `otto.*`
-2. Apply [He2025] patterns to all new code
+2. Apply patterns to all new code
 
 ---
 

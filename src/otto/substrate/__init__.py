@@ -30,7 +30,7 @@ v7.1.0 Encryption Features (NEW):
 - Merkle tree for efficient partial verification
 - Safety constraint enforcement (floors cannot be lowered)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed tile sizes for memory operations
 - Deterministic checksums (SHA256, sorted keys)
 - Fixed evaluation order (9-phase NEXUS pipeline)

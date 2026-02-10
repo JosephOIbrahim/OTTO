@@ -2,7 +2,7 @@
 Cognitive State Widget
 ======================
 
-[He2025] Compliant widget displaying cognitive state.
+Determinism widget displaying cognitive state.
 
 Principles:
 1. Render is a pure function of CognitiveState
@@ -41,7 +41,7 @@ class CognitiveStateWidget:
     """
     Widget displaying current cognitive state.
 
-    [He2025] Compliance:
+    Determinism:
     - No internal mutable state
     - Render is pure function of input
     - All mappings from FIXED constants
@@ -55,7 +55,7 @@ class CognitiveStateWidget:
         """
         Create new widget with updated state.
 
-        [He2025] Compliance: Returns new instance, doesn't mutate.
+        Determinism: Returns new instance, doesn't mutate.
         """
         return CognitiveStateWidget(state)
 
@@ -63,7 +63,7 @@ class CognitiveStateWidget:
         """
         Render burnout progress bar.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         segments = BURNOUT_SEGMENTS.get(level, 0)
         color_name, _ = BURNOUT_COLORS.get(level, ("white", "#ffffff"))
@@ -80,7 +80,7 @@ class CognitiveStateWidget:
         """
         Render energy bar.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         icon = ENERGY_ICONS.get(level, "████████")
         color_name, _ = ENERGY_COLORS.get(level, ("white", "#ffffff"))
@@ -95,7 +95,7 @@ class CognitiveStateWidget:
         """
         Render mode indicator.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         icon = MODE_ICONS.get(mode, "○")
         color_name, _ = MODE_COLORS.get(mode, ("white", "#ffffff"))
@@ -109,7 +109,7 @@ class CognitiveStateWidget:
         """
         Render momentum indicator.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         icon = MOMENTUM_ICONS.get(phase, "○")
         color_name, _ = MOMENTUM_COLORS.get(phase, ("white", "#ffffff"))
@@ -125,7 +125,7 @@ class CognitiveStateWidget:
         """
         Render altitude indicator.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         color_name, _ = ALTITUDE_COLORS.get(altitude, ("white", "#ffffff"))
         description = ALTITUDE_DESCRIPTIONS.get(altitude, "")
@@ -139,7 +139,7 @@ class CognitiveStateWidget:
         """
         Render burnout with label and status.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         icon = BURNOUT_ICONS.get(level, "●")
         color_name, _ = BURNOUT_COLORS.get(level, ("white", "#ffffff"))
@@ -155,7 +155,7 @@ class CognitiveStateWidget:
         """
         Render the complete cognitive state widget.
 
-        [He2025] Compliance:
+        Determinism:
         - Pure function of self._state
         - Fixed layout structure
         - All mappings from constants
@@ -240,7 +240,7 @@ def render_cognitive_state(state: CognitiveState) -> Panel:
     """
     Functional interface for rendering cognitive state.
 
-    [He2025] Compliance: Pure function, no side effects.
+    Determinism: Pure function, no side effects.
     """
     widget = CognitiveStateWidget(state)
     return widget.render()

@@ -5,7 +5,7 @@ Tasks MCP Server
 MCP server for task management operations.
 Integrates with Todoist, Things, TickTick, and local task storage.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic task ordering (by due date, then priority)
 - Fixed priority levels
 - Sorted iteration
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class TaskPriority(str, Enum):
-    """Task priority levels (fixed ordering per [He2025])."""
+    """Task priority levels (fixed ordering)."""
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"

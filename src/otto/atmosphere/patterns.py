@@ -11,7 +11,7 @@ The Six Atmosphere Principles:
 5. Soft Landings: "Picking back up:" instead of "You forgot to..."
 6. Breathing Room: Silence is better than noise
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Sorted pattern lists for deterministic iteration
 - Fixed seed (0xCAFEBABE) for replacement selection
 - Same inputs always produce same outputs
@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, Final, List, Optional, Tuple
 
-# [He2025] Fixed seed for deterministic replacement selection
+# Fixed seed for deterministic replacement selection
 ATMOSPHERE_SEED: Final[int] = 0xCAFEBABE
 
 
@@ -33,7 +33,7 @@ class PatternReplacement:
     flags: int = re.IGNORECASE
 
 
-# [He2025] Sorted pattern lists for deterministic iteration
+# Sorted pattern lists for deterministic iteration
 # Patterns sorted by regex string for reproducibility
 INSTRUCTIONAL_PATTERNS: Final[List[PatternReplacement]] = sorted([
     # "You should" variants
@@ -167,7 +167,7 @@ class LanguageTransformer:
     """
     Transforms instructional language into supportive language.
 
-    [He2025] Deterministic transformation:
+    Deterministic transformation:
     - Patterns applied in sorted order
     - Seed-based replacement selection
     - Same inputs → same outputs
@@ -187,7 +187,7 @@ class LanguageTransformer:
         """
         Transform text by removing instructional patterns.
 
-        [He2025] Fixed order:
+        Fixed order:
         1. Apply patterns in sorted order
         2. Use deterministic replacement selection
         3. Clean up whitespace
@@ -213,7 +213,7 @@ class LanguageTransformer:
         """
         Apply a single pattern replacement.
 
-        [He2025] Deterministic replacement selection using hash.
+        Deterministic replacement selection using hash.
         """
         # Get or compile regex
         if pattern_def.pattern not in self._pattern_cache:

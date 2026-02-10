@@ -4,7 +4,7 @@ OTTO Response Generator
 
 Generates responses using LLM provider with cognitive context.
 
-[He2025] Compliance:
+Determinism:
 - Fixed system prompts per expert
 - Deterministic prompt construction
 - Sorted context building
@@ -22,6 +22,13 @@ from .model_router import (
     ModelTier,
     create_model_router,
 )
+
+# Effort controller (v3 API layer)
+try:
+    from otto_v3.api.effort import EffortController
+    _effort_controller = EffortController()
+except ImportError:
+    _effort_controller = None
 
 # Voice system integration
 from ..voice import (
@@ -42,7 +49,7 @@ from ..atmosphere import (
 logger = logging.getLogger(__name__)
 
 
-# [He2025] Fixed system prompts per expert
+# Fixed system prompts per expert
 EXPERT_PROMPTS: Final[Dict[str, str]] = {
     "Validator": """You are OTTO, an empathetic AI assistant. The user appears frustrated or upset.
 
@@ -129,7 +136,7 @@ class ConversationTurn:
     """
     A single turn in a conversation.
 
-    [He2025] Fixed structure for deterministic serialization.
+    Fixed structure for deterministic serialization.
     """
     role: str  # "user" or "assistant"
     content: str
@@ -146,7 +153,7 @@ class GenerationContext:
 
     Contains cognitive state, routing info, and conversation history.
 
-    [He2025] Compliance:
+    Determinism:
     - Conversation history in fixed order (oldest to newest)
     - Deterministic serialization
     """
@@ -162,7 +169,7 @@ class GenerationContext:
     session_id: Optional[str] = None
 
     # Conversation history for multi-turn context
-    # [He2025] Ordered list: oldest first, newest last
+    # Ordered list: oldest first, newest last
     conversation_history: List[ConversationTurn] = field(default_factory=list)
 
     def to_context_string(self) -> str:
@@ -185,7 +192,7 @@ class ResponseGenerator:
     """
     Generates responses using LLM with cognitive context.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed prompt templates per expert
     - Deterministic context building
     - Provider-agnostic generation
@@ -229,7 +236,7 @@ class ResponseGenerator:
         """
         Generate a response with voice awareness.
 
-        [He2025] Voice-aware generation pipeline:
+        Voice-aware generation pipeline:
         1. Detect register from user message
         2. Get voice-aware inference params (temperature, top_p, max_tokens)
         3. Build voice-enhanced system prompt
@@ -275,12 +282,24 @@ class ResponseGenerator:
 
         # Merge config: voice params override defaults, explicit config overrides voice
         cfg = config or self.default_config
+
+        # Compute effort level from routing context
+        effort_value = None
+        if _effort_controller is not None:
+            effort_level = _effort_controller.select_effort(
+                primary_expert=ctx.expert,
+                use_agent_team=False,
+                signal_count=len(ctx.conversation_history) if ctx.conversation_history else 0,
+            )
+            effort_value = effort_level.value
+
         routed_config = LLMConfig(
             model=model_id,
             max_tokens=config.max_tokens if config else voice_params.max_tokens,
             temperature=config.temperature if config else voice_params.temperature,
             top_p=voice_params.top_p,
             stop_sequences=voice_params.stop_sequences,
+            effort=effort_value,
         )
 
         # =================================================================
@@ -344,7 +363,7 @@ class ResponseGenerator:
         """
         Map GenerationContext to a detected state string for voice params.
 
-        [He2025] Deterministic mapping from context to state.
+        Deterministic mapping from context to state.
         """
         # Priority order for state detection
         if ctx.burnout_level == "RED":
@@ -372,7 +391,7 @@ class ResponseGenerator:
         """
         Build model routing context from generation context.
 
-        [He2025] Fixed mapping - same context → same routing.
+        Fixed mapping - same context → same routing.
         """
         return ModelRoutingContext(
             expert=ctx.expert,
@@ -389,7 +408,7 @@ class ResponseGenerator:
         """
         Build system prompt for generation.
 
-        [He2025] Fixed prompt structure:
+        Fixed prompt structure:
         1. Expert-specific base prompt
         2. User state context (only if notable)
         """
@@ -407,7 +426,7 @@ class ResponseGenerator:
         """
         Map GenerationContext energy_level to atmosphere energy level.
 
-        [He2025] Fixed mapping for deterministic behavior.
+        Fixed mapping for deterministic behavior.
         """
         # Direct mapping - atmosphere uses same terms
         # but we ensure valid values

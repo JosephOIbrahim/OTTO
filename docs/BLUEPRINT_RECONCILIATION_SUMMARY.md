@@ -6,7 +6,7 @@
 
 ## TL;DR
 
-The Blueprint v1.0 is **85% aligned** with [He2025] determinism principles and existing code. Three documents now close the gaps:
+The Blueprint v1.0 is **85% aligned** with determinism principles and existing code. Three documents now close the gaps:
 
 1. `docs/HE2025_DETERMINISM_ADDENDUM.md` - Determinism specifications
 2. `docs/USD_ARCHITECTURE_DECISION.md` - USD as conceptual model
@@ -42,7 +42,7 @@ The Blueprint v1.0 is **85% aligned** with [He2025] determinism principles and e
 | USD file parsing | **NOT NEEDED** |
 | LIVRPS semantics | **Python implementation** |
 
-**Rationale:** Mobile compatibility, simpler deployment, [He2025] easier to verify.
+**Rationale:** Mobile compatibility, simpler deployment, easier to verify.
 
 ### 2. State Detection: Fixed Vocabularies
 
@@ -106,8 +106,8 @@ docs/
 └── MOBILE_TUI_REMOVAL.md             # EXISTING - Migration status
 
 src/otto/schema/
-├── cognitive.usda                    # UPDATED - [He2025] notes added
-└── constitutional.usda               # UPDATED - [He2025] notes added
+├── cognitive.usda                    # UPDATED - notes added
+└── constitutional.usda               # UPDATED - notes added
 ```
 
 ---
@@ -159,7 +159,7 @@ pytest tests/test_status_renderer.py -v     # 36 tests
 The Blueprint's soul:
 > "Doesn't judge. Doesn't annoy. Doesn't forget."
 
-How [He2025] compliance protects it:
+How Determinism protects it:
 
 | Promise | Protection |
 |---------|------------|

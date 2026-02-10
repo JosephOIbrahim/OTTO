@@ -2,7 +2,7 @@
 Orchestra - Cognitive Orchestration System (v5.0)
 
 A production-hardened async orchestration system with cognitive state management
-and ThinkingMachines [He2025] compliant deterministic execution.
+and ThinkingMachines deterministic (inspired by [He2025]) execution.
 
 v5.0 Cognitive Engine:
 - 5-Phase NEXUS Pipeline (DETECT → CASCADE → LOCK → EXECUTE → UPDATE)
@@ -19,7 +19,7 @@ v4.0 Hybrid Orchestra (Cognitive Layer):
 - PRISM signal detection with FIXED evaluation order
 - Cognitive support (always active, no toggle)
 - Research and synthesis worker agents
-- ThinkingMachines [He2025] batch-invariance compliance
+- ThinkingMachines batch-invariance (inspired by [He2025])
 
 v3.0 Production Excellence:
 - Prometheus-compatible metrics for observability
@@ -334,7 +334,7 @@ from .decision_engine import (
 )
 
 # ============================================================================
-# v6.0 ThinkingMachines [He2025] Compliant Execution
+# v6.0 Deterministic Execution (inspired by [He2025])
 # ============================================================================
 
 # Expert Router (Cognitive Safety MoE)
@@ -691,7 +691,7 @@ __all__ = [
     "process_quick",
 
     # ========================================
-    # v6.0 ThinkingMachines [He2025] Compliant Execution
+    # v6.0 Deterministic Execution (inspired by [He2025])
     # ========================================
 
     # Expert Router (Cognitive Safety MoE)

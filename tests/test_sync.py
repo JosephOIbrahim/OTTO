@@ -4,7 +4,7 @@ Tests for Cloud Sync Module
 
 Comprehensive tests for storage adapters, manifest, and sync engine.
 
-ThinkingMachines [He2025] Compliance Tests:
+ThinkingMachines Determinism Tests:
 - Fixed protocol parameters
 - Deterministic operations
 - Bounded sync operations
@@ -724,7 +724,7 @@ class TestSyncIntegration:
 # =============================================================================
 
 class TestThinkingMachinesCompliance:
-    """Tests verifying ThinkingMachines [He2025] compliance."""
+    """Tests verifying ThinkingMachines Determinism."""
 
     def test_fixed_protocol_parameters(self):
         """Protocol parameters are fixed."""

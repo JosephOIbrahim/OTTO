@@ -11,7 +11,7 @@ Signal Categories (evaluated in this FIXED order):
 4. TASK - implement, debug, plan, research
 5. ENERGY - tired, exhausted, break
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - Fixed evaluation order (SIGNAL_PRIORITY)
 - Deterministic pattern matching
 - No dynamic algorithm switching
@@ -596,7 +596,7 @@ class PRISMDetector:
 
         Higher severity emotions (angry, overwhelmed) weight more heavily.
 
-        [He2025] Uses deterministic iteration and Kahan summation.
+        Uses deterministic iteration and Kahan summation.
         """
         if not emotional_signals:
             return 0.0
@@ -610,7 +610,7 @@ class PRISMDetector:
             weighted_values.append(score * severity)
             severity_values.append(severity)
 
-        # [He2025] Kahan summation for batch-invariant accumulation
+        # Kahan summation for batch-invariant accumulation
         weighted_sum = kahan_sum(weighted_values)
         weight_total = kahan_sum(severity_values)
 
@@ -625,7 +625,7 @@ class PRISMDetector:
 
         OTTO-specific: weighs signals by how concerning they are for user wellbeing.
 
-        [He2025] Uses deterministic iteration and Kahan summation.
+        Uses deterministic iteration and Kahan summation.
         """
         if not protection_signals:
             return 0.0
@@ -639,7 +639,7 @@ class PRISMDetector:
             weighted_values.append(score * severity)
             severity_values.append(severity)
 
-        # [He2025] Kahan summation for batch-invariant accumulation
+        # Kahan summation for batch-invariant accumulation
         weighted_sum = kahan_sum(weighted_values)
         weight_total = kahan_sum(severity_values)
 
@@ -753,7 +753,7 @@ class PRISMDetector:
     # Phase 0: Factual Query Detection (Knowledge Fast Path)
     # =========================================================================
 
-    # FIXED signal list for factual queries - ThinkingMachines [He2025] compliant
+    # FIXED signal list for factual queries - ThinkingMachines [He2025]-inspired determinism
     FACTUAL_SIGNALS = [
         "what is", "what's", "what are",
         "explain", "define", "describe",
@@ -768,7 +768,7 @@ class PRISMDetector:
         Factual queries can short-circuit to Knowledge Layer if high-confidence
         match is found (≥0.85), bypassing the full NEXUS pipeline.
 
-        ThinkingMachines [He2025] Compliance:
+        Determinism (inspired by [He2025]):
         - FIXED signal list (no runtime variation)
         - Deterministic detection (same input = same output)
 

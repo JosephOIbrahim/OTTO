@@ -438,7 +438,7 @@ class TestGlobalFunctions:
 
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_same_input_same_hash(self):
         """Same input produces same hash."""

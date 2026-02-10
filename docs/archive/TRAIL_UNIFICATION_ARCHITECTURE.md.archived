@@ -125,7 +125,7 @@ Create `otto/integrations/orchestra_bridge.py`:
 Orchestra ↔ OTTO OS Trail Bridge
 ================================
 
-Bidirectional trail synchronization preserving [He2025] compliance.
+Bidirectional trail synchronization preserving determinism (inspired by [He2025]).
 """
 
 from dataclasses import dataclass
@@ -156,7 +156,7 @@ class TrailBridge:
     """
     Bidirectional synchronization between Orchestra BCM and OTTO Pheromones.
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism (inspired by [He2025]):
     - All updates are QUEUED, not applied during processing
     - Sync operations use fixed batch size (COGNITIVE_TILE_SIZE=32)
     - Deterministic ordering before any aggregation
@@ -312,7 +312,7 @@ sync_interval_seconds = 60
 
 2. **Cognitive Context**: When Orchestra routes to Scaffolder for overwhelmed user working on `expert_router.py`, OTTO's PATTERN trails capture "what helped" for similar future situations.
 
-3. **[He2025] Compliance**: Both systems maintain batch-invariance through:
+3. **Determinism (inspired by [He2025])**: Both systems maintain batch-invariance through:
    - Queued updates (neither applies changes during message processing)
    - Fixed tile sizes (COGNITIVE_TILE_SIZE=32)
    - Deterministic ordering before any aggregation

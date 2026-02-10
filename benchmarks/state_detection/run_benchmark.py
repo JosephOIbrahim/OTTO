@@ -1,10 +1,10 @@
 """
-[He2025]-Compliant State Detection Benchmark Runner
+Deterministic State Detection Benchmark Runner
 ====================================================
 
 Measures PRISM detector accuracy against labeled dataset.
 
-[He2025] Compliance:
+Determinism:
 - Sorted key iteration throughout
 - Deterministic metric aggregation (Kahan summation for floats)
 - Fixed evaluation order
@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 from otto.prism_detector import PRISMDetector, SignalVector
 
 
-# [He2025] Constants
+# Constants
 _DETERMINISM_SEED: Final[int] = 0xCAFEBABE
 
 
@@ -72,7 +72,7 @@ class BenchmarkResult:
 
 def kahan_sum(values: list[float]) -> float:
     """
-    [He2025] Batch-invariant summation using Kahan algorithm.
+    Batch-invariant summation using Kahan algorithm.
 
     Reduces floating-point accumulation error for deterministic results.
     """
@@ -102,7 +102,7 @@ def detect_state(detector: PRISMDetector, message: str) -> str:
     """
     Detect state from message using PRISM detector.
 
-    [He2025] FIXED evaluation order matching PRISM priority:
+    FIXED evaluation order matching PRISM priority:
     0. CAPS detection (indicates frustration/anger)
     1. EMOTIONAL (frustrated, overwhelmed, stuck) - highest priority
     2. ENERGY (depleted) - maps to depleted state
@@ -117,7 +117,7 @@ def detect_state(detector: PRISMDetector, message: str) -> str:
 
     signals: SignalVector = detector.detect(message)
 
-    # [He2025] Detection threshold - lowered from 0.5 to 0.3
+    # Detection threshold - lowered from 0.5 to 0.3
     # Single keyword match gives 0.33, so we need threshold < 0.33
     DETECTION_THRESHOLD: Final[float] = 0.3
 
@@ -132,7 +132,7 @@ def detect_state(detector: PRISMDetector, message: str) -> str:
     }
 
     if signals.emotional:
-        # [He2025] Find highest emotional signal using sorted iteration
+        # Find highest emotional signal using sorted iteration
         max_score = 0.0
         detected_emotion = None
         for emotion in sorted(signals.emotional.keys()):
@@ -170,7 +170,7 @@ def run_benchmark(dataset_path: Path) -> BenchmarkResult:
     """
     Run benchmark on dataset.
 
-    [He2025] Compliance:
+    Determinism:
     - Sorted iteration over samples and states
     - Kahan summation for aggregations
     - Deterministic evaluation order
@@ -192,7 +192,7 @@ def run_benchmark(dataset_path: Path) -> BenchmarkResult:
     correct = 0
     total = len(dataset)
 
-    # [He2025] Process samples in sorted order by ID for determinism
+    # Process samples in sorted order by ID for determinism
     sorted_samples = sorted(dataset, key=lambda s: s["id"])
 
     for sample in sorted_samples:
@@ -257,7 +257,7 @@ def print_results(result: BenchmarkResult) -> None:
     print("="*70)
     print(f"Dataset: {result.dataset_path}")
     print(f"Samples: {result.sample_count}")
-    print(f"[He2025] Compliant: Yes (sorted iteration, Kahan summation)")
+    print(f"Determinism: Yes (sorted iteration, Kahan summation)")
     print()
 
     # Overall metrics

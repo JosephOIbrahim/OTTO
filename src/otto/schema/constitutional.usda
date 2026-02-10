@@ -25,7 +25,7 @@
     6. One at a time - Complete before switching
     7. User knows best - Their signal trumps Claude's guess
 
-    [He2025] Determinism Compliance:
+    [He2025]-inspired determinism:
     ================================
     Safety floors are ADDITIVE constraints, never removed:
     - safety_floor_protector >= 0.10 (Validator always has 10% minimum)

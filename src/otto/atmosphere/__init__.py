@@ -6,7 +6,7 @@ Transforms rigid, robotic responses into supportive, flowing communication.
 
 Core Philosophy: "The current that carries, not the dam that blocks"
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Sorted pattern lists for deterministic iteration
 - Fixed transformation order in pipeline
 - Same inputs always produce same outputs

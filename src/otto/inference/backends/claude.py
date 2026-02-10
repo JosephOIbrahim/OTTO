@@ -4,7 +4,7 @@ Claude (Anthropic) Inference Backend
 
 Backend implementation for Claude models via the Anthropic API.
 
-[He2025] Compliance:
+Determinism:
 - Uses temperature=0 for deterministic sampling
 - Provides seed parameter (when supported)
 - Fixed parameter handling
@@ -125,7 +125,7 @@ class ClaudeBackend(InferenceBackend):
         """
         Perform inference using Claude.
 
-        [He2025] Compliance: temperature=0 by default for deterministic output.
+        Determinism: temperature=0 by default for deterministic output.
         """
         if self._client is None:
             await self.initialize()

@@ -4,7 +4,7 @@ Storage Provider Abstract Base Class
 
 Defines the interface for all storage backends.
 
-[He2025] Compliance:
+Determinism:
 - All methods have deterministic behavior
 - Path resolution follows fixed rules
 - No runtime variation based on external state

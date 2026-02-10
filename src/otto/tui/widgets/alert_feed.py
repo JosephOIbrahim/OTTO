@@ -2,7 +2,7 @@
 Alert Feed Widget
 =================
 
-[He2025] Compliant widget displaying recent alerts.
+Determinism widget displaying recent alerts.
 
 Principles:
 1. Render is a pure function of alerts tuple
@@ -31,7 +31,7 @@ class AlertFeedWidget:
     """
     Widget displaying recent alerts.
 
-    [He2025] Compliance:
+    Determinism:
     - No internal mutable state
     - Render is pure function of input
     - Deterministic sorting
@@ -51,7 +51,7 @@ class AlertFeedWidget:
         """
         Create new widget with updated alerts.
 
-        [He2025] Compliance: Returns new instance, doesn't mutate.
+        Determinism: Returns new instance, doesn't mutate.
         """
         return AlertFeedWidget(alerts, self._max_items)
 
@@ -59,7 +59,7 @@ class AlertFeedWidget:
         """
         Format timestamp for display.
 
-        [He2025] Compliance: Deterministic formatting.
+        Determinism: Deterministic formatting.
         Uses fixed format string, no locale-dependent formatting.
         """
         dt = datetime.fromtimestamp(timestamp)
@@ -69,14 +69,14 @@ class AlertFeedWidget:
         """
         Get relative time description.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed thresholds for relative time
         - Deterministic based on delta
         """
         now = time.time()
         delta = now - timestamp
 
-        # [He2025]: Fixed thresholds
+        # Fixed thresholds
         if delta < 60:
             return "just now"
         elif delta < 3600:
@@ -93,7 +93,7 @@ class AlertFeedWidget:
         """
         Render alert severity icon.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         icon = ALERT_ICONS.get(severity, "○")
         color_name, _ = ALERT_COLORS.get(severity, ("white", "#ffffff"))
@@ -106,7 +106,7 @@ class AlertFeedWidget:
         """
         Render a single alert row.
 
-        [He2025] Compliance:
+        Determinism:
         - Pure function of Alert
         - Fixed format structure
         """
@@ -139,7 +139,7 @@ class AlertFeedWidget:
         """
         Render the complete alert feed widget.
 
-        [He2025] Compliance:
+        Determinism:
         - Pure function of self._alerts
         - Deterministic sorting
         - Fixed layout structure
@@ -153,7 +153,7 @@ class AlertFeedWidget:
             )
 
         # Sort alerts deterministically
-        # [He2025]: Sort by timestamp descending, then by id for stability
+        # Sort by timestamp descending, then by id for stability
         sorted_alerts = sorted(
             self._alerts,
             key=lambda a: (-a.timestamp, a.id)
@@ -188,7 +188,7 @@ def render_alert_feed(alerts: Tuple[Alert, ...]) -> Panel:
     """
     Functional interface for rendering alert feed.
 
-    [He2025] Compliance: Pure function, no side effects.
+    Determinism: Pure function, no side effects.
     """
     widget = AlertFeedWidget(alerts)
     return widget.render()

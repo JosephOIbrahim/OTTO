@@ -4,7 +4,7 @@ Real Integration Tests for OTTO Public REST API.
 Unlike test_api_integration.py which uses mocks, these tests use the ACTUAL
 JSON-RPC handler to verify end-to-end behavior.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests verify batch-invariant behavior
 - Same input → same output regardless of execution context
 - Fixed evaluation order throughout the stack
@@ -155,7 +155,7 @@ class TestRealJSONRPCIntegration:
 
 class TestDeterminismHe2025:
     """
-    Test determinism compliance per [He2025] principles.
+    Test determinism principles.
 
     Key principle: Batch invariance - same input produces same output
     regardless of concurrent load or execution context.
@@ -184,7 +184,7 @@ class TestDeterminismHe2025:
         """
         Normalize response for determinism comparison.
 
-        Per [He2025], we expect structural determinism - the response
+       , we expect structural determinism - the response
         structure and non-random data should be identical.
 
         Fields that are expected to vary:
@@ -212,7 +212,7 @@ class TestDeterminismHe2025:
         """
         Verify routing is deterministic.
 
-        [He2025] Principle: Fixed evaluation order ensures reproducibility.
+        Principle: Fixed evaluation order ensures reproducibility.
         """
         request = HTTPRequest(
             method="GET",
@@ -264,7 +264,7 @@ class TestDeterminismHe2025:
         """
         Verify routes are evaluated in fixed order.
 
-        [He2025] requires fixed evaluation order for determinism.
+        requires fixed evaluation order for determinism.
         """
         from otto.api.rest_router import ROUTES
 
@@ -281,7 +281,7 @@ class TestDeterminismHe2025:
         """
         Verify middleware executes in fixed order.
 
-        [He2025] requires fixed evaluation order.
+        requires fixed evaluation order.
         """
         from otto.api.middleware import create_api_middleware
 
@@ -310,7 +310,7 @@ class TestConcurrentRequests:
     """
     Test behavior under concurrent load.
 
-    Per [He2025], batch invariance means results should not depend
+   , batch invariance means results should not depend
     on how many other requests are being processed.
     """
 
@@ -354,7 +354,7 @@ class TestConcurrentRequests:
         """
         Concurrent requests should produce same result as sequential.
 
-        [He2025] batch invariance: result should not depend on concurrent load.
+        batch invariance: result should not depend on concurrent load.
         """
         request = HTTPRequest(
             method="GET",
@@ -470,7 +470,7 @@ class TestHTTPServerRealIntegration:
         """
         Both /api/v1/* and legacy endpoints should work.
 
-        [He2025] fixed evaluation order: API routes checked first,
+        fixed evaluation order: API routes checked first,
         then fall back to legacy routes.
         """
         rest_router = create_real_router(key_manager)

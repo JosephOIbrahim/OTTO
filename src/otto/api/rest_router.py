@@ -22,7 +22,7 @@ Route Mappings:
     GET  /api/v1/health            → (health check)
     GET  /api/v1/openapi.json      → (OpenAPI spec)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED route mappings
 - DETERMINISTIC: path + method → JSON-RPC method
 """
@@ -370,7 +370,7 @@ class RESTRouter:
         except ImportError:
             spec = {"error": "OpenAPI spec not available"}
 
-        # [He2025] Compliance: sort_keys=True for deterministic serialization
+        # Deterministic: sort_keys=True for deterministic serialization
         return HTTPResponse(
             status=200,
             content_type="application/json",

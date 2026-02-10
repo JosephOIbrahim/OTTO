@@ -2,7 +2,7 @@
 OTTO TUI Application
 ====================
 
-[He2025] Compliant terminal dashboard application.
+Determinism terminal dashboard application.
 
 Principles:
 1. Fixed widget layout (WIDGET_ORDER from constants)
@@ -56,7 +56,7 @@ class OTTODashboard:
     """
     Main TUI dashboard application.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed layout structure (from WIDGET_ORDER)
     - Deterministic rendering pipeline
     - Event handlers in fixed order
@@ -83,7 +83,7 @@ class OTTODashboard:
         self._websocket_task: Optional[asyncio.Task] = None
 
         # Command handlers - FIXED mapping
-        # [He2025]: No runtime registration, all handlers defined here
+        # No runtime registration, all handlers defined here
         self._command_handlers: Dict[str, Callable[[], None]] = {
             "health": self._handle_health,
             "state": self._handle_state,
@@ -97,7 +97,7 @@ class OTTODashboard:
         """
         Render header panel.
 
-        [He2025] Compliance: Pure function, fixed content.
+        Determinism: Pure function, fixed content.
         """
         state = self._store.state
 
@@ -138,7 +138,7 @@ class OTTODashboard:
         """
         Render main body layout.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed layout structure
         - Widgets rendered in WIDGET_ORDER
         - Each widget is pure function of state
@@ -148,7 +148,7 @@ class OTTODashboard:
         # Create layout with FIXED structure
         layout = Layout()
 
-        # [He2025]: Fixed ratio split, no adaptive sizing
+        # Fixed ratio split, no adaptive sizing
         layout.split_column(
             Layout(name="top", ratio=2),
             Layout(name="bottom", ratio=1),
@@ -160,7 +160,7 @@ class OTTODashboard:
         )
 
         # Render widgets (order defined in WIDGET_ORDER)
-        # [He2025]: Each render call is a pure function
+        # Each render call is a pure function
 
         cognitive_widget = CognitiveStateWidget(state.cognitive)
         layout["cognitive"].update(cognitive_widget.render())
@@ -180,7 +180,7 @@ class OTTODashboard:
         """
         Render footer panel with shortcuts.
 
-        [He2025] Compliance: Pure function, shortcuts from FIXED constants.
+        Determinism: Pure function, shortcuts from FIXED constants.
         """
         state = self._store.state
 
@@ -195,7 +195,7 @@ class OTTODashboard:
         """
         Render complete dashboard.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed layout structure
         - Rendering order matches WIDGET_ORDER
         - Pure function of state
@@ -203,7 +203,7 @@ class OTTODashboard:
         # Create main layout
         layout = Layout()
 
-        # [He2025]: Fixed ratios, no content-dependent sizing
+        # Fixed ratios, no content-dependent sizing
         layout.split_column(
             Layout(name="header", size=HEADER_HEIGHT),
             Layout(name="body"),
@@ -219,7 +219,7 @@ class OTTODashboard:
 
     # =========================================================================
     # Command Handlers
-    # [He2025]: Fixed handler mapping, deterministic dispatch
+    # Fixed handler mapping, deterministic dispatch
     # =========================================================================
 
     def _handle_health(self) -> None:
@@ -288,7 +288,7 @@ class OTTODashboard:
         """
         Handle keyboard input.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed key → command mapping from KEYBOARD_SHORTCUTS
         - Deterministic dispatch order
         """
@@ -309,7 +309,7 @@ class OTTODashboard:
                 self._current_input += key
         else:
             # Check keyboard shortcuts
-            # [He2025]: Fixed iteration order (tuple)
+            # Fixed iteration order (tuple)
             for shortcut_key, command, _ in KEYBOARD_SHORTCUTS:
                 if key.lower() == shortcut_key:
                     handler = self._command_handlers.get(command)
@@ -321,7 +321,7 @@ class OTTODashboard:
         """
         Run the dashboard.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed update interval
         - Deterministic render loop
         """
@@ -333,7 +333,7 @@ class OTTODashboard:
         with Live(
             self.render(),
             console=self._console,
-            refresh_per_second=4,  # [He2025]: Fixed refresh rate
+            refresh_per_second=4,  # Fixed refresh rate
             screen=True,
         ) as live:
             while self._running:
@@ -397,7 +397,7 @@ def create_dashboard(
     """
     Factory function to create dashboard.
 
-    [He2025] Compliance: Deterministic initialization.
+    Determinism: Deterministic initialization.
     """
     return OTTODashboard(store=store, console=console)
 
@@ -406,7 +406,7 @@ async def run_dashboard() -> None:
     """
     Entry point to run the dashboard.
 
-    [He2025] Compliance: Fixed initialization sequence.
+    Determinism: Fixed initialization sequence.
     """
     dashboard = create_dashboard()
     await dashboard.run()

@@ -3,7 +3,7 @@
  *
  * Converts Orchestra WebSocket state to React Flow nodes and edges
  *
- * 5-Phase NEXUS Pipeline (ThinkingMachines [He2025]):
+ * 5-Phase NEXUS Pipeline (ThinkingMachines):
  * 1. DETECT  - StateNode (PRISM signal extraction)
  * 2. CASCADE - CascadeNode (7-expert Cognitive Safety MoE routing)
  * 3. LOCK    - LockNode (MAX3 + parameter locking)

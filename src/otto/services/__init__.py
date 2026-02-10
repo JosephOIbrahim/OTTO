@@ -2,12 +2,12 @@
 OTTO Secure Services Layer
 ==========================
 
-Provides secure, [He2025]-compliant service infrastructure:
+Provides secure, Deterministic service infrastructure:
 - credentials: Secure credential management with OS keyring
 - audit: Immutable audit log with hash chaining
 - approval: Approval gate system for sensitive actions
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed seeds for all operations
 - Deterministic hashing (SHA-256)
 - Sorted key iteration

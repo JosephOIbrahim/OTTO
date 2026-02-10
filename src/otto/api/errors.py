@@ -22,7 +22,7 @@ REST-only Error Codes:
     N/A     RATE_LIMITED       → 429 (rate limit exceeded)
     N/A     FORBIDDEN          → 403 (insufficient scope)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED error code mappings
 - DETERMINISTIC: JSON-RPC code → (HTTP status, API code)
 """

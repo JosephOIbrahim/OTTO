@@ -1,7 +1,7 @@
 """
 Tests for LLM Provider Layer
 
-[He2025] Compliance:
+Determinism:
 - Fixed test data
 - Deterministic assertions
 - Provider-agnostic testing
@@ -125,16 +125,25 @@ class TestGenerationContext:
         assert ctx.session_id == "test-session"
 
     def test_context_string(self):
-        """Context generates proper string."""
+        """Context generates proper string for notable states only."""
         ctx = GenerationContext(
             burnout_level="YELLOW",
-            energy_level="high",
-            momentum_phase="rolling",
+            energy_level="low",
+            momentum_phase="crashed",
         )
         context_str = ctx.to_context_string()
         assert "YELLOW" in context_str
-        assert "high" in context_str
-        assert "rolling" in context_str
+        assert "low" in context_str
+        assert "crashed" in context_str
+
+    def test_context_string_normal_state_empty(self):
+        """Normal/default state produces empty context string."""
+        ctx = GenerationContext(
+            burnout_level="GREEN",
+            energy_level="high",
+            momentum_phase="rolling",
+        )
+        assert ctx.to_context_string() == ""
 
 
 class TestExpertPrompts:
@@ -223,7 +232,8 @@ class TestResponseGenerator:
         assert call_args.kwargs["prompt"] == "Hello"
         # Direct expert prompt contains "efficient" and "minimal friction"
         assert "efficient" in call_args.kwargs["system"].lower()
-        assert result == "Generated response"
+        # Atmosphere layer may prepend affirmations; core text preserved
+        assert "Generated response" in result
 
     @pytest.mark.asyncio
     async def test_generate_uses_expert_prompt(self, generator, mock_provider):
@@ -259,7 +269,8 @@ class TestResponseGenerator:
         """Generate works with no context provided."""
         result = await generator.generate(message="Hello")
 
-        assert result == "Generated response"
+        # Atmosphere layer may prepend affirmations; core text preserved
+        assert "Generated response" in result
         mock_provider.generate.assert_called_once()
 
     @pytest.mark.asyncio
@@ -307,7 +318,7 @@ class TestMockProvider:
 
 
 class TestDeterminism:
-    """Test deterministic behavior per [He2025]."""
+    """Test deterministic behavior."""
 
     def test_expert_prompts_fixed(self):
         """Expert prompts are constants."""

@@ -229,7 +229,7 @@ class TestDeterministicGoldenOutputs:
     """
     Tests that golden scenarios produce deterministic outputs.
 
-    Per [He2025]: Same input must produce same output across runs.
+    Same input must produce same output across runs.
     """
 
     SCENARIOS = [

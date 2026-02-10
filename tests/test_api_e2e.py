@@ -6,7 +6,7 @@ Unlike other test files that call methods directly, these tests:
 2. Make REAL HTTP requests over the network
 3. Verify the COMPLETE stack from TCP to response
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests verify batch invariance under real network conditions
 - Same request → same response regardless of network timing
 - Fixed behavior across sequential and concurrent HTTP requests
@@ -375,14 +375,14 @@ class TestResponseFormat:
 
 
 # =============================================================================
-# Determinism Tests [He2025] - Real Network
+# Determinism Tests - Real Network
 # =============================================================================
 
 class TestNetworkDeterminism:
     """
     Test determinism under real network conditions.
 
-    [He2025] Batch Invariance: Same input → same output regardless of
+    Batch Invariance: Same input → same output regardless of
     network timing, connection reuse, or concurrent requests.
     """
 
@@ -403,7 +403,7 @@ class TestNetworkDeterminism:
         """
         Sequential requests should produce identical responses.
 
-        [He2025]: Fixed evaluation order ensures reproducibility.
+        Fixed evaluation order ensures reproducibility.
         """
         server, port = server_with_api
         url = f"http://127.0.0.1:{port}/api/v1/status"
@@ -426,7 +426,7 @@ class TestNetworkDeterminism:
         """
         Concurrent requests should produce same results as sequential.
 
-        [He2025] Batch Invariance: Results should not depend on concurrent load.
+        Batch Invariance: Results should not depend on concurrent load.
         """
         server, port = server_with_api
         url = f"http://127.0.0.1:{port}/api/v1/ping"
@@ -458,7 +458,7 @@ class TestNetworkDeterminism:
         """
         Different batch sizes should not affect individual results.
 
-        [He2025]: Batch size should not affect output.
+        Batch size should not affect output.
         """
         server, port = server_with_api
         url = f"http://127.0.0.1:{port}/api/v1/health"
@@ -484,7 +484,7 @@ class TestNetworkDeterminism:
         """
         Fresh connections should produce same results as reused connections.
 
-        [He2025]: Connection state should not affect output.
+        Connection state should not affect output.
         """
         server, port = server_with_api
         url = f"http://127.0.0.1:{port}/api/v1/health"

@@ -6,7 +6,7 @@ Provides:
 - Heartbeat/keepalive for connection monitoring
 - Graceful reconnection support
 
-ThinkingMachines [He2025] compliant:
+ThinkingMachines Determinism:
 - Deterministic state serialization
 - Fixed update intervals
 - Pre-computed state mappings
@@ -36,7 +36,7 @@ class CognitiveState:
     """
     Current cognitive state for dashboard display.
 
-    ThinkingMachines [He2025]: Fixed structure, deterministic serialization.
+    Fixed structure, deterministic serialization.
     Full Orchestra substrate controls - 5-Phase NEXUS Pipeline.
 
     Phases:

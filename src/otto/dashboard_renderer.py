@@ -5,7 +5,7 @@ Dashboard Renderer - Mobile-Compatible Output
 Platform-agnostic dashboard rendering using OutputFormatter abstraction.
 Separates data queries from terminal-specific display code.
 
-[He2025] Compliance:
+Determinism:
 - Fixed rendering order
 - Deterministic output for same state
 - No runtime variation
@@ -125,7 +125,7 @@ def render_progress_bar(
     """
     Generate a progress bar string.
 
-    [He2025]: Deterministic rendering - same value always produces same bar.
+    Deterministic rendering - same value always produces same bar.
 
     Args:
         value: Progress value (0.0-1.0)
@@ -148,7 +148,7 @@ def format_time_ago(timestamp: float) -> str:
     """
     Format timestamp as relative time.
 
-    [He2025]: Deterministic for same input timestamp.
+    Deterministic for same input timestamp.
     """
     import time
     diff = time.time() - timestamp
@@ -174,7 +174,7 @@ class DashboardRenderer:
     Uses OutputFormatter abstraction for rendering, separating
     data queries from terminal-specific display code.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed section order
     - Deterministic state conversion
     - No runtime variation in rendering
@@ -206,7 +206,7 @@ class DashboardRenderer:
 
         Returns CognitiveStateData with all fields populated.
 
-        [He2025]: Fixed field extraction order.
+        Fixed field extraction order.
         """
         # Try to load from CognitiveStateManager if available
         try:
@@ -282,7 +282,7 @@ class DashboardRenderer:
         """
         Convert CognitiveStateData to StatusData.
 
-        [He2025]: Fixed field mapping.
+        Fixed field mapping.
         """
         return StatusData(
             burnout=state.burnout_level,
@@ -321,7 +321,7 @@ class DashboardRenderer:
         """
         Render progress bar with optional label.
 
-        [He2025]: Deterministic rendering.
+        Deterministic rendering.
         """
         bar = render_progress_bar(value, width)
         if label:
@@ -336,7 +336,7 @@ class DashboardRenderer:
         """
         Render a dashboard section.
 
-        [He2025]: Fixed item order.
+        Fixed item order.
         """
         lines = []
         lines.append(section.title.upper())
@@ -355,7 +355,7 @@ class DashboardRenderer:
         """
         Render full dashboard output.
 
-        [He2025]: Fixed section order.
+        Fixed section order.
         """
         if state is None:
             state = self.read_cognitive_state()
@@ -458,7 +458,7 @@ class DashboardRenderer:
         """
         Render state as JSON.
 
-        [He2025]: Deterministic key ordering via sort_keys.
+        Deterministic key ordering via sort_keys.
         """
         if state is None:
             state = self.read_cognitive_state()
@@ -507,7 +507,7 @@ class DashboardRenderer:
         """
         Get state as nested dict (for API responses).
 
-        [He2025]: Returns structured data.
+        Returns structured data.
         """
         if state is None:
             state = self.read_cognitive_state()

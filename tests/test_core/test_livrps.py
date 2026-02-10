@@ -4,7 +4,7 @@ LIVRPS Composition Engine Tests
 
 Tests for USD-inspired composition semantics.
 
-[He2025] Compliance Tests:
+Determinism Tests:
 - Deterministic evaluation order
 - Sorted key iteration
 - Float precision
@@ -341,11 +341,11 @@ class TestConvenienceMethods:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_deterministic_key_order(self):
         """Keys are processed in sorted order."""

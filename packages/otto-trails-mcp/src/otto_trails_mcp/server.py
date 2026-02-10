@@ -28,7 +28,7 @@ Tools Provided:
     otto_get_related      - Follow CONTEXT trails to find related files
     otto_decay_trails     - Run decay and prune dead trails
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - All queries return results in deterministic order
 - Trail operations are atomic via SQLite transactions
 - Same inputs -> same outputs

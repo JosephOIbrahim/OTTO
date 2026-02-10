@@ -5,7 +5,7 @@ Tests for Tier 2: Determinism Verification
 Tests multi-trial verification, divergence detection, consensus mechanisms,
 and criticality-based auto-verification.
 
-[He2025] Tier 2 provides probabilistic detection of non-determinism.
+Tier 2 provides probabilistic detection of non-determinism.
 """
 
 import pytest

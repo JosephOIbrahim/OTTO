@@ -2,14 +2,14 @@
 OTTO TUI Dashboard Tests
 ========================
 
-Comprehensive tests for TUI components with [He2025] determinism verification.
+Comprehensive tests for TUI components with determinism verification.
 
 Test Categories:
 1. Constants integrity
 2. State management (immutability, transitions)
 3. Widget rendering (determinism)
 4. Application logic
-5. [He2025] Compliance verification
+5. Determinism verification
 """
 
 import pytest
@@ -80,7 +80,7 @@ class TestConstants:
         assert len(TUI_VERSION) > 0
 
     def test_he2025_compliance_flag(self):
-        """Test [He2025] compliance flag is True."""
+        """Test Determinism flag is True."""
         assert HE2025_COMPLIANT is True
 
     def test_burnout_levels_complete(self):
@@ -155,7 +155,7 @@ class TestCognitiveState:
         """
         Test checksum is deterministic.
 
-        [He2025] Compliance: Same state → same checksum.
+        Determinism: Same state → same checksum.
         """
         state1 = CognitiveState(
             active_mode="focused",
@@ -282,7 +282,7 @@ class TestTUIState:
         """
         Test get_recent_alerts returns sorted alerts.
 
-        [He2025] Compliance: Deterministic sort order.
+        Determinism: Deterministic sort order.
         """
         alerts = (
             Alert(id="a1", timestamp=100.0, severity="info", title="Old", message=""),
@@ -380,7 +380,7 @@ class TestCognitiveStateWidget:
         """
         Test render is deterministic.
 
-        [He2025] Compliance: Same state → same output.
+        Determinism: Same state → same output.
         """
         state = CognitiveState(
             active_mode="focused",
@@ -437,7 +437,7 @@ class TestProjectCardWidget:
         """
         Test progress bar is deterministic.
 
-        [He2025] Compliance: Same progress → same bar.
+        Determinism: Same progress → same bar.
         """
         project = Project(id="p1", name="Test", status="FOCUS", progress=0.75)
 
@@ -478,7 +478,7 @@ class TestAlertFeedWidget:
         """
         Test alerts are sorted deterministically.
 
-        [He2025] Compliance: Same alerts → same order.
+        Determinism: Same alerts → same order.
         """
         alerts = (
             Alert(id="a1", timestamp=100.0, severity="info", title="A", message=""),
@@ -576,13 +576,13 @@ class TestOTTODashboard:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 @pytest.mark.determinism
 class TestHe2025Compliance:
     """
-    Tests verifying [He2025] determinism compliance.
+    Tests verifying Determinism.
 
     These tests verify that the TUI produces identical output
     for identical input, with no runtime variation.
@@ -612,7 +612,7 @@ class TestHe2025Compliance:
         """
         Test alert sorting is stable for equal timestamps.
 
-        [He2025] Compliance: Secondary sort by ID for stability.
+        Determinism: Secondary sort by ID for stability.
         """
         alerts = (
             Alert(id="a3", timestamp=100.0, severity="info", title="", message=""),
@@ -631,7 +631,7 @@ class TestHe2025Compliance:
         """
         Test rendering same state multiple times produces identical output.
 
-        [He2025] Compliance: No runtime variation in rendering.
+        Determinism: No runtime variation in rendering.
         """
         state = CognitiveState(
             active_mode="focused",
@@ -653,7 +653,7 @@ class TestHe2025Compliance:
         """
         Test state transitions are deterministic.
 
-        [He2025] Compliance: Same update → same result.
+        Determinism: Same update → same result.
         """
         # Test that the same update produces the same cognitive state
         # Note: We compare cognitive checksums, not full state checksums,
@@ -689,7 +689,7 @@ class TestHe2025Compliance:
         """
         Test alert data uses tuple of tuples, not dict iteration.
 
-        [He2025] Compliance: Dict iteration order is implementation-defined.
+        Determinism: Dict iteration order is implementation-defined.
         """
         alert = Alert(
             id="a1",
@@ -709,7 +709,7 @@ class TestHe2025Compliance:
         """
         Test state dispatch has fixed evaluation order.
 
-        [He2025] Compliance: Fixed order prevents batch-variance.
+        Determinism: Fixed order prevents batch-variance.
         """
         reset_store()
         store = get_store()
@@ -733,7 +733,7 @@ class TestHe2025Compliance:
         """
         Test keyboard shortcuts are in fixed order.
 
-        [He2025] Compliance: Tuple ordering is deterministic.
+        Determinism: Tuple ordering is deterministic.
         """
         # KEYBOARD_SHORTCUTS is a tuple, so iteration order is fixed
         keys = [key for key, _, _ in KEYBOARD_SHORTCUTS]

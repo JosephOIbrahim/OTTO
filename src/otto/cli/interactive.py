@@ -19,12 +19,13 @@ Flow:
 This is the primary user-facing interface for OTTO.
 """
 
+import asyncio
 import sys
 import json
 import time
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, List, Tuple
 import logging
 
 from ..profile_loader import ProfileLoader, ResolvedProfile, load_profile
@@ -37,6 +38,12 @@ from ..cognitive_state import (
 from ..prism_detector import PRISMDetector, SignalVector, create_detector
 from ..protection import ProtectionEngine, ProtectionDecision, ProtectionAction
 from ..render import HumanRender, render_welcome
+from ..llm.response_generator import (
+    ResponseGenerator,
+    GenerationContext,
+    ConversationTurn,
+    create_response_generator,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +79,7 @@ class InteractiveSession:
             otto_dir: OTTO directory (default: ~/.otto)
         """
         self.otto_dir = otto_dir or Path.home() / ".otto"
+        self._checkpoint_dir = self.otto_dir / "checkpoints"
 
         # Core components
         self.profile_loader = ProfileLoader(self.otto_dir)
@@ -82,6 +90,10 @@ class InteractiveSession:
         self._profile: Optional[ResolvedProfile] = None
         self._protection: Optional[ProtectionEngine] = None
         self._renderer: Optional[HumanRender] = None
+        self._generator: Optional[ResponseGenerator] = None
+
+        # Conversation history for multi-turn context
+        self._conversation_history: List[ConversationTurn] = []
 
         # Session tracking
         self.session_goal: str = ""
@@ -109,6 +121,17 @@ class InteractiveSession:
             self._renderer = HumanRender(otto_role=self.profile.otto_role)
         return self._renderer
 
+    @property
+    def generator(self) -> Optional[ResponseGenerator]:
+        """Get LLM response generator, creating if API key available."""
+        if self._generator is None:
+            try:
+                self._generator = create_response_generator()
+                logger.info("LLM response generator initialized")
+            except (ImportError, ValueError) as e:
+                logger.warning(f"LLM not available: {e}")
+        return self._generator
+
     def start(self) -> None:
         """
         Start the interactive session.
@@ -134,6 +157,26 @@ class InteractiveSession:
             print("Run 'otto-intake' first to set up your preferences.")
             print()
             sys.exit(0)
+
+        # Check for interrupted work
+        try:
+            from ..checkpoint import OrchestrationCheckpoint
+            checkpoint = OrchestrationCheckpoint(self._checkpoint_dir)
+            interrupted = checkpoint.get_interrupted_orchestrations()
+            if interrupted:
+                latest = interrupted[0]
+                print(f"Found interrupted work: {latest.task[:60]}")
+                print(f"  {len(latest.agents_completed)} agents completed, "
+                      f"{len(latest.agents_pending)} pending")
+                resume = input("Resume? (y/n): ").strip().lower()
+                if resume in ("y", "yes"):
+                    import asyncio
+                    asyncio.run(checkpoint.resume_orchestration(
+                        latest.checkpoint_id, mark_as_recovered=True
+                    ))
+                    print(f"Resumed: {latest.checkpoint_id}")
+        except Exception as e:
+            logger.debug(f"No checkpoint recovery needed: {e}")
 
         # Load state
         state = self.state_manager.load()
@@ -200,7 +243,8 @@ class InteractiveSession:
 
             # Process the actual request
             response = self._process_request(user_input, signals, state)
-            print(response)
+            if response:
+                print(response)
             print()
 
             # Show status line every 10 exchanges
@@ -302,6 +346,34 @@ class InteractiveSession:
         if signals.mode_detected == "recovery":
             state.batch_update({"mode": "recovery"})
 
+    def _map_expert_from_signals(self, signals: SignalVector, state: CognitiveState) -> str:
+        """Map PRISM signals to expert name for generation context."""
+        # Safety-first: burnout → Validator
+        if state.burnout_level in (BurnoutLevel.ORANGE, BurnoutLevel.RED):
+            return "Validator"
+        if signals.requires_intervention():
+            return "Validator"
+
+        # Energy → Restorer
+        if signals.energy_state in ("depleted", "low"):
+            return "Restorer"
+
+        # Overwhelmed/stuck → Scaffolder
+        priority = signals.get_priority_signal()
+        if priority[0].name == "EMOTIONAL":
+            return "Scaffolder"
+
+        # Task completion → Celebrator
+        if signals.task_completed():
+            return "Celebrator"
+
+        # Exploration → Socratic
+        if signals.mode_detected == "exploring":
+            return "Socratic"
+
+        # Default → Direct
+        return "Direct"
+
     def _process_request(
         self,
         user_input: str,
@@ -309,23 +381,61 @@ class InteractiveSession:
         state: CognitiveState
     ) -> str:
         """
-        Process the user's request.
+        Process user request through the LLM pipeline.
 
-        In the full implementation, this would integrate with an LLM.
-        For Phase 1, we return acknowledgment and detected signals.
+        Flow:
+        1. Check for local emotional responses (no LLM needed)
+        2. Build cognitive context from signals + state
+        3. Call LLM with streaming output
+        4. Track conversation history
+        5. Fall back to canned responses if LLM unavailable
         """
-        # Check for emotional response needed
+        # Quick local responses (no LLM needed)
         emotional_response = self.renderer.render_emotional_response(signals)
         if emotional_response:
             return emotional_response
 
-        # Check for task completion celebration
         if signals.task_completed():
             return self.renderer.render_celebration("medium_win")
 
-        # Default response - acknowledge and note detected signals
-        priority = signals.get_priority_signal()
+        # Try LLM generation
+        if self.generator is not None:
+            expert = self._map_expert_from_signals(signals, state)
+            ctx = GenerationContext(
+                expert=expert,
+                burnout_level=state.burnout_level.value,
+                energy_level=state.energy_level.value
+                    if hasattr(state.energy_level, 'value')
+                    else str(state.energy_level),
+                momentum_phase=state.momentum_phase.value
+                    if hasattr(state.momentum_phase, 'value')
+                    else str(state.momentum_phase),
+                platform="cli",
+                conversation_history=self._conversation_history[-20:],
+            )
 
+            try:
+                # Generate response (streaming writes to stdout directly)
+                response_text = asyncio.run(
+                    self._stream_response(user_input, ctx)
+                )
+
+                # Track conversation history
+                self._conversation_history.append(
+                    ConversationTurn(role="user", content=user_input)
+                )
+                self._conversation_history.append(
+                    ConversationTurn(role="assistant", content=response_text)
+                )
+
+                return response_text
+
+            except Exception as e:
+                logger.error(f"LLM generation failed: {e}")
+                # Fall through to canned responses
+
+        # Fallback: canned responses (LLM unavailable)
+        priority = signals.get_priority_signal()
         if priority[0].name == "TASK":
             task_responses = {
                 "implement": "Got it. Let's build this.",
@@ -335,8 +445,18 @@ class InteractiveSession:
                 "review": "Let's take a look.",
             }
             return task_responses.get(priority[1], "Understood.")
-
         return "Got it."
+
+    async def _stream_response(
+        self,
+        message: str,
+        context: GenerationContext,
+    ) -> str:
+        """Generate LLM response, return full text."""
+        return await self.generator.generate(
+            message=message,
+            context=context,
+        )
 
     def _show_status(self, state: CognitiveState) -> None:
         """Show status line."""

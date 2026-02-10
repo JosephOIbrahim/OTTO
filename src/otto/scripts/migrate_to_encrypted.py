@@ -17,7 +17,7 @@ Prerequisites:
     - Run 'otto encryption setup' first to configure encryption
     - Run 'otto encryption unlock' to unlock if locked
 
-[He2025] Compliance:
+Determinism:
     - Deterministic iteration (sorted keys)
     - Fixed encryption parameters (AES-256-GCM)
     - Graceful degradation with backup

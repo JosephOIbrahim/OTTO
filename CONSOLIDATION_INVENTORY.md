@@ -1,7 +1,7 @@
 # Otto Consolidation Inventory
 
 **Date:** 2026-01-23
-**Methodology:** ThinkingMachines [He2025] batch-invariance compliant
+**Methodology:** Batch-invariance
 
 ---
 

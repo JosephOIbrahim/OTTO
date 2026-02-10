@@ -4,7 +4,7 @@ Deterministic Response Cache
 
 Thread-safe response caching with integrity verification.
 
-[He2025] Principles Applied:
+Principles Applied:
 - Deterministic cache key computation (sorted keys, stable serialization)
 - Integrity verification via content hashing
 - No dynamic eviction strategies that could vary with load
@@ -33,13 +33,13 @@ def compute_cache_key(
     """
     Compute deterministic cache key from inference inputs.
 
-    This function is critical for [He2025] compliance. It MUST produce
+    This function is critical for determinism. It MUST produce
     identical keys for identical inputs, regardless of:
     - Dictionary insertion order
     - Parameter ordering in function calls
     - System state or load
 
-    [He2025] Compliance:
+    Determinism:
     - Uses sorted keys for all dictionaries
     - Uses stable JSON serialization (separators, no whitespace variance)
     - Applies SHA-256 for collision resistance
@@ -88,7 +88,7 @@ def _deep_sort_dict(obj: Any) -> Any:
     """
     Recursively sort dictionary keys for deterministic serialization.
 
-    [He2025] Compliance: Ensures nested structures are consistently ordered.
+    Determinism: Ensures nested structures are consistently ordered.
     """
     if isinstance(obj, dict):
         return {k: _deep_sort_dict(v) for k, v in sorted(obj.items())}
@@ -230,7 +230,7 @@ class ResponseCache:
     after a response is cached, identical queries will always
     return identical results.
 
-    [He2025] Compliance:
+    Determinism:
     - No dynamic eviction based on load (fixed max_size, LRU order)
     - Deterministic cache key computation
     - Integrity verification on retrieval

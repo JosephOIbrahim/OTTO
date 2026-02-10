@@ -2,7 +2,7 @@
 OTTO TUI Widgets
 ================
 
-[He2025] Compliant widget components for the TUI dashboard.
+Determinism widget components for the TUI dashboard.
 
 All widgets follow these principles:
 1. Deterministic rendering (same state → same output)

@@ -3,7 +3,7 @@ Tests for SecurityHeadersMiddleware
 
 Tests security header injection into all API responses.
 
-[He2025] Compliance: Verifies FIXED headers, no runtime variation.
+Determinism: Verifies FIXED headers, no runtime variation.
 """
 
 import pytest
@@ -70,14 +70,14 @@ def key_manager(tmp_path) -> APIKeyManager:
 
 
 # =============================================================================
-# Test: Header Values (FIXED per [He2025])
+# Test: Header Values (FIXED)
 # =============================================================================
 
 class TestSecurityHeaderValues:
     """Test that security headers have correct fixed values."""
 
     def test_headers_are_fixed(self):
-        """[He2025] Security headers must be FIXED (no runtime variation)."""
+        """Security headers must be FIXED (no runtime variation)."""
         expected = {
             "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "DENY",
@@ -344,11 +344,11 @@ class TestCreateApiMiddleware:
 
 
 # =============================================================================
-# Test: [He2025] Determinism
+# Test: Determinism
 # =============================================================================
 
 class TestDeterminism:
-    """Test [He2025] determinism compliance."""
+    """Test Determinism."""
 
     def test_headers_are_deterministic(self):
         """Headers should be identical across multiple instantiations."""

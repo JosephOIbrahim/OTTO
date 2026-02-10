@@ -14,7 +14,7 @@ Expert Priority (from CLAUDE.md):
 6. Socratic    - exploring, high_energy, what if → guide discovery
 7. Direct      - focused, hyperfocused, flow → stay out of way
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - FIXED expert priority (never reorder)
 - First-match-wins (no backtracking)
 - Deterministic routing (same signals → same expert)

@@ -2,13 +2,13 @@
 Tests for Tier 3: Kernel-Level Determinism
 ==========================================
 
-Tests [He2025] kernel-level compliance including:
+Tests Deterministic kernel-level determinism including:
 - Kernel configuration validation
 - CUDA environment management
 - Server configuration validation
 - Deterministic vLLM backend
 
-[He2025] Tier 3 provides TRUE kernel-level determinism through:
+Tier 3 provides TRUE kernel-level determinism through:
 - Batch size = 1 (eliminates batch-variance)
 - Fixed CUDA deterministic operations
 - No dynamic algorithm switching
@@ -43,7 +43,7 @@ class TestHe2025KernelConfig:
     """Tests for He2025KernelConfig class."""
 
     def test_default_config_is_compliant(self):
-        """Default configuration is [He2025] compliant."""
+        """Default configuration is Determinism."""
         config = He2025KernelConfig()
 
         assert config.batch_size == 1
@@ -56,14 +56,14 @@ class TestHe2025KernelConfig:
         with pytest.raises(ValueError) as exc:
             He2025KernelConfig(batch_size=2)
 
-        assert "[He2025] requires batch_size=1" in str(exc.value)
+        assert "requires batch_size=1" in str(exc.value)
 
     def test_tensor_parallel_must_be_one(self):
         """Tensor parallel != 1 raises ValueError."""
         with pytest.raises(ValueError) as exc:
             He2025KernelConfig(tensor_parallel_size=2)
 
-        assert "[He2025] requires tensor_parallel_size=1" in str(exc.value)
+        assert "requires tensor_parallel_size=1" in str(exc.value)
 
     def test_max_batched_tokens_must_match_batch_size(self):
         """max_num_batched_tokens must equal batch_size."""

@@ -11,7 +11,7 @@ Pipeline:
 4. EXECUTE - Decision engine routing (work/delegate/protect)
 5. UPDATE  - RC^+xi convergence tracking
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - State snapshot BEFORE processing (batch-invariance)
 - FIXED evaluation order (5 phases, no reordering)
 - FIXED signal priority (emotional > mode > domain > task)
@@ -72,7 +72,7 @@ class PatternTracker:
     - momentum_up: Successful momentum transitions (cold_start→building, etc.)
     - recovery_success: Burnout/energy improved after intervention
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism (inspired by [He2025]):
     - Fixed evaluation order for pattern detection
     - Deterministic trail signals
     - State comparison uses snapshot values only
@@ -255,7 +255,7 @@ class KnowledgeResult:
     When a factual query matches high-confidence knowledge (≥0.85),
     the pipeline short-circuits here instead of running full NEXUS.
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism (inspired by [He2025]):
     - Fixed confidence threshold (0.85)
     - Deterministic short-circuit decision
     """

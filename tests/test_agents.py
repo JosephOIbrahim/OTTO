@@ -8,7 +8,7 @@ Tests for ValidationAgent and ContextAgent covering:
 - Trail deposition
 - Reporting and summaries
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests use deterministic inputs
 - Output verification uses sorted comparisons
 """
@@ -231,7 +231,7 @@ def compliant():
 
         report = validation_agent.format_report(results)
 
-        assert "Compliance Report" in report
+        assert "Determinism Report" in report
         assert "test.py" in report
         assert "HE2025-001" in report
         assert "sorted_max" in report
@@ -660,11 +660,11 @@ class Calculator:
 
 
 # =============================================================================
-# Determinism Tests ([He2025] Compliance)
+# Determinism Tests (Determinism)
 # =============================================================================
 
 class TestDeterminism:
-    """Tests verifying [He2025] determinism compliance."""
+    """Tests verifying Determinism."""
 
     @pytest.mark.asyncio
     async def test_validation_order_deterministic(self, temp_dir):

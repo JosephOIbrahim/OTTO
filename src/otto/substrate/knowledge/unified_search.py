@@ -8,7 +8,7 @@ Provides a unified O(1) retrieval and trigger-based search across:
 - Curated USDA knowledge prims (confidence: 0.95)
 - Personal memories from 'remember' command (confidence: 0.85)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC result ordering (by confidence, then path)
 - FIXED confidence values from sources
 - BOUNDED result sets

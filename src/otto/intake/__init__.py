@@ -6,7 +6,7 @@ how you work—without diagnostic language, without clinical framing.
 
 Just scenarios and choices.
 
-[He2025] Compliance:
+Determinism:
 - Trait accumulation uses sorted key iteration
 - Deterministic profile generation
 - Integration with ProfileManager via LIVRPS layers

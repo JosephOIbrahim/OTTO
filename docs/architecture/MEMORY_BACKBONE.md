@@ -193,7 +193,7 @@ data = storage.read_json("state/cognitive_state.json")
 
 ---
 
-## [He2025] Determinism Compliance
+## Determinism
 
 | Requirement | Implementation |
 |-------------|----------------|

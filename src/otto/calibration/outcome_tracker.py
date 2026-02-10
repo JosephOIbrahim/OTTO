@@ -12,7 +12,7 @@ Tracks:
 
 This data feeds into the CalibrationLearner for weight updates.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed outcome categories
 - Deterministic outcome scoring
 - Bounded history (prevents unbounded memory)

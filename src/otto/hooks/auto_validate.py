@@ -1,9 +1,9 @@
 """
-Auto-Validation Hook for [He2025] Compliance
+Auto-Validation Hook for [He2025]-inspired determinism
 =============================================
 
 Runs after Edit/Write operations on OTTO OS files and checks for
-determinism compliance per ThinkingMachines [He2025].
+determinism (inspired by [He2025]).
 
 Detects and deposits trails for:
 - sorted_max() vs max() on dict items
@@ -11,7 +11,7 @@ Detects and deposits trails for:
 - sorted(set(...)) vs raw set iteration
 - Seeded random operations
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - Fixed pattern matching order
 - Deterministic trail deposits
 - Same code → same validation result
@@ -69,7 +69,7 @@ VIOLATION_PATTERNS = [
     ),
 ]
 
-# Patterns that indicate good [He2025] compliance
+# Patterns that indicate good [He2025]-inspired determinism
 COMPLIANCE_PATTERNS = [
     (r"sorted_max\s*\(", "uses_sorted_max"),
     (r"sorted_max_value\s*\(", "uses_sorted_max_value"),
@@ -91,7 +91,7 @@ COMPLIANCE_PATTERNS = [
 
 def check_he2025_compliance(content: str) -> Tuple[List[dict], List[dict]]:
     """
-    Check code content for [He2025] compliance.
+    Check code content for determinism (inspired by [He2025]).
 
     Args:
         content: Python source code to check
@@ -158,7 +158,7 @@ def extract_new_content(tool_output: str) -> Optional[str]:
 
 class AutoValidateHook(Hook):
     """
-    Validates OTTO OS code for [He2025] compliance after edits.
+    Validates OTTO OS code for determinism (inspired by [He2025]) after edits.
 
     Triggers: POST_TOOL_USE on Edit/Write for OTTO files
     Deposits:
@@ -321,7 +321,7 @@ class AutoValidateHook(Hook):
 
 def validate_file(file_path: str) -> dict:
     """
-    Validate a file for [He2025] compliance.
+    Validate a file for determinism (inspired by [He2025]).
 
     Standalone function for use outside hook context.
 

@@ -27,7 +27,7 @@ Tools Provided:
     orchestra_expert        - Get recommended expert for a message
     orchestra_set_burnout   - Manually set burnout level
     orchestra_set_energy    - Manually set energy level
-    otto_verify_determinism - Run [He2025] compliance check on Python file
+    otto_verify_determinism - Run Determinism check on Python file
     otto_get_test_coverage  - Get test coverage for a module
     otto_run_module_tests   - Run tests for a module
 
@@ -191,7 +191,7 @@ def create_server() -> "Server":
             Tool(
                 name="otto_verify_determinism",
                 description=(
-                    "Run [He2025] determinism compliance check on a Python file. "
+                    "Run Determinism check on a Python file. "
                     "Detects patterns like max() on dicts, unseeded random, and set iteration. "
                     "Returns violations and compliance status."
                 ),
@@ -518,7 +518,7 @@ async def handle_verify_determinism(
 
     return [TextContent(
         type="text",
-        text=f"[He2025] {status}\n\nFile: {path}{violations_text}{compliances_text}\n\n```json\n{json.dumps(result, indent=2)}\n```"
+        text=f"{status}\n\nFile: {path}{violations_text}{compliances_text}\n\n```json\n{json.dumps(result, indent=2)}\n```"
     )]
 
 

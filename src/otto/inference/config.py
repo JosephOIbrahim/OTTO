@@ -129,7 +129,7 @@ class DeterministicInferenceConfig:
 
         Used for cache key computation and verification.
 
-        [He2025] Compliance: Uses sorted keys for deterministic serialization.
+        [He2025]-inspired determinism: Uses sorted keys for deterministic serialization.
         """
         # Convert to dict with sorted keys for deterministic serialization
         config_dict = {

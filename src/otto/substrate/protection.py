@@ -22,7 +22,7 @@ Protected Assets:
 │ Constitutional values    │ SIGNED     │ Immutable core values │
 └─────────────────────────────────────────────────────────────────┘
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED signature algorithm: HMAC-SHA256
 - FIXED encryption: AES-256-GCM (via EncryptionManager)
 - DETERMINISTIC verification
@@ -744,7 +744,7 @@ def get_protection() -> SubstrateProtection:
     """
     Get or create the default SubstrateProtection instance (singleton).
 
-    [He2025] Compliance:
+    Determinism:
     - Singleton ensures consistent state across all callers
     - Deterministic initialization order
 

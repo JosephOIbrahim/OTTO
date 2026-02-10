@@ -14,7 +14,7 @@ import re
 
 import pytest
 
-from otto.core.constitution import (
+from otto_v3.core.constitution import (
     CLINICAL_BLOCKLIST,
     ConstitutionalPrinciples,
     ConstitutionViolation,
@@ -214,7 +214,7 @@ class TestNoClinicalLanguage:
         assert len(CLINICAL_BLOCKLIST) > 0
 
     def test_blocklist_is_tuple_not_set(self) -> None:
-        """Tuple for [He2025] deterministic iteration order."""
+        """Tuple for deterministic iteration order."""
         assert isinstance(CLINICAL_BLOCKLIST, tuple)
 
     def test_blocklist_entries_are_lowercase(self) -> None:

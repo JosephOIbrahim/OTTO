@@ -1,4 +1,4 @@
-# ThinkingMachines [He2025] Compliance Audit
+# ThinkingMachines Determinism Audit
 
 ## Reference
 
@@ -10,7 +10,7 @@ https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 
 ## ⚠️ Scope Clarification (Critical)
 
-**[He2025] addresses GPU kernel-level batch-variance** in LLM inference:
+**addresses GPU kernel-level batch-variance** in LLM inference:
 - RMSNorm reduction order varying with batch size
 - MatMul tile sizes changing with input dimensions
 - Attention split-KV strategy varying with load
@@ -221,7 +221,7 @@ def test_deterministic_resolution():
 
 ## Conclusion
 
-Otto's cognitive routing system is **ThinkingMachines [He2025] compliant**:
+Otto's cognitive routing system is **ThinkingMachines Determinism**:
 
 1. ✅ **Batch-invariant**: Same inputs → same outputs regardless of load
 2. ✅ **Fixed reduction order**: LIVRPS priority is fixed

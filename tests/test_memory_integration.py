@@ -4,7 +4,7 @@ Memory Integration Tests
 
 Tests for unified memory interface integration with services.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed seeds for reproducibility
 - Deterministic test order
 - Sorted assertions
@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Final
 from unittest.mock import MagicMock, patch
 
-# Constants per [He2025]
+# Constants
 TEST_SEED: Final[int] = 0x7E57CAFE
 DETERMINISM_ROUNDS: Final[int] = 10
 
@@ -355,7 +355,7 @@ class TestSurfaceMemoryIntegration:
 # ============================================================================
 
 class TestMemoryDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_outcome_enum_determinism(self):
         """Outcome enum values should be deterministic."""
@@ -439,7 +439,7 @@ class TestAutoApprovalIntegration:
         assert low_strength.auto_approvable is False
 
     def test_threshold_is_fixed(self):
-        """Auto-approval threshold should be fixed per [He2025]."""
+        """Auto-approval threshold should be fixed."""
         from otto.memory import AUTO_APPROVE_THRESHOLD
 
         # Threshold should always be 0.8
@@ -478,7 +478,7 @@ class TestKnowledgeGraphIntegration:
         assert any("LIVRPS" in p.path for p in results)
 
     def test_knowledge_deterministic_query(self):
-        """Query results should be deterministic per [He2025]."""
+        """Query results should be deterministic."""
         from otto.memory import OTTOMemory
 
         OTTOMemory._instance = None
@@ -525,7 +525,7 @@ class TestTrailDecayIntegration:
     """Tests for trail decay integration."""
 
     def test_decay_factor_calculation(self):
-        """Decay factor should follow formula per [He2025]."""
+        """Decay factor should follow formula."""
         from otto.memory import OTTOMemory
 
         OTTOMemory._instance = None
@@ -659,7 +659,7 @@ class TestMemoryMetricsIntegration:
 # ============================================================================
 
 class TestMemoryConstants:
-    """Tests for memory constants per [He2025]."""
+    """Tests for memory constants."""
 
     def test_cognitive_tile_size_fixed(self):
         """COGNITIVE_TILE_SIZE should be fixed at 32."""

@@ -4,7 +4,7 @@ Sync Manifest
 
 Encrypted manifest for tracking synced files.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED manifest format version
 - DETERMINISTIC file entry ordering (sorted by path)
 - BOUNDED entry count (configurable limit)

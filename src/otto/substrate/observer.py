@@ -11,7 +11,7 @@ Features:
 - RC^+xi convergence tracking
 - Pattern recognition for anomalies
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed evaluation windows
 - Deterministic drift calculation
 - Sorted iteration for reproducibility
@@ -33,7 +33,7 @@ from .interface import CognitiveSubstrate, SubstrateTier, SubstrateValue
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Constants - [He2025] Compliance
+# Constants - Determinism
 # ============================================================================
 
 OBSERVER_SEED: Final[int] = 0x0B5E7AE7
@@ -251,7 +251,7 @@ class SubstrateObserver:
     def record_change(self, change: BeliefChange) -> None:
         """Record a belief change.
 
-        Per [He2025]: Deterministic recording order.
+        Deterministic recording order.
 
         Args:
             change: The change to record
@@ -284,7 +284,7 @@ class SubstrateObserver:
     def _record_change_to_memory(self, change: BeliefChange) -> None:
         """Record belief change to unified memory system.
 
-        Per [He2025]: Deterministic trail deposits.
+        Deterministic trail deposits.
 
         Args:
             change: The belief change to record
@@ -665,7 +665,7 @@ class SubstrateObserver:
         """Propose a learning modification to the substrate.
 
         Uses the unified memory interface to submit learning proposals.
-        Per [He2025]: Deterministic proposal format.
+        Deterministic proposal format.
 
         Args:
             key: The substrate key to modify
@@ -685,7 +685,7 @@ class SubstrateObserver:
             # Build evidence list from recent changes
             evidence = []
             if evidence_keys:
-                for ek in sorted(evidence_keys):  # Sorted per [He2025]
+                for ek in sorted(evidence_keys):  # Sorted
                     changes = list(self._key_changes.get(ek, []))
                     if changes:
                         recent = changes[-1]
@@ -716,7 +716,7 @@ class SubstrateObserver:
         """Automatically propose learnings based on drift detection.
 
         Analyzes drift patterns and proposes value adjustments.
-        Per [He2025]: Deterministic iteration order.
+        Deterministic iteration order.
 
         Args:
             min_severity: Minimum drift severity to trigger proposal
@@ -727,7 +727,7 @@ class SubstrateObserver:
         proposed_keys = []
         drift_reports = self.check_all_drift()
 
-        for key in sorted(drift_reports.keys()):  # Sorted per [He2025]
+        for key in sorted(drift_reports.keys()):  # Sorted
             report = drift_reports[key]
 
             if report.severity.value >= min_severity.value:

@@ -10,7 +10,7 @@ Design principles:
 - Scenarios feel like conversations
 - Results stored as USD
 
-[He2025] Compliance:
+Determinism:
 - Trait accumulation uses sorted key iteration
 - Deterministic profile generation
 """
@@ -220,7 +220,7 @@ class IntakeGame:
         """
         Accumulate traits from scenario result.
 
-        [He2025] Compliance: Uses sorted key iteration for determinism.
+        Determinism: Uses sorted key iteration for determinism.
         """
         # Sort keys for deterministic iteration order
         for key in sorted(result.trait_mappings.keys()):
@@ -313,7 +313,7 @@ def run_intake(use_profile_manager: bool = True) -> None:
         use_profile_manager: If True, also loads traits into ProfileManager.
                             Default True for integration with cognitive substrate.
 
-    [He2025] Compliance: Sorted trait accumulation, deterministic profile generation.
+    Determinism: Sorted trait accumulation, deterministic profile generation.
     """
     game = IntakeGame()
     profile_data = game.run()

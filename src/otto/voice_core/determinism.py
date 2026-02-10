@@ -1,5 +1,5 @@
 """
-[He2025] Batch-Invariance Compliance for Voice Processing.
+[He2025]-inspired batch-invariance for Voice Processing.
 
 Fixed seeds and deterministic constants ensuring reproducible voice processing.
 

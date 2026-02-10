@@ -14,7 +14,7 @@ Middleware Pattern:
     Each middleware receives a request context, can modify it,
     and either passes to the next middleware or returns an error.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED middleware order
 - DETERMINISTIC: same request → same middleware decisions
 """
@@ -610,7 +610,7 @@ class InputValidationMiddleware(Middleware):
     """
     Validates request bodies against JSON schemas.
 
-    [He2025] Compliance: FIXED schemas, DETERMINISTIC validation.
+    FIXED schemas, DETERMINISTIC validation.
 
     Validates:
     - Request body structure matches schema
@@ -704,7 +704,7 @@ class InputValidationMiddleware(Middleware):
                 errors.append(f"{field_path}: required field missing")
 
         # Check additional properties
-        # [He2025] Use sorted() for deterministic iteration order
+        # Use sorted() for deterministic iteration order
         if additional is False and self._strict:
             allowed = set(properties.keys())
             for key in sorted(data.keys()):
@@ -905,7 +905,7 @@ class SecurityHeadersMiddleware(Middleware):
     """
     Add security headers to all responses.
 
-    [He2025] Compliance: FIXED headers, no runtime variation.
+    Determinism: FIXED headers, no runtime variation.
 
     Headers added:
     - X-Content-Type-Options: nosniff (prevent MIME sniffing)
@@ -916,7 +916,7 @@ class SecurityHeadersMiddleware(Middleware):
     - X-Request-Id: {request_id} (for tracing)
     """
 
-    # Fixed security headers - [He2025] DETERMINISTIC
+    # Fixed security headers - DETERMINISTIC
     HEADERS = {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
@@ -987,7 +987,7 @@ class ReplayProtectionMiddleware(Middleware):
     """
     Protects against request replay attacks.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED time window (no runtime variation)
     - DETERMINISTIC nonce validation
     - Bounded memory for nonce storage
@@ -1000,7 +1000,7 @@ class ReplayProtectionMiddleware(Middleware):
     GET requests are not protected (read-only, idempotent).
     """
 
-    # [He2025] FIXED configuration - no runtime variation
+    # FIXED configuration - no runtime variation
     DEFAULT_TIME_WINDOW_SECONDS: int = 300  # 5 minutes
     DEFAULT_MAX_NONCES: int = 100000  # Max stored nonces
     DEFAULT_CLEANUP_THRESHOLD: float = 0.9  # Cleanup at 90% capacity
@@ -1017,7 +1017,7 @@ class ReplayProtectionMiddleware(Middleware):
         """
         Initialize replay protection middleware.
 
-        [He2025] Compliance: Parameters are FIXED at initialization.
+        Determinism: Parameters are FIXED at initialization.
 
         Args:
             time_window_seconds: Max age of valid requests. Default: 300 (5 min).
@@ -1242,7 +1242,7 @@ class CORSMiddleware(Middleware):
     """
     Cross-Origin Resource Sharing (CORS) middleware.
 
-    [He2025] Compliance: FIXED allowed origins, methods, and headers.
+    Determinism: FIXED allowed origins, methods, and headers.
     No runtime variation in CORS policy.
 
     Handles:
@@ -1259,7 +1259,7 @@ class CORSMiddleware(Middleware):
     - Access-Control-Expose-Headers
     """
 
-    # [He2025] FIXED CORS configuration - no runtime variation
+    # FIXED CORS configuration - no runtime variation
     DEFAULT_ALLOWED_METHODS: frozenset = frozenset([
         "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
     ])
@@ -1282,7 +1282,7 @@ class CORSMiddleware(Middleware):
         "Retry-After",
     ])
 
-    # [He2025] FIXED max-age for preflight caching (24 hours)
+    # FIXED max-age for preflight caching (24 hours)
     DEFAULT_MAX_AGE: int = 86400
 
     def __init__(
@@ -1297,7 +1297,7 @@ class CORSMiddleware(Middleware):
         """
         Initialize CORS middleware.
 
-        [He2025] Compliance: All parameters are FIXED at initialization.
+        Determinism: All parameters are FIXED at initialization.
         No runtime changes to CORS policy.
 
         Args:
@@ -1309,7 +1309,7 @@ class CORSMiddleware(Middleware):
             allow_credentials: Allow credentials (cookies, auth). Default: False.
             max_age: Preflight cache duration in seconds. Default: 86400 (24h).
         """
-        # FIXED at init - [He2025] determinism
+        # FIXED at init - determinism
         self._allowed_origins: frozenset = frozenset(allowed_origins or set())
         self._allowed_methods: frozenset = frozenset(
             allowed_methods or self.DEFAULT_ALLOWED_METHODS
@@ -1361,7 +1361,7 @@ class CORSMiddleware(Middleware):
         """
         Build CORS response headers.
 
-        [He2025] DETERMINISTIC: Same origin → same headers.
+        DETERMINISTIC: Same origin → same headers.
         """
         allowed_origin = self._get_allowed_origin(origin)
         if not allowed_origin:
@@ -1504,7 +1504,7 @@ def create_api_middleware(
     """
     Create the standard API middleware chain.
 
-    Order is FIXED (per ThinkingMachines [He2025]):
+    Order is FIXED (per ThinkingMachines):
     1. CORS - Handle preflight and add CORS headers (wrapper)
     2. Security Headers - Add security headers to ALL responses (wrapper)
     3. Authentication - Who is this?

@@ -10,7 +10,7 @@ Features:
 - Status line formatting
 - Input history
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic color mapping
 - Fixed progress bar format
 - Sorted output for lists
@@ -39,7 +39,7 @@ from .base import (
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Constants - [He2025] Compliance
+# Constants - Determinism
 # ============================================================================
 
 CLI_SEED: Final[int] = 0xC11FACE

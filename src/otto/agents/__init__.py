@@ -13,13 +13,13 @@ Agent Types:
 - Researcher: Deep research with knowledge integration
 - Memory: Profile storage and recall (USD-backed)
 - Reflection: Self-assessment and cognitive integration
-- Validation: [He2025] determinism compliance checking
+- Validation: Determinism checking
 - Context: Import analysis and dependency mapping
 - Explorer: Codebase exploration (existing)
 - Implementer: Code generation (existing)
 - Reviewer: Code review (existing)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed agent types with deterministic behavior
 - State propagation from parent to child
 - Progress visibility at all times

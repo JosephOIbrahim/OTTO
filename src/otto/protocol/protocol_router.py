@@ -20,7 +20,7 @@ Architecture:
           │
           └── Text/Human (anything else) ──► Transform to Message
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed detection order (binary → jsonrpc → human)
 - Deterministic format classification
 - Layer isolation enforced

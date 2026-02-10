@@ -5,7 +5,7 @@ Rate Limiter Backend Abstraction
 Provides pluggable backend interface for rate limiting.
 Supports distributed rate limiting across multiple instances.
 
-[He2025] Compliance:
+Determinism:
 - FIXED rate limit configurations
 - DETERMINISTIC limit checking
 - Backend-agnostic interface
@@ -78,7 +78,7 @@ class RateLimitBackend(ABC):
     """
     Abstract base class for rate limit backends.
 
-    [He2025] Compliance:
+    Determinism:
     - Backend implementations must be DETERMINISTIC
     - Same key + config → same behavior
     - Atomic operations required
@@ -183,7 +183,7 @@ class InMemoryRateLimitBackend(RateLimitBackend):
     Suitable for single-instance deployments.
     State is lost on restart.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED window algorithm (sliding window)
     - DETERMINISTIC bucket management
     - Thread-safe via asyncio lock
@@ -332,7 +332,7 @@ class RedisRateLimitBackend(RateLimitBackend):
     Uses Redis MULTI/EXEC for atomic operations.
     Supports multiple OTTO instances sharing rate limits.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED Lua scripts (no runtime variation)
     - DETERMINISTIC atomic operations
     - Consistent hashing for key distribution
@@ -347,7 +347,7 @@ class RedisRateLimitBackend(RateLimitBackend):
         )
     """
 
-    # [He2025] FIXED Lua script for atomic check-and-increment
+    # FIXED Lua script for atomic check-and-increment
     # This script is loaded once and cached by Redis
     _CHECK_AND_INCREMENT_SCRIPT = """
     local key = KEYS[1]
@@ -527,7 +527,7 @@ def create_rate_limit_backend(
     """
     Factory function to create rate limit backends.
 
-    [He2025] FIXED backend types - no runtime registration.
+    FIXED backend types - no runtime registration.
 
     Args:
         backend_type: One of "memory" or "redis"

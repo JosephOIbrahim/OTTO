@@ -4,7 +4,7 @@ Tests for Output Formatter Abstraction
 
 Tests the output formatter interface and implementations.
 
-[He2025] Compliance:
+Determinism:
 - Tests verify deterministic behavior
 - Same inputs → same outputs
 """
@@ -414,11 +414,11 @@ class TestGlobalInstance:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestDeterminism:
-    """Tests verifying [He2025] compliant determinism."""
+    """Tests verifying Determinism determinism."""
 
     def test_same_input_same_output_plain(self, plain_formatter, sample_status):
         """Test that same status produces same output."""

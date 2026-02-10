@@ -350,7 +350,7 @@ class TestFactory:
 # =============================================================================
 
 class TestThinkingMachinesCompliance:
-    """Tests for ThinkingMachines [He2025] compliance."""
+    """Tests for ThinkingMachines Determinism."""
 
     def test_constants_are_fixed(self):
         """All constants are fixed values."""

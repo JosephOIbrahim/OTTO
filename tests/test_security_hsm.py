@@ -335,7 +335,7 @@ class TestIntegration:
 
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_fixed_slot_assignments(self):
         """Slot assignments are fixed."""

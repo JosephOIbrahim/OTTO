@@ -17,10 +17,10 @@ import random
 
 import pytest
 
-from otto.core.constitution import SafetyFloors
-from otto.core.prism.signals import CognitiveSignal, Signal
-from otto.core.experts.base import ExpertConfig, ExpertSelection, ExpertWeight
-from otto.core.experts.router import (
+from otto_v3.core.constitution import SafetyFloors
+from otto_v3.core.prism.signals import CognitiveSignal, Signal
+from otto_v3.core.experts.base import ExpertConfig, ExpertSelection, ExpertWeight
+from otto_v3.core.experts.router import (
     ALL_EXPERTS,
     NEXUSRouter,
     STATE_BOOSTS,
@@ -59,7 +59,7 @@ def floors() -> SafetyFloors:
 
 
 # ===================================================================
-# Test: Expert registry [He2025]
+# Test: Expert registry
 # ===================================================================
 
 class TestExpertRegistry:
@@ -283,7 +283,7 @@ class TestStateBoosts:
         assert selection.primary.expert == "executor"
 
     def test_state_boosts_are_sorted(self) -> None:
-        """STATE_BOOSTS must be a sorted tuple for [He2025]."""
+        """STATE_BOOSTS must be a sorted tuple for."""
         keys = [(prop, val, name) for prop, val, name, _ in STATE_BOOSTS]
         assert keys == sorted(keys)
 
@@ -511,7 +511,7 @@ class TestPhaseUpdate:
 
 
 # ===================================================================
-# Test: Determinism — [He2025] compliance
+# Test: Determinism — Determinism
 # ===================================================================
 
 class TestDeterminism:
@@ -578,7 +578,7 @@ class TestFullPipeline:
 
     def test_frustrated_user_full_pipeline(self, router: NEXUSRouter) -> None:
         """Simulate: user sends frustrated message."""
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         signals = detector.detect("UGH this is broken, nothing works!!")
@@ -589,7 +589,7 @@ class TestFullPipeline:
         assert selection.primary.value > 0.10
 
     def test_stuck_user_full_pipeline(self, router: NEXUSRouter) -> None:
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         signals = detector.detect("I'm completely stuck, don't know how to proceed")
@@ -598,7 +598,7 @@ class TestFullPipeline:
         assert selection.primary.expert == "decomposer"
 
     def test_depleted_user_full_pipeline(self, router: NEXUSRouter) -> None:
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         signals = detector.detect("I'm exhausted, need a break, can't think anymore")
@@ -607,7 +607,7 @@ class TestFullPipeline:
         assert selection.primary.expert == "restorer"
 
     def test_focused_user_full_pipeline(self, router: NEXUSRouter) -> None:
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         signals = detector.detect("ready to go, let's do this")
@@ -616,7 +616,7 @@ class TestFullPipeline:
         assert selection.primary.expert == "executor"
 
     def test_exploring_user_full_pipeline(self, router: NEXUSRouter) -> None:
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         signals = detector.detect("what if we tried a completely different approach?")

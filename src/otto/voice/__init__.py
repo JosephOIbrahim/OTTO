@@ -9,7 +9,7 @@ Components:
 - adapter.py: Post-process responses to strip robot speak
 - prompts.py: System prompt injections for voice shaping
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - All pattern lists are sorted for deterministic iteration
 - All classifications use fixed priority order
 - Same inputs always produce same outputs

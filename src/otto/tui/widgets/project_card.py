@@ -2,7 +2,7 @@
 Project Card Widget
 ===================
 
-[He2025] Compliant widget displaying active project.
+Determinism widget displaying active project.
 
 Principles:
 1. Render is a pure function of Project
@@ -29,7 +29,7 @@ class ProjectCardWidget:
     """
     Widget displaying the active FOCUS project.
 
-    [He2025] Compliance:
+    Determinism:
     - No internal mutable state
     - Render is pure function of input
     - All mappings from FIXED constants
@@ -53,7 +53,7 @@ class ProjectCardWidget:
         """
         Create new widget with updated project.
 
-        [He2025] Compliance: Returns new instance, doesn't mutate.
+        Determinism: Returns new instance, doesn't mutate.
         """
         return ProjectCardWidget(project, all_projects)
 
@@ -61,7 +61,7 @@ class ProjectCardWidget:
         """
         Render deterministic progress bar.
 
-        [He2025] Compliance:
+        Determinism:
         - Integer math to avoid floating point non-determinism
         - Fixed width calculation
         """
@@ -71,7 +71,7 @@ class ProjectCardWidget:
         empty_count = width - filled_count
 
         # Determine color based on progress thresholds
-        # [He2025]: Fixed thresholds, no runtime variation
+        # Fixed thresholds, no runtime variation
         if percentage >= 75:
             color = "green"
         elif percentage >= 50:
@@ -91,7 +91,7 @@ class ProjectCardWidget:
         """
         Render status badge.
 
-        [He2025] Compliance: Pure function, FIXED mappings.
+        Determinism: Pure function, FIXED mappings.
         """
         icon = PROJECT_STATUS_ICONS.get(status, "○")
         color_name, _ = PROJECT_STATUS_COLORS.get(status, ("white", "#ffffff"))
@@ -104,7 +104,7 @@ class ProjectCardWidget:
         """
         Render list of all projects with status.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed ordering (FOCUS first, then by status priority)
         - Pure function
         """
@@ -112,7 +112,7 @@ class ProjectCardWidget:
             return Text("No projects", style="dim")
 
         # Sort projects by status priority
-        # [He2025]: Fixed sort order
+        # Fixed sort order
         status_priority = {
             "FOCUS": 0,
             "HOLDING": 1,
@@ -151,7 +151,7 @@ class ProjectCardWidget:
         """
         Render the complete project card widget.
 
-        [He2025] Compliance:
+        Determinism:
         - Pure function of self._project
         - Fixed layout structure
         - All mappings from constants
@@ -232,7 +232,7 @@ def render_project_card(state: TUIState) -> Panel:
     """
     Functional interface for rendering project card.
 
-    [He2025] Compliance: Pure function, no side effects.
+    Determinism: Pure function, no side effects.
     """
     focus_project = state.get_focus_project()
     widget = ProjectCardWidget(focus_project, state.projects)

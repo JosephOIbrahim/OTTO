@@ -20,7 +20,7 @@ Privacy First:
 - Uses folder structure for topic categorization
 - NEVER reads note content or titles
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC: Same files -> Same context
 - FIXED: Parsing rules are immutable
 - BOUNDED: Max notes limit prevents memory issues

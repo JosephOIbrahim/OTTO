@@ -4,7 +4,7 @@ LLM Provider Protocol
 
 Abstract interface for LLM backends.
 
-[He2025] Compliance:
+Determinism:
 - Fixed interface contract
 - Deterministic configuration
 - Provider-agnostic design
@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Final, List, Optional, Protocol, runtime_checkable
 
 
-# [He2025] Fixed constants
+# Fixed constants
 DEFAULT_MAX_TOKENS: Final[int] = 1024
 DEFAULT_TEMPERATURE: Final[float] = 0.7
 DEFAULT_TOP_P: Final[float] = 0.9
@@ -26,7 +26,7 @@ class Message:
     """
     A single message in a conversation.
 
-    [He2025] Fixed role values for deterministic serialization.
+    Fixed role values for deterministic serialization.
     """
     role: str  # "user" or "assistant"
     content: str
@@ -41,12 +41,15 @@ class LLMConfig:
     """
     Configuration for LLM provider.
 
-    [He2025] All fields have fixed defaults.
+    All fields have fixed defaults.
     """
     max_tokens: int = DEFAULT_MAX_TOKENS
     temperature: float = DEFAULT_TEMPERATURE
     top_p: float = DEFAULT_TOP_P  # Nucleus sampling parameter
     model: Optional[str] = None  # Provider-specific model name
+
+    # Effort control (Opus 4.6 GA): "low", "medium", "high", "max"
+    effort: Optional[str] = None
 
     # Safety settings
     stop_sequences: List[str] = field(default_factory=list)
@@ -89,7 +92,7 @@ class LLMProvider(Protocol):
 
     Implement this to add a new LLM backend.
 
-    [He2025] Fixed method signatures for deterministic behavior.
+    Fixed method signatures for deterministic behavior.
     """
 
     @property

@@ -1,7 +1,7 @@
 """
 Comprehensive Determinism Verification for OTTO Public REST API.
 
-Per [He2025] "Defeating Nondeterminism in LLM Inference":
+Per "Defeating Nondeterminism in LLM Inference":
 - Batch invariance: same input → same output regardless of concurrent load
 - Fixed evaluation order: no runtime-dependent branching
 - Reproducible computations: deterministic routing and response generation
@@ -84,7 +84,7 @@ class TestRouteOrderDeterminism:
     """
     Verify route evaluation order is fixed.
 
-    [He2025] Principle: Fixed evaluation order ensures reproducibility.
+    Principle: Fixed evaluation order ensures reproducibility.
     """
 
     def test_routes_list_is_immutable_order(self):
@@ -155,7 +155,7 @@ class TestMiddlewareChainDeterminism:
     """
     Verify middleware execution order is fixed.
 
-    [He2025] Principle: Fixed evaluation order in the processing pipeline.
+    Principle: Fixed evaluation order in the processing pipeline.
     """
 
     def test_middleware_order_is_fixed(self):
@@ -202,7 +202,7 @@ class TestResponseStructureDeterminism:
     """
     Verify response structure is deterministic.
 
-    [He2025] Principle: Same input should produce structurally identical output.
+    Principle: Same input should produce structurally identical output.
     """
 
     def test_success_response_structure_fixed(self):
@@ -252,7 +252,7 @@ class TestErrorCodeMappingDeterminism:
     """
     Verify error code → HTTP status mapping is deterministic.
 
-    [He2025] Principle: Fixed mappings, no runtime variation.
+    Principle: Fixed mappings, no runtime variation.
     """
 
     def test_error_code_to_status_is_fixed(self):
@@ -287,7 +287,7 @@ class TestAPIKeyValidationDeterminism:
     """
     Verify API key validation is deterministic.
 
-    [He2025] Principle: Same key + same state → same validation result.
+    Principle: Same key + same state → same validation result.
     """
 
     def test_valid_key_always_validates(self):
@@ -344,7 +344,7 @@ class TestAPIKeyValidationDeterminism:
 
 class TestBatchInvariance:
     """
-    Verify batch invariance per [He2025].
+    Verify batch invariance.
 
     Core principle: Results should not depend on concurrent load.
     """

@@ -20,7 +20,7 @@ Security:
 - Constant-time comparison to prevent timing attacks
 - Key_id logged for auditing, never full key
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED key format
 - DETERMINISTIC: key_id → stored hash lookup
 """

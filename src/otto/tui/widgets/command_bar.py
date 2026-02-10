@@ -2,7 +2,7 @@
 Command Bar Widget
 ==================
 
-[He2025] Compliant widget displaying keyboard shortcuts and status.
+Determinism widget displaying keyboard shortcuts and status.
 
 Principles:
 1. All shortcuts from FIXED constants
@@ -24,7 +24,7 @@ class CommandBarWidget:
     """
     Widget displaying keyboard shortcuts and connection status.
 
-    [He2025] Compliance:
+    Determinism:
     - Shortcuts from FIXED constant
     - No internal mutable state
     - Render is pure function
@@ -50,7 +50,7 @@ class CommandBarWidget:
         """
         Create new widget with updated status.
 
-        [He2025] Compliance: Returns new instance, doesn't mutate.
+        Determinism: Returns new instance, doesn't mutate.
         """
         return CommandBarWidget(connected, error_message, current_input)
 
@@ -58,13 +58,13 @@ class CommandBarWidget:
         """
         Render keyboard shortcuts.
 
-        [He2025] Compliance:
+        Determinism:
         - FIXED shortcut list from constants
         - Deterministic formatting
         """
         text = Text()
 
-        # [He2025]: Iterate in fixed order (tuple order is deterministic)
+        # Iterate in fixed order (tuple order is deterministic)
         for i, (key, command, description) in enumerate(KEYBOARD_SHORTCUTS):
             if i > 0:
                 text.append("  ")
@@ -80,7 +80,7 @@ class CommandBarWidget:
         """
         Render connection status indicator.
 
-        [He2025] Compliance: Pure function, fixed status mapping.
+        Determinism: Pure function, fixed status mapping.
         """
         text = Text()
 
@@ -97,7 +97,7 @@ class CommandBarWidget:
         """
         Render error message if present.
 
-        [He2025] Compliance: Pure function.
+        Determinism: Pure function.
         """
         if not self._error_message:
             return None
@@ -111,7 +111,7 @@ class CommandBarWidget:
         """
         Render the complete command bar widget.
 
-        [He2025] Compliance:
+        Determinism:
         - Pure function of state
         - Fixed layout structure
         """
@@ -159,7 +159,7 @@ def render_command_bar(
     """
     Functional interface for rendering command bar.
 
-    [He2025] Compliance: Pure function, no side effects.
+    Determinism: Pure function, no side effects.
     """
     widget = CommandBarWidget(connected, error_message, current_input)
     return widget.render()

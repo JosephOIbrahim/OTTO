@@ -10,7 +10,7 @@ Features:
 - Progress bars with ETA calculation
 - Cognitive state visualization
 - Interactive controls
-- ThinkingMachines [He2025] compliant status display
+- ThinkingMachines Determinism status display
 
 Usage:
   python -m otto.cli.tui_enhanced              # Launch enhanced TUI
@@ -23,7 +23,7 @@ Keyboard:
   p           - Toggle progress detail
   1-4         - Set burnout level (testing)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed display phases
 - Deterministic color mapping
 - Bounded update frequency

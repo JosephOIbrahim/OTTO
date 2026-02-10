@@ -292,7 +292,7 @@ Convergence:
 - **RC^+xi Research**: Epistemic tension formula, attractor basin theory
 - **Resonance Framework**: Self-reflection triggers, ancestral wisdom synthesis
 - **PRISM Framework**: 7-perspective signal analysis
-- **ThinkingMachines [He2025]**: Batch-invariance, determinism guarantees
+- **ThinkingMachines**: Batch-invariance, determinism guarantees
 
 ---
 

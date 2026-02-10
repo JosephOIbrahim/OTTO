@@ -18,7 +18,7 @@ Production-grade post-quantum and hardware-backed security:
    - FIPS 204 compliant
    - Hybrid classical + PQ signatures
 
-[He2025] Compliance:
+Determinism:
 - FIXED algorithm parameters (no runtime variation)
 - DETERMINISTIC key derivation
 - Pre-computed security levels
@@ -76,7 +76,7 @@ try:
     import oqs
     HAS_LIBOQS = True
     logger.info(f"liboqs available - PQ algorithms enabled (version: {oqs.oqs_version()})")
-except ImportError:
+except (ImportError, SystemExit, RuntimeError):
     HAS_LIBOQS = False
     logger.warning("liboqs not available - post-quantum algorithms disabled")
 
@@ -99,7 +99,7 @@ class NISTSecurityLevel(Enum):
     """
     NIST Post-Quantum Security Levels.
 
-    [He2025] FIXED: No runtime modification of security levels.
+    FIXED: No runtime modification of security levels.
     """
     LEVEL_1 = 1  # Equivalent to AES-128
     LEVEL_2 = 2  # Stronger than AES-128
@@ -132,7 +132,7 @@ class KeyExchangeResult:
     """
     Result of a hybrid key exchange.
 
-    [He2025] FROZEN: Immutable result.
+    Immutable: Immutable result.
     """
     shared_secret: bytes
     classical_public: bytes
@@ -197,7 +197,7 @@ class HybridKeyExchange:
     protection against "harvest now, decrypt later" attacks while
     maintaining classical security as a fallback.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED algorithm selection (X25519 + ML-KEM-768)
     - FIXED security level (NIST Level 3)
     - DETERMINISTIC key derivation (HKDF-SHA384)
@@ -219,7 +219,7 @@ class HybridKeyExchange:
         # Both now have the same shared_secret
     """
 
-    # [He2025] FIXED algorithm parameters
+    # FIXED algorithm parameters
     CLASSICAL_ALGORITHM = "X25519"
     PQ_ALGORITHM = "ML-KEM-768"  # NIST Level 3
     KDF_ALGORITHM = "HKDF-SHA384"
@@ -415,7 +415,7 @@ class HybridKeyExchange:
         """
         Combine classical and PQ shared secrets using HKDF.
 
-        [He2025] DETERMINISTIC: Fixed KDF parameters.
+        DETERMINISTIC: Fixed KDF parameters.
 
         Args:
             classical_secret: X25519 shared secret
@@ -433,8 +433,8 @@ class HybridKeyExchange:
         hkdf = HKDF(
             algorithm=hashes.SHA384(),
             length=self.SHARED_SECRET_LENGTH,
-            salt=b"OTTO_HYBRID_KEX_v1",  # [He2025] FIXED salt
-            info=b"hybrid_shared_secret",  # [He2025] FIXED info
+            salt=b"OTTO_HYBRID_KEX_v1",  # FIXED salt
+            info=b"hybrid_shared_secret",  # FIXED info
             backend=default_backend(),
         )
 
@@ -462,7 +462,7 @@ class HybridSignature:
     """
     A hybrid classical + post-quantum signature.
 
-    [He2025] FROZEN: Immutable signature.
+    Immutable: Immutable signature.
     """
     classical_signature: bytes
     pq_signature: Optional[bytes]
@@ -512,7 +512,7 @@ class HybridSigner:
     Implements Ed25519 + ML-DSA-65 hybrid signatures providing
     quantum-resistant API key signing and message authentication.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED algorithm selection (Ed25519 + ML-DSA-65)
     - FIXED security level (NIST Level 3)
     - DETERMINISTIC signature verification
@@ -524,7 +524,7 @@ class HybridSigner:
         is_valid = signer.verify(message, signature, keypair.public)
     """
 
-    # [He2025] FIXED algorithm parameters
+    # FIXED algorithm parameters
     CLASSICAL_ALGORITHM = "Ed25519"
     PQ_ALGORITHM = "ML-DSA-65"  # NIST Level 3 (formerly Dilithium3)
 
@@ -863,7 +863,7 @@ class PKCS11HSM(HSMInterface):
     - Azure Dedicated HSM
     - SoftHSM (for testing)
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED mechanism selection per key type
     - DETERMINISTIC slot assignment
     - Key material never exposed to software
@@ -876,7 +876,7 @@ class PKCS11HSM(HSMInterface):
             signature = hsm.sign(key, message, "ECDSA-SHA256")
     """
 
-    # [He2025] FIXED mechanism mappings
+    # FIXED mechanism mappings
     MECHANISMS = {
         "RSA-PKCS": "RSA_PKCS",
         "RSA-OAEP": "RSA_PKCS_OAEP",

@@ -5,7 +5,7 @@ Inference Metrics and Reporting
 Instrumentation for tracking inference behavior, determinism,
 and performance.
 
-[He2025] Compliance:
+Determinism:
 - Deterministic metric computation
 - Fixed aggregation order
 - Reproducible reports
@@ -232,7 +232,7 @@ class DeterminismReport:
         """
         Deterministic hash of this report.
 
-        [He2025] Compliance: Uses sorted keys for reproducibility.
+        Determinism: Uses sorted keys for reproducibility.
         """
         report_data = {
             "total_inferences": self.total_inferences,
@@ -303,7 +303,7 @@ class DeterminismReport:
 
 {self._format_divergences()}
 
-## [He2025] Compliance
+## Determinism
 
 - **Tier 1 (API-Maximized)**: {self.determinism_rate:.1%} of requests
 - **Tier 3 (Kernel-Level)**: {self.kernel_rate:.1%} of requests

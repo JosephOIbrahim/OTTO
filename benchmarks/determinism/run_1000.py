@@ -2,7 +2,7 @@
 1000-Iteration Determinism Verification
 =======================================
 
-Proves OTTO achieves [He2025] batch-invariant execution at application level.
+Proves OTTO achieves batch-invariant execution at application level.
 
 This test verifies that:
 1. Same inputs produce same routing decisions
@@ -10,7 +10,7 @@ This test verifies that:
 3. Same inputs produce same locked parameters
 4. Hash of full result is identical across all iterations
 
-[He2025] Principles Tested:
+Principles Tested:
 - Fixed reduction order
 - Batch invariance
 - Deterministic state transitions
@@ -30,7 +30,7 @@ from otto.cognitive_orchestrator import create_orchestrator, NexusResult
 from otto.cognitive_state import CognitiveState, BurnoutLevel, MomentumPhase, EnergyLevel
 from otto.prism_detector import PRISMDetector
 
-# [He2025] Fixed inputs for determinism test
+# Fixed inputs for determinism test
 FIXED_INPUTS: Final[list[dict]] = [
     {
         "message": "I need help organizing my project",
@@ -87,7 +87,7 @@ class DeterminismResult:
 
 def hash_result(result: dict) -> str:
     """
-    [He2025] Deterministic hash of result.
+    Deterministic hash of result.
 
     Uses sort_keys=True for deterministic JSON serialization.
     """
@@ -118,7 +118,7 @@ def run_single_iteration(orchestrator, inputs: list[dict], states: list[dict]) -
     """
     all_results = []
 
-    # [He2025] Fixed order iteration
+    # Fixed order iteration
     for input_data in inputs:
         for state_data in states:
             # Create cognitive state
@@ -146,7 +146,7 @@ def run_determinism_test(
     """
     Run N iterations of the cognitive pipeline with fixed inputs.
 
-    [He2025] Compliance:
+    Determinism:
     - Same inputs must produce same outputs every time
     - Any variation indicates non-determinism
     """
@@ -193,7 +193,7 @@ def print_result(result: DeterminismResult) -> None:
     """Print determinism test results."""
     print()
     print("="*70)
-    print("[He2025] DETERMINISM VERIFICATION RESULTS")
+    print("DETERMINISM VERIFICATION RESULTS")
     print("="*70)
     print()
     print(f"  Iterations:        {result.iterations}")
@@ -209,12 +209,12 @@ def print_result(result: DeterminismResult) -> None:
 
     if result.deterministic:
         print("  " + "="*50)
-        print("  [He2025] DETERMINISM VERIFIED")
+        print("  DETERMINISM VERIFIED")
         print(f"  All {result.iterations} iterations produced IDENTICAL output")
         print("  " + "="*50)
     else:
         print("  " + "="*50)
-        print("  [He2025] DETERMINISM FAILED")
+        print("  DETERMINISM FAILED")
         print(f"  {result.unique_hashes} unique outputs in {result.iterations} iterations")
         print("  " + "="*50)
 

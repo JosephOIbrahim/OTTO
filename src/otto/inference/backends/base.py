@@ -4,7 +4,7 @@ Abstract Inference Backend
 
 Base class defining the interface that all inference backends must implement.
 
-[He2025] Principles:
+Principles:
 - Fixed interface (no dynamic method addition)
 - Explicit capabilities declaration
 - Deterministic status reporting
@@ -33,7 +33,7 @@ class BackendCapabilities:
     """
     Declares what features a backend supports.
 
-    Frozen for [He2025] compliance (no runtime modification).
+    Frozen for determinism (no runtime modification).
 
     Attributes:
         supports_seed: Can accept seed parameter for reproducibility
@@ -160,7 +160,7 @@ class InferenceBackend(ABC):
     All backends must implement this interface to ensure consistent
     behavior and enable backend swapping.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed method signatures
     - Explicit capability declaration
     - Deterministic configuration

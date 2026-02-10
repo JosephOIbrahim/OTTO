@@ -3,7 +3,7 @@ Register Detection for OTTO Voice System.
 
 Detects communication style: casual, formal, venting, terse.
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Pattern lists are sorted for deterministic iteration
 - Classification uses fixed priority order
 - Same input always produces same output
@@ -37,7 +37,7 @@ class RegisterSignals:
     has_exclamation_burst: bool = False  # !!! or similar
 
 
-# [He2025] Sorted pattern lists for deterministic iteration
+# Sorted pattern lists for deterministic iteration
 CASUAL_MARKERS = sorted([
     r'\bbro\b', r'\bbruh\b', r'\bdude\b',
     r'\blol\b', r'\blmao\b', r'\bhaha\b', r'\bheh\b',
@@ -80,7 +80,7 @@ def detect_register(message: str) -> Tuple[Register, RegisterSignals]:
     """
     Detect register from message.
 
-    [He2025] Deterministic: same input always produces same output.
+    Deterministic: same input always produces same output.
 
     Args:
         message: User message to analyze
@@ -130,7 +130,7 @@ def _classify(signals: RegisterSignals) -> Register:
     """
     Classify register from signals.
 
-    [He2025] Fixed priority order (first match wins):
+    Fixed priority order (first match wins):
     1. Venting (emotional override)
     2. Casual with strong markers (casual markers win over terse)
     3. Terse (structural override, only if no casual markers)

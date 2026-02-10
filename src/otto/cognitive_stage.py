@@ -338,7 +338,7 @@ class MockCognitiveBackend(CognitiveStageBackend):
             return False
 
     def save_stage(self, path: Path) -> None:
-        """Save stage to JSON file with secure atomic write [He2025].
+        """Save stage to JSON file with secure atomic write.
 
         Uses atomic write pattern to prevent:
         - TOCTOU (time-of-check-time-of-use) vulnerabilities

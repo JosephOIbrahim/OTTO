@@ -10,7 +10,7 @@ Hooks are triggered on specific events and can:
 - Deposit trails based on outcomes
 - Inject context into the system message
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Hooks execute in FIXED priority order
 - Same event → same hooks → same result
 - Trail operations are deterministic

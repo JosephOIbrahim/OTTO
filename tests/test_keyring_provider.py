@@ -4,7 +4,7 @@ Tests for Keyring Provider Abstraction
 
 Tests the keyring provider interface and implementations.
 
-[He2025] Compliance:
+Determinism:
 - Tests verify deterministic behavior
 - Same operations → same results
 """
@@ -368,11 +368,11 @@ class TestGlobalInstance:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestDeterminism:
-    """Tests verifying [He2025] compliant determinism."""
+    """Tests verifying Determinism determinism."""
 
     def test_same_input_same_output(self, memory_provider):
         """Test that same operations produce same results."""

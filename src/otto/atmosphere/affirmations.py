@@ -9,7 +9,7 @@ Rules:
 - Never forced or excessive
 - One per response max
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Sorted affirmation lists for deterministic selection
 - Fixed seed for reproducible selection
 - Same inputs always produce same outputs
@@ -41,7 +41,7 @@ class Affirmation:
     energy_level: str = "any"  # "high", "medium", "low", "depleted", "any"
 
 
-# [He2025] Sorted affirmation lists per type for deterministic selection
+# Sorted affirmation lists per type for deterministic selection
 AFFIRMATIONS: Final[Dict[AffirmationType, List[Affirmation]]] = {
     AffirmationType.EFFORT: sorted([
         Affirmation("That was a push.", AffirmationType.EFFORT, "any"),
@@ -127,7 +127,7 @@ def detect_affirmation_type(
     """
     Detect if an affirmation is earned based on user message and context.
 
-    [He2025] Deterministic: fixed signal priority order.
+    Deterministic: fixed signal priority order.
 
     Args:
         user_message: The user's message
@@ -177,7 +177,7 @@ def get_affirmation(
     """
     Get an appropriate affirmation for the type and energy level.
 
-    [He2025] Deterministic selection using hash.
+    Deterministic selection using hash.
 
     Args:
         affirmation_type: Type of affirmation needed

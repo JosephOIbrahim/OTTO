@@ -11,7 +11,7 @@ Implements a detect → diagnose → remediate loop:
 4. Apply automatic remediation where safe
 5. Alert for manual intervention when needed
 
-[He2025] Compliance:
+Determinism:
 - FIXED remediation actions (no runtime policy changes)
 - FIXED detection thresholds
 - Deterministic diagnosis rules
@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - [He2025] Compliant)
+# Constants (FIXED - Determinism)
 # =============================================================================
 
 # Detection thresholds (FIXED)

@@ -9,7 +9,7 @@ Supports:
 - Asynchronous input (APIs, mobile)
 - Memory-based input (testing)
 
-[He2025] Compliance:
+Determinism:
 - Fixed provider selection order
 - Deterministic behavior in testing
 - No runtime variation in input logic
@@ -639,7 +639,7 @@ def _create_default_provider() -> InputProvider:
     """
     Create default provider based on environment.
 
-    [He2025] Fixed selection order: env var → memory (safe default)
+    Fixed selection order: env var → memory (safe default)
     """
     provider_env = os.environ.get("OTTO_INPUT_PROVIDER", "").lower()
 

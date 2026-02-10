@@ -18,7 +18,7 @@ File format:
         ...
     }
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed serialization format
 - Deterministic load order
 - Atomic writes for crash safety

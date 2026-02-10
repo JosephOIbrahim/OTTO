@@ -4,7 +4,7 @@ Tests for Enhanced TUI Dashboard
 
 Tests for Phase 7 TUI enhancements.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic display phase transitions
 - Fixed color mappings
 - Bounded update frequency
@@ -364,7 +364,7 @@ class TestLayoutCreation:
 
 
 class TestThinkingMachinesCompliance:
-    """Tests for ThinkingMachines [He2025] compliance."""
+    """Tests for ThinkingMachines Determinism."""
 
     def test_fixed_color_mappings(self):
         """Color mappings are fixed at import time."""

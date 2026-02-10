@@ -4,7 +4,7 @@ Profile Manager Tests
 
 Tests for user profile management with LIVRPS layering.
 
-[He2025] Compliance Tests:
+Determinism Tests:
 - Deterministic profile composition
 - Schema validation
 - Source tracking
@@ -389,11 +389,11 @@ class TestSingleton:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestProfileDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     @pytest.fixture
     def mock_storage(self):

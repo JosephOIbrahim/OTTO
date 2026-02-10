@@ -19,7 +19,7 @@ Tamper-evident security audit logging using Merkle trees:
    - Append-only guarantee
    - Detect tampering
 
-[He2025] Compliance:
+Determinism:
 - FIXED hash algorithm (SHA-256)
 - DETERMINISTIC tree construction
 - Pre-computed proof verification
@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 # Constants
 # =============================================================================
 
-# [He2025] FIXED: Hash algorithm and domain separators
+# FIXED: Hash algorithm and domain separators
 HASH_ALGORITHM = "sha256"
 LEAF_PREFIX = b"\x00"     # Domain separator for leaf nodes
 NODE_PREFIX = b"\x01"     # Domain separator for internal nodes
@@ -71,7 +71,7 @@ def hash_leaf(data: bytes) -> bytes:
     """
     Hash a leaf node.
 
-    [He2025] DETERMINISTIC: SHA-256 with leaf prefix.
+    DETERMINISTIC: SHA-256 with leaf prefix.
 
     Args:
         data: Leaf data to hash
@@ -89,7 +89,7 @@ def hash_node(left: bytes, right: bytes) -> bytes:
     """
     Hash an internal node.
 
-    [He2025] DETERMINISTIC: SHA-256 with node prefix.
+    DETERMINISTIC: SHA-256 with node prefix.
 
     Args:
         left: Left child hash
@@ -114,7 +114,7 @@ class AuditEntry:
     """
     A single audit log entry.
 
-    [He2025] Compliance: Deterministic serialization.
+    Determinism: Deterministic serialization.
     """
     entry_id: int
     timestamp: float
@@ -130,7 +130,7 @@ class AuditEntry:
         """
         Serialize to bytes for hashing.
 
-        [He2025] DETERMINISTIC: Sorted keys, consistent encoding.
+        DETERMINISTIC: Sorted keys, consistent encoding.
         """
         data = {
             "entry_id": self.entry_id,
@@ -262,7 +262,7 @@ class MerkleTree:
     """
     Binary Merkle tree for audit log integrity.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED hash function (SHA-256)
     - DETERMINISTIC tree construction
     - RFC 6962 compatible structure
@@ -317,7 +317,7 @@ class MerkleTree:
         """
         Compute the root hash of the tree.
 
-        [He2025] DETERMINISTIC: Same entries → same root.
+        DETERMINISTIC: Same entries → same root.
 
         Returns:
             32-byte root hash, or empty hash for empty tree
@@ -350,7 +350,7 @@ class MerkleTree:
         """
         Generate an inclusion proof for an entry.
 
-        [He2025] DETERMINISTIC: Same index → same proof.
+        DETERMINISTIC: Same index → same proof.
 
         Args:
             index: Index of the entry
@@ -410,7 +410,7 @@ class MerkleTree:
         """
         Verify an inclusion proof.
 
-        [He2025] DETERMINISTIC: Same inputs → same result.
+        DETERMINISTIC: Same inputs → same result.
 
         Args:
             entry: Original entry data
@@ -532,7 +532,7 @@ class MerkleTree:
         """
         Verify a consistency proof.
 
-        [He2025] DETERMINISTIC: Same proof → same result.
+        DETERMINISTIC: Same proof → same result.
 
         Args:
             proof: Consistency proof to verify
@@ -595,7 +595,7 @@ class MerkleAuditLog:
     - Inclusion proofs for individual entries
     - Consistency proofs between checkpoints
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED hash algorithm (SHA-256)
     - DETERMINISTIC log structure
     - Verifiable integrity at any point
@@ -945,7 +945,7 @@ class AuditEventType:
     """
     Standard audit event types.
 
-    [He2025] FIXED: Consistent event taxonomy.
+    FIXED: Consistent event taxonomy.
     """
     # Authentication events
     AUTH_SUCCESS = "auth_success"

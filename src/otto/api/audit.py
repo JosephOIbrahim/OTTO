@@ -4,7 +4,7 @@ Audit Logging for OTTO Public REST API
 
 Provides dedicated, append-only audit trail for API key lifecycle events.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC: Same event → same log structure
 - FIXED FORMAT: No runtime variation in log format
 - APPEND-ONLY: Immutable audit trail
@@ -38,7 +38,7 @@ class AuditEvent(Enum):
     """
     API audit event types.
 
-    [He2025] Compliance: Fixed enumeration, no runtime additions.
+    Determinism: Fixed enumeration, no runtime additions.
     """
     # Key lifecycle
     KEY_CREATED = "key.created"
@@ -75,7 +75,7 @@ class AuditRecord:
     """
     Immutable audit record.
 
-    [He2025] Compliance: Fixed structure, deterministic serialization.
+    Determinism: Fixed structure, deterministic serialization.
     """
     timestamp: float
     event: str
@@ -104,7 +104,7 @@ class AuditRecord:
         """
         Serialize to JSON with DETERMINISTIC ordering.
 
-        [He2025] Compliance: sort_keys=True ensures same dict → same JSON.
+        Deterministic: sort_keys=True ensures same dict → same JSON.
         """
         return json.dumps(self.to_dict(), sort_keys=True, separators=(',', ':'))
 
@@ -123,7 +123,7 @@ class AuditLogger:
     - Deterministic serialization
     - Optional structured logging integration
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed log format (no runtime variation)
     - Deterministic: same event + context → same output
     - Append-only: never modifies existing records
@@ -219,7 +219,7 @@ class AuditLogger:
         """
         Get appropriate log level for event type.
 
-        [He2025] Compliance: Fixed mapping, no runtime variation.
+        Determinism: Fixed mapping, no runtime variation.
         """
         # Security-sensitive events at WARNING
         if event in (
@@ -245,7 +245,7 @@ class AuditLogger:
         """
         Format audit record for standard logging.
 
-        [He2025] Compliance: Fixed format template.
+        Determinism: Fixed format template.
         """
         parts = [f"AUDIT:{record.event}"]
 

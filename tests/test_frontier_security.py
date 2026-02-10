@@ -9,7 +9,7 @@ Comprehensive tests for the frontier security modules:
 4. Self-Healing Security (self_healing.py)
 5. Merkle Audit Trail (merkle_audit.py)
 
-[He2025] Compliance: Verifies FIXED algorithms, DETERMINISTIC operations.
+Determinism: Verifies FIXED algorithms, DETERMINISTIC operations.
 """
 
 import hashlib
@@ -154,7 +154,7 @@ class TestHybridKeyExchange:
 
     @pytest.mark.skipif(not HAS_CRYPTOGRAPHY, reason="cryptography not available")
     def test_deterministic_shared_secret(self, kex):
-        """[He2025] Same keys should produce same shared secret."""
+        """Same keys should produce same shared secret."""
         # Generate fixed keys
         alice_keypair, init_message = kex.initiate()
 
@@ -509,7 +509,7 @@ class TestShamirSecretSharing:
             sss.reconstruct([shares[0], shares[1]])  # Only 2 shares
 
     def test_deterministic_reconstruction(self, sss):
-        """[He2025] Same shares should always produce same secret."""
+        """Same shares should always produce same secret."""
         secret = secrets.token_bytes(32)
         shares = sss.split(secret, threshold=3, total_shares=5)
 
@@ -742,7 +742,7 @@ class TestMerkleTree:
         assert len(root) == 32
 
     def test_deterministic_root(self, tree):
-        """[He2025] Same entries should produce same root."""
+        """Same entries should produce same root."""
         entries = [b"entry1", b"entry2", b"entry3"]
 
         tree1 = MerkleTree()
@@ -967,7 +967,7 @@ class TestHashFunctions:
     """Test hash utility functions."""
 
     def test_hash_leaf_deterministic(self):
-        """[He2025] Leaf hashing should be deterministic."""
+        """Leaf hashing should be deterministic."""
         data = b"test data"
         hash1 = hash_leaf(data)
         hash2 = hash_leaf(data)
@@ -975,7 +975,7 @@ class TestHashFunctions:
         assert hash1 == hash2
 
     def test_hash_node_deterministic(self):
-        """[He2025] Node hashing should be deterministic."""
+        """Node hashing should be deterministic."""
         left = b"left" * 8
         right = b"right" * 8
 
@@ -1143,11 +1143,11 @@ class TestFrontierIntegration:
 
 
 # =============================================================================
-# PART 7: Determinism Tests ([He2025] Compliance)
+# PART 7: Determinism Tests (Determinism)
 # =============================================================================
 
 class TestDeterminism:
-    """Test [He2025] determinism compliance across all modules."""
+    """Test Determinism across all modules."""
 
     def test_shamir_lagrange_deterministic(self):
         """Lagrange interpolation should be deterministic."""

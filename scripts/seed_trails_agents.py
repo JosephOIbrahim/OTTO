@@ -5,10 +5,10 @@ Seed Trails Using OTTO OS Agents
 
 Uses ValidationAgent and ContextAgent to analyze the OTTO OS codebase
 and deposit comprehensive trails:
-- QUALITY trails for [He2025] compliance (ValidationAgent)
+- QUALITY trails for determinism (ValidationAgent)
 - CONTEXT trails for import dependencies (ContextAgent)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Processes files in sorted order
 - Uses deterministic agents
 - Fixed signal patterns
@@ -67,7 +67,7 @@ async def seed_with_agents(
         ctx_agent = ContextAgent(store=store, agent_id="seed_context", auto_deposit=True, base_path=base_path)
 
     print(f"\n{'='*60}")
-    print("Phase 1: Validation Analysis ([He2025] Compliance)")
+    print("Phase 1: Validation Analysis (Determinism)")
     print(f"{'='*60}")
 
     # Run validation on entire src directory

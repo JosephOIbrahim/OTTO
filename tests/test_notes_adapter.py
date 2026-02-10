@@ -475,7 +475,7 @@ class TestFactoryFunction:
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for ThinkingMachines [He2025] compliance."""
+    """Tests for ThinkingMachines Determinism."""
 
     @pytest.mark.asyncio
     async def test_same_files_same_context(self, temp_notes_dir):

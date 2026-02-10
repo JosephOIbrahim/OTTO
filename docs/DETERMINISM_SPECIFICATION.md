@@ -2,7 +2,7 @@
 
 **Version**: 1.0.0
 **Status**: Formal Specification
-**ThinkingMachines Compliance**: [He2025]
+**Determinism (inspired by [He2025])**
 
 ---
 
@@ -144,7 +144,7 @@ master_checksum = hashlib.sha256(combined.encode()).hexdigest()[:32]
 class MoERouterAgent(BaseAgent):
     """V5 Intervention Experts with Safety Floors.
 
-    ThinkingMachines Batch-Invariance Compliance [He2025]:
+    Batch-Invariance (inspired by [He2025]):
     - Fixed iteration order (dict order deterministic in Python 3.7+)
     - No dynamic algorithm switching based on input
     - Consistent data layout across all invocations
@@ -336,7 +336,7 @@ The Framework Ottotor achieves **full determinism** when:
 This is verified by:
 - 31 passing tests including determinism tests
 - Checksum-based reproducibility proofs
-- ThinkingMachines [He2025] compliance
+- ThinkingMachines [He2025]-inspired determinism
 
 **Determinism is a feature, not an accident.** The architecture is designed from the ground up to guarantee reproducible cognitive routing.
 

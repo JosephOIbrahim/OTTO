@@ -26,7 +26,7 @@ Message Types:
     error         - Error message
     pong          - Keep-alive response
 
-[He2025] Compliance:
+Determinism:
 - FIXED message format
 - DETERMINISTIC: message type → handler mapping
 """
@@ -272,7 +272,7 @@ class WebSocketHub:
         logger.info(f"WebSocket connected: {connection_id}")
 
         # Send welcome message synchronously via callback
-        # [He2025]: Direct callback avoids event loop dependency
+        # Direct callback avoids event loop dependency
         welcome_msg = WebSocketMessage(
             type=MessageType.WELCOME,
             data={

@@ -4,7 +4,7 @@ OTTO OS Cloud Sync Module
 
 End-to-end encrypted cloud synchronization.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED sync protocol (version, manifest format)
 - DETERMINISTIC conflict resolution (last-write-wins with vector clocks)
 - BOUNDED operations (chunk size, retry limits)

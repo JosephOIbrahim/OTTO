@@ -7,7 +7,7 @@ Provides frontier security capabilities:
 2. Security Invariant Verification - Runtime property checking
 3. Post-Quantum Readiness - Hybrid cipher support
 
-[He2025] Compliance:
+Determinism:
 - FIXED algorithm registries (no runtime modification)
 - DETERMINISTIC invariant evaluation
 - Pre-computed cipher specifications
@@ -74,7 +74,7 @@ class AlgorithmSpec:
     """
     Immutable specification for a cryptographic algorithm.
 
-    [He2025] FROZEN: No runtime modification allowed.
+    Immutable: No runtime modification allowed.
     """
     name: str
     category: AlgorithmCategory
@@ -97,7 +97,7 @@ class AlgorithmRegistry:
     """
     Registry of approved cryptographic algorithms.
 
-    [He2025] Compliance:
+    Determinism:
     - Registry is FIXED at initialization
     - No runtime modifications allowed
     - DETERMINISTIC algorithm lookup
@@ -108,7 +108,7 @@ class AlgorithmRegistry:
         secure_hashes = registry.get_by_category(AlgorithmCategory.HASH, secure_only=True)
     """
 
-    # [He2025] FIXED default algorithms - no runtime variation
+    # FIXED default algorithms - no runtime variation
     _DEFAULT_ALGORITHMS: Tuple[AlgorithmSpec, ...] = (
         # Symmetric ciphers
         AlgorithmSpec(
@@ -458,7 +458,7 @@ class SecurityInvariant(ABC):
     Security invariants are properties that must always hold true.
     They are checked at runtime to detect security violations.
 
-    [He2025] Compliance: Invariant checks are DETERMINISTIC.
+    Determinism: Invariant checks are DETERMINISTIC.
     Same state → same result.
     """
 
@@ -548,7 +548,7 @@ class TLSVersionInvariant(SecurityInvariant):
 class CipherSuiteInvariant(SecurityInvariant):
     """Invariant: Only approved cipher suites are used."""
 
-    # [He2025] FIXED approved ciphers
+    # FIXED approved ciphers
     APPROVED_TLS13_CIPHERS: FrozenSet[str] = frozenset([
         "TLS_AES_256_GCM_SHA384",
         "TLS_CHACHA20_POLY1305_SHA256",
@@ -765,7 +765,7 @@ class InvariantVerifier:
     """
     Verifies security invariants at runtime.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED set of invariants (registered at init)
     - DETERMINISTIC evaluation order
     - REPRODUCIBLE results
@@ -777,7 +777,7 @@ class InvariantVerifier:
             handle_security_violation(results)
     """
 
-    # [He2025] FIXED default invariants
+    # FIXED default invariants
     _DEFAULT_INVARIANTS: Tuple[Type[SecurityInvariant], ...] = (
         TLSVersionInvariant,
         CipherSuiteInvariant,
@@ -834,7 +834,7 @@ class InvariantVerifier:
         """
         Verify all registered invariants.
 
-        [He2025] DETERMINISTIC: Fixed evaluation order.
+        DETERMINISTIC: Fixed evaluation order.
 
         Args:
             context: System context
@@ -914,7 +914,7 @@ class CTLogInfo:
     """
     Information about a CT log.
 
-    [He2025] FROZEN: Immutable log configuration.
+    Immutable: Immutable log configuration.
     """
     name: str
     operator: CTLogOperator
@@ -931,7 +931,7 @@ class CTMonitor:
     Monitors CT logs for certificates issued for your domains.
     Detects unauthorized certificate issuance (CA compromise, misissuance).
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED set of monitored logs
     - DETERMINISTIC log checking
     - Alerting hooks for integration
@@ -948,7 +948,7 @@ class CTMonitor:
     This provides the interface and alerting hooks.
     """
 
-    # [He2025] FIXED known CT logs
+    # FIXED known CT logs
     _KNOWN_LOGS: Tuple[CTLogInfo, ...] = (
         CTLogInfo(
             name="Google Argon 2024",
@@ -1109,7 +1109,7 @@ class AnomalyEvent:
     """
     A detected security anomaly.
 
-    [He2025] Compliance: Deterministic event structure.
+    Determinism: Deterministic event structure.
     """
     event_id: str
     anomaly_type: AnomalyType
@@ -1144,7 +1144,7 @@ class AnomalyDetector(ABC):
 
     Frontier Feature: Pluggable anomaly detection for API security.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED detection thresholds (set at init)
     - DETERMINISTIC anomaly classification
     - No runtime threshold modification
@@ -1204,13 +1204,13 @@ class RateSpikeDetector(AnomalyDetector):
     """
     Detects unusual spikes in request rate.
 
-    [He2025] FIXED thresholds:
+    FIXED thresholds:
     - Spike threshold: 3x baseline
     - Window: 60 seconds
     - Minimum samples: 10
     """
 
-    # [He2025] FIXED thresholds
+    # FIXED thresholds
     SPIKE_MULTIPLIER = 3.0
     WINDOW_SECONDS = 60
     MIN_SAMPLES = 10
@@ -1304,7 +1304,7 @@ class AuthFailureDetector(AnomalyDetector):
     """
     Detects excessive authentication failures.
 
-    [He2025] FIXED thresholds:
+    FIXED thresholds:
     - Max failures per IP: 5 per minute
     - Max failures per key: 3 per minute
     """
@@ -1433,7 +1433,7 @@ class AnomalyDetectionEngine:
 
     Frontier Feature: Composable anomaly detection for API security.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED detector set (registered at init)
     - DETERMINISTIC event routing
     - Consistent detection across instances

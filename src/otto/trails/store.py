@@ -5,7 +5,7 @@ SQLite-backed Trail Store for OTTO OS
 Persistent storage for pheromone trails with atomic operations,
 decay management, and deterministic query ordering.
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - All queries return results in deterministic order (path ASC, signal ASC)
 - Strength aggregations use sorted order before computation
 - No race conditions through SQLite transactions
@@ -116,7 +116,7 @@ class TrailStore:
         """
         Set up encryption if SubstrateProtection is available and configured.
 
-        [He2025] Compliance: Deterministic decision based on protection state.
+        [He2025]-inspired determinism: Deterministic decision based on protection state.
         """
         try:
             from ..substrate.protection import get_protection, SubstrateProtectionError
@@ -166,7 +166,7 @@ class TrailStore:
         """
         Encrypt the temp database and save to encrypted path.
 
-        [He2025] Compliance: Atomic write via temp file.
+        Atomic write via temp file.
         """
         if not self._is_encrypted or not self._temp_db_path or not self._protection:
             return
@@ -325,6 +325,10 @@ class TrailStore:
                 # Cap strength at 1.0
                 new_strength = min(new_strength, 1.0)
 
+                # Merge metadata: existing values preserved, new values added/updated
+                merged_metadata = dict(existing_trail.metadata or {})
+                merged_metadata.update(trail.metadata or {})
+
                 conn.execute(
                     """
                     UPDATE trails SET
@@ -339,7 +343,7 @@ class TrailStore:
                         new_strength,
                         trail.deposited_by,
                         now.isoformat(),
-                        json.dumps(trail.metadata),
+                        json.dumps(merged_metadata),
                         existing_trail.id,
                     ),
                 )
@@ -353,7 +357,7 @@ class TrailStore:
                     deposited_by=trail.deposited_by,
                     deposited_at=now,
                     reinforced_count=existing_trail.reinforced_count + 1,
-                    metadata=trail.metadata,
+                    metadata=merged_metadata,
                     half_life_days=trail.half_life_days,
                 )
             else:

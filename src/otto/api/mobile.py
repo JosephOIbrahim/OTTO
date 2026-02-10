@@ -15,7 +15,7 @@ Endpoints:
     GET  /api/v1/security/crypto          Get crypto capabilities
     POST /api/v1/commands/:command        Execute OTTO command
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED endpoint behavior
 - DETERMINISTIC: request → response mapping
 - Token format and validation are deterministic
@@ -241,7 +241,7 @@ class MobileDeviceManager:
     """
     Manages mobile device registration and authentication.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED token generation algorithm
     - DETERMINISTIC device ID derivation
     """

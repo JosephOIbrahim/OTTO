@@ -376,7 +376,7 @@ class TestGlobalFunctions:
 
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_same_context_same_issues(self):
         """Same context produces same issues."""

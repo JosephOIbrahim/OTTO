@@ -11,7 +11,7 @@ Each MCP server:
 - Logs all operations to audit log
 - Uses credential manager for API keys
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic tool registration
 - Fixed response schemas
 - Sorted iteration for tool listing

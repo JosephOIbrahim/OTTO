@@ -4,7 +4,7 @@ OTTO LLM Provider Layer
 
 Swappable LLM backends for response generation.
 
-[He2025] Compliance:
+Determinism:
 - Fixed system prompts (deterministic instructions)
 - Provider-agnostic interface
 - Consistent context formatting

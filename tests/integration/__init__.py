@@ -11,7 +11,7 @@ Test Categories:
 - test_e2e_scenarios.py: End-to-end user scenarios
 - test_livrps_integration.py: LIVRPS layer composition and safety floors
 
-[He2025] Compliance:
+Determinism:
 - All tests use real memory instances (no mocking of determinism)
 - Tests verify fixed evaluation order
 - Tests verify deterministic outputs

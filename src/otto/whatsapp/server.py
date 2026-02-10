@@ -18,7 +18,7 @@ Environment Variables:
     WHATSAPP_PHONE_NUMBER_ID - WhatsApp Business phone number ID
     WHATSAPP_VERIFY_TOKEN   - Webhook verification token
 
-[He2025] Compliance:
+Determinism:
     - Fixed seed for session management
     - Deterministic cognitive routing
     - State snapshot before processing

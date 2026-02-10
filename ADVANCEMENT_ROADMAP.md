@@ -12,7 +12,7 @@
 - ✅ CI/CD with matrix testing (Ubuntu/Windows × Python 3.10-3.12)
 - ✅ Code coverage in CI (50% threshold, Codecov integration)
 - ✅ Branch protection on main
-- ✅ ThinkingMachines [He2025] compliant
+- ✅ ThinkingMachines Determinism
 - ✅ Public on GitHub
 
 ### Tier 1 Features (Completed)
@@ -101,7 +101,7 @@ pip install otto-mcp
 
 ## Semgrep Determinism Rules
 
-9 rules enforcing ThinkingMachines [He2025] compliance:
+9 rules enforcing Determinism:
 
 | Rule | Severity | Purpose |
 |------|----------|---------|

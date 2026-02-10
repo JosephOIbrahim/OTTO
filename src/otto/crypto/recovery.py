@@ -4,7 +4,7 @@ Recovery Key Generation
 
 Generate and validate recovery keys for password-less decryption.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED entropy: 256 bits
 - FIXED format: 24 words (BIP39-compatible word count)
 - DETERMINISTIC validation

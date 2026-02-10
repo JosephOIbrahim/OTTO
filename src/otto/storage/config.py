@@ -5,7 +5,7 @@ Storage Configuration
 Centralized configuration for all storage paths.
 Supports environment variable overrides for flexibility.
 
-[He2025] Compliance:
+Determinism:
 - Fixed default values
 - Deterministic environment variable resolution
 - No runtime variation
@@ -37,7 +37,7 @@ def _get_env_path(env_var: str, default: Path) -> Path:
     """
     Get a path from environment variable or use default.
 
-    [He2025] Deterministic: Same env → same result.
+    Deterministic: Same env → same result.
     """
     value = os.environ.get(env_var)
     if value:
@@ -105,9 +105,9 @@ class StorageConfig:
         """
         Get the root path for a storage type.
 
-        [He2025] Fixed mapping, no runtime variation.
+        Fixed mapping, no runtime variation.
         """
-        # [He2025] Fixed evaluation order
+        # Fixed evaluation order
         roots = {
             StorageRoot.OTTO: self.otto_root,
             StorageRoot.ORCHESTRA: self.orchestra_root,

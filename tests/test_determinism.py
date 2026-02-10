@@ -1,5 +1,5 @@
 """
-Tests for [He2025] Determinism Compliance
+Tests for [He2025]-inspired determinism
 =========================================
 
 Verifies that OTTO OS routing and aggregation operations are deterministic

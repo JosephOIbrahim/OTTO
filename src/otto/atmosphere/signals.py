@@ -10,7 +10,7 @@ These signals flow BACK from atmosphere to the cognitive layer:
 - Affirmation patterns show momentum
 - Reframe usage shows learning state
 
-[He2025] Compliance:
+Determinism:
 - Fixed signal structure (deterministic)
 - Same inputs produce same signals
 - Signals are observational (no side effects)
@@ -126,7 +126,7 @@ def extract_signals(
     """
     Extract atmosphere signals from transformation results.
 
-    [He2025] Deterministic extraction from transformation outputs.
+    Deterministic extraction from transformation outputs.
 
     Args:
         response: Original response

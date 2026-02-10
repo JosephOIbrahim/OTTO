@@ -6,7 +6,7 @@ Generates OpenAPI 3.0 spec from route definitions.
 
 The spec is auto-generated and served at /api/v1/openapi.json.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC: same routes → same spec
 """
 

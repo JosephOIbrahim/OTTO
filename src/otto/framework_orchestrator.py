@@ -755,7 +755,7 @@ class MoERouterAgent(BaseAgent):
     - Priority-based tiebreaking (lower priority number wins)
     - Homeostatic normalization (weights sum to 1.0)
 
-    ThinkingMachines Batch-Invariance Compliance [He2025]:
+    Batch-Invariance (inspired by [He2025]):
     - Fixed iteration order (dict order deterministic in Python 3.7+)
     - No dynamic algorithm switching based on input
     - Consistent data layout across all invocations
@@ -873,7 +873,7 @@ class MoERouterAgent(BaseAgent):
                 activation["guide"] = max(activation["guide"], task_signals["research"])
 
         # Fallback: Original keyword matching (if no PRISM signals)
-        # [He2025] Use kahan_sum for batch-invariant accumulation
+        # Use kahan_sum for batch-invariant accumulation
         if not prism_signals or kahan_sum(activation.values()) == 0:
             for expert, config in self.EXPERTS.items():
                 triggers = config["triggers"]
@@ -910,7 +910,7 @@ class MoERouterAgent(BaseAgent):
             bounded[expert] = max(score, floor)
 
         # Homeostatic normalization: ensure weights sum to 1.0
-        # [He2025] Use kahan_sum for batch-invariant accumulation
+        # Use kahan_sum for batch-invariant accumulation
         total = kahan_sum(bounded.values())
         if total > 0:
             # Normalize in sorted key order for determinism
@@ -1182,7 +1182,7 @@ def _apply_determinism_settings(seed: int) -> Dict[str, Any]:
     """
     Apply determinism settings to all available random sources.
 
-    ThinkingMachines Compliance [He2025]:
+    Determinism (inspired by [He2025]):
         Controls every source of randomness for batch-invariant inference.
         Settings are applied at runtime, not just documented.
 

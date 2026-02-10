@@ -4,7 +4,7 @@ JSON Schemas for OTTO API Input Validation
 
 Defines validation schemas for API request bodies.
 
-[He2025] Compliance: FIXED schemas, DETERMINISTIC validation.
+FIXED schemas, DETERMINISTIC validation.
 """
 
 from typing import Dict, Any

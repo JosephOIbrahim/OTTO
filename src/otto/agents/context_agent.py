@@ -5,7 +5,7 @@ Context Agent for OTTO OS
 A specialized agent that analyzes import dependencies and relationships
 between files, depositing CONTEXT trails to help navigation.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Uses deterministic AST parsing
 - Deposits trails in sorted order
 - Fixed dependency resolution algorithm

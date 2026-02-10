@@ -325,7 +325,7 @@ class DistributedTracer:
     def _should_sample(self) -> bool:
         """Determine if this trace should be sampled.
 
-        ThinkingMachines [He2025] Compliance:
+        Determinism:
             Uses seeded RNG for reproducible sampling decisions.
         """
         if self.sample_rate >= 1.0:

@@ -2,9 +2,9 @@
 OTTO TUI State Management
 =========================
 
-[He2025] Compliance: Immutable state with deterministic transitions.
+Determinism: Immutable state with deterministic transitions.
 
-This module implements state management following [He2025] principles:
+This module implements state management following principles:
 1. Immutable state objects (frozen dataclasses)
 2. Deterministic state transitions (pure functions)
 3. No hidden state (all state is explicit)
@@ -34,7 +34,7 @@ from .constants import (
 
 # =============================================================================
 # IMMUTABLE STATE OBJECTS
-# [He2025]: Frozen dataclasses prevent mutation
+# Frozen dataclasses prevent mutation
 # =============================================================================
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class CognitiveState:
     """
     Immutable cognitive state snapshot.
 
-    [He2025] Compliance:
+    Determinism:
     - frozen=True prevents mutation
     - All fields have explicit types
     - Default values are deterministic
@@ -57,7 +57,7 @@ class CognitiveState:
 
     def __post_init__(self):
         """Validate state values are within allowed sets."""
-        # [He2025]: Fail fast on invalid state
+        # Fail fast on invalid state
         if self.active_mode not in MODES:
             object.__setattr__(self, 'active_mode', 'focused')
         if self.burnout_level not in BURNOUT_LEVELS:
@@ -106,7 +106,7 @@ class CognitiveState:
         """
         Generate deterministic checksum for state verification.
 
-        [He2025] Compliance: Fixed field order ensures deterministic hash.
+        Determinism: Fixed field order ensures deterministic hash.
         """
         # FIXED order - never changes
         ordered_values = (
@@ -127,7 +127,7 @@ class Project:
     """
     Immutable project state.
 
-    [He2025] Compliance: frozen=True, explicit types.
+    Immutable: frozen=True, explicit types.
     """
     id: str
     name: str
@@ -151,7 +151,7 @@ class Alert:
     """
     Immutable alert object.
 
-    [He2025] Compliance: frozen=True, timestamp for ordering.
+    Immutable: frozen=True, timestamp for ordering.
     """
     id: str
     timestamp: float
@@ -189,7 +189,7 @@ class TUIState:
     """
     Complete TUI state - immutable snapshot.
 
-    [He2025] Compliance:
+    Determinism:
     - All nested objects are also immutable
     - State transitions create new objects
     - No mutation allowed
@@ -212,7 +212,7 @@ class TUIState:
         """
         Get most recent alerts.
 
-        [He2025] Compliance: Deterministic sorting by timestamp.
+        Determinism: Deterministic sorting by timestamp.
         """
         # Sort by timestamp descending (most recent first)
         # sorted() is stable and deterministic for equal timestamps
@@ -226,7 +226,7 @@ class TUIState:
         """
         Generate deterministic checksum for entire state.
 
-        [He2025] Compliance: Fixed computation order.
+        Determinism: Fixed computation order.
         """
         parts = [
             self.cognitive.checksum(),
@@ -240,7 +240,7 @@ class TUIState:
 
 # =============================================================================
 # STATE TRANSITIONS
-# [He2025]: Pure functions, no side effects
+# Pure functions, no side effects
 # =============================================================================
 
 def update_cognitive_state(
@@ -250,7 +250,7 @@ def update_cognitive_state(
     """
     Create new state with updated cognitive state.
 
-    [He2025] Compliance: Pure function, returns new immutable object.
+    Determinism: Pure function, returns new immutable object.
     """
     return TUIState(
         cognitive=cognitive,
@@ -269,7 +269,7 @@ def update_projects(
     """
     Create new state with updated projects.
 
-    [He2025] Compliance: Pure function, returns new immutable object.
+    Determinism: Pure function, returns new immutable object.
     """
     return TUIState(
         cognitive=current.cognitive,
@@ -289,7 +289,7 @@ def add_alert(
     """
     Create new state with added alert.
 
-    [He2025] Compliance:
+    Determinism:
     - Pure function
     - Deterministic ordering (by timestamp, then id)
     - Fixed maximum size
@@ -321,7 +321,7 @@ def set_connection_state(
     """
     Create new state with updated connection state.
 
-    [He2025] Compliance: Pure function.
+    Determinism: Pure function.
     """
     return TUIState(
         cognitive=current.cognitive,
@@ -340,7 +340,7 @@ def apply_state_update(
     """
     Apply a state update from WebSocket message.
 
-    [He2025] Compliance:
+    Determinism:
     - Deterministic field mapping
     - Pure function
     - No side effects
@@ -373,14 +373,14 @@ def apply_state_update(
 
 # =============================================================================
 # STATE STORE
-# [He2025]: Single source of truth with event history
+# Single source of truth with event history
 # =============================================================================
 
 class StateStore:
     """
     State store with deterministic state management.
 
-    [He2025] Compliance:
+    Determinism:
     - Single source of truth
     - Event-sourced state changes
     - Deterministic reducer pattern
@@ -417,7 +417,7 @@ class StateStore:
         """
         Dispatch an event to update state.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed event type → reducer mapping
         - Deterministic state transition
         - Event recorded for replay
@@ -430,7 +430,7 @@ class StateStore:
             self._event_history = self._event_history[-self._max_history:]
 
         # Apply reducer based on event type
-        # [He2025]: Fixed mapping, no runtime variation
+        # Fixed mapping, no runtime variation
         new_state = self._reduce(event_type, payload)
 
         if new_state is not self._state:
@@ -441,7 +441,7 @@ class StateStore:
         """
         Reduce event to new state.
 
-        [He2025] Compliance: Fixed event → reducer mapping.
+        Determinism: Fixed event → reducer mapping.
         """
         # FIXED mapping - defined at compile time
         reducers = {
@@ -470,7 +470,7 @@ class StateStore:
         """
         Notify all listeners of state change.
 
-        [He2025] Compliance: Fixed notification order.
+        Determinism: Fixed notification order.
         """
         # Listeners notified in registration order
         for listener in self._listeners:

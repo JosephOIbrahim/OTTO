@@ -5,7 +5,7 @@ Notion MCP Server
 MCP server for Notion operations.
 Provides access to pages, databases, and blocks.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic page ordering (by last edited)
 - Fixed block type mapping
 - Sorted iteration

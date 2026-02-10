@@ -1,7 +1,7 @@
 """
 Tests for OTTO CLI api-key command.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests verify deterministic command behavior
 - Same inputs → same outputs
 - Fixed error message format
@@ -532,14 +532,14 @@ class TestApiKeyUnknown:
 
 
 # =============================================================================
-# Test: Determinism [He2025]
+# Test: Determinism
 # =============================================================================
 
 class TestDeterminism:
     """
     Verify CLI command output is deterministic.
 
-    [He2025] Principle: Same inputs → same outputs.
+    Principle: Same inputs → same outputs.
     """
 
     def test_list_output_deterministic(self, mock_home, capsys):

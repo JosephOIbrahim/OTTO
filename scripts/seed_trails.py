@@ -4,11 +4,11 @@ Seed Initial Trails for OTTO OS
 ================================
 
 Analyzes existing OTTO OS source files and deposits initial trails:
-- QUALITY trails for [He2025] compliance
+- QUALITY trails for determinism
 - CONTEXT trails for import dependencies
 - PATTERN trails for recurring code patterns
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deposits in deterministic order (sorted paths)
 - Uses batch-invariant operations
 - Fixed signal patterns
@@ -31,7 +31,7 @@ from otto.trails import Trail, TrailType, TrailStore
 
 def analyze_file_he2025(path: Path, content: str) -> tuple[list[str], list[str]]:
     """
-    Analyze Python file for [He2025] compliance.
+    Analyze Python file for determinism.
 
     Returns:
         (violations, compliances) - lists of signal strings
@@ -193,7 +193,7 @@ def seed_trails(
 
         stats["files_analyzed"] += 1
 
-        # [He2025] compliance analysis
+        # Determinism analysis
         violations, compliances = analyze_file_he2025(py_file, content)
 
         for violation in violations:

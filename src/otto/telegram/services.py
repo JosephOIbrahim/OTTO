@@ -4,7 +4,7 @@ Telegram Service Router
 
 Routes Telegram requests to MCP services.
 
-[He2025] Compliance:
+Determinism:
 - Deterministic service routing
 - Fixed parameter extraction order
 - Sorted tool iteration
@@ -38,7 +38,7 @@ from ..services.approval import get_approval_gate
 logger = logging.getLogger(__name__)
 
 
-# [He2025] Fixed constants
+# Fixed constants
 SERVICE_ROUTE_SEED: Final[int] = 0x5EAF00D5
 MAX_RESULT_LINES: Final[int] = 10
 DATE_FORMAT: Final[str] = "%Y-%m-%d"
@@ -49,7 +49,7 @@ class ServiceRequest:
     """
     Parsed service request from Telegram.
 
-    [He2025] Deterministic structure.
+    Deterministic structure.
     """
     service: str
     """Target service name (calendar, tasks, email, etc.)."""
@@ -89,7 +89,7 @@ class TelegramServiceRouter:
     """
     Routes Telegram requests to MCP services.
 
-    [He2025] Compliance:
+    Determinism:
     - Deterministic service selection (first match)
     - Fixed pattern evaluation order
     - Sorted service iteration
@@ -108,7 +108,7 @@ class TelegramServiceRouter:
         """
         Initialize and register MCP servers.
 
-        [He2025] Fixed initialization order.
+        Fixed initialization order.
         """
         # Initialize servers in deterministic order
         servers = [
@@ -187,7 +187,7 @@ class TelegramServiceRouter:
         """
         Parse request text to extract service and parameters.
 
-        [He2025] Fixed parsing order:
+        Fixed parsing order:
         1. Command format (/service action params)
         2. Natural language patterns
         3. Default patterns
@@ -264,7 +264,7 @@ class TelegramServiceRouter:
         """
         Map action verb to tool name.
 
-        [He2025] Fixed mapping (deterministic).
+        Fixed mapping (deterministic).
         """
         action_map = {
             "calendar": {
@@ -311,7 +311,7 @@ class TelegramServiceRouter:
         """
         Extract parameters from command arguments.
 
-        [He2025] Fixed extraction logic per service/action.
+        Fixed extraction logic per service/action.
         """
         params: Dict[str, Any] = {}
 
@@ -396,7 +396,7 @@ class TelegramServiceRouter:
         """
         Invoke the default tool for a service.
 
-        [He2025] Fixed default tool per service.
+        Fixed default tool per service.
         """
         default_tools = {
             "calendar": "calendar_list_events",
@@ -449,7 +449,7 @@ class TelegramServiceRouter:
         """
         Format MCPToolResult for Telegram display.
 
-        [He2025] Fixed formatting rules.
+        Fixed formatting rules.
         """
         if not result.success:
             return ServiceResponse(

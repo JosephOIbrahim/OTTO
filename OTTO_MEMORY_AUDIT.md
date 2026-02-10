@@ -242,7 +242,7 @@ CREATE TABLE trails (
     UNIQUE(trail_type, path, signal)
 );
 
--- [He2025] Deterministic ordering
+-- Deterministic ordering
 ORDER BY path ASC, trail_type ASC, signal ASC
 ```
 
@@ -270,7 +270,7 @@ class LayerType(Enum):
 > **Higher priority wins.** LOCAL overrides INHERITS overrides VARIANTS, etc.
 > Safety floors from SPECIALIZES are ADDITIVE (never bypassed).
 
-### [He2025] Compliance
+### Determinism
 
 ```python
 # Fixed evaluation order - CRITICAL
@@ -333,7 +333,7 @@ class SubstrateTier(IntEnum):
     EPHEMERAL = 2       # Session-scoped, not persisted (HIGHEST in override)
 ```
 
-### [He2025] Constants
+### Constants
 
 ```python
 COGNITIVE_TILE_SIZE: Final[int] = 32
@@ -367,13 +367,13 @@ DEFAULT_SAFETY_FLOORS = [
 
 ---
 
-## 5. Determinism Compliance ([He2025])
+## 5. Determinism (Inspired by)
 
 ### Scope Clarification
 
-> **OTTO applies [He2025] PRINCIPLES at application level, not GPU kernel level.**
+> **OTTO applies PRINCIPLES at application level, not GPU kernel level.**
 >
-> [He2025] addresses GPU kernel-level batch-variance (RMSNorm, MatMul, Attention).
+> addresses GPU kernel-level batch-variance (RMSNorm, MatMul, Attention).
 > OTTO achieves application-level determinism via fixed evaluation order.
 > The principle is the same: fixed order → reproducible outputs.
 
@@ -402,7 +402,7 @@ HASH_ALGORITHM: Final[str] = "sha256"
 
 ```python
 def kahan_sum(values: List[float]) -> float:
-    """[He2025] Batch-invariant summation."""
+    """Batch-invariant summation."""
     total = 0.0
     compensation = 0.0
     for v in sorted(values):  # CRITICAL: sort first

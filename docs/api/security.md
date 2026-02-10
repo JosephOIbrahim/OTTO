@@ -397,7 +397,7 @@ The security module enforces these invariants:
 
 ---
 
-## [He2025] Compliance
+## Determinism
 
 Security operations maintain determinism:
 
@@ -435,5 +435,5 @@ key = crypto.derive_key(
 ## See Also
 
 - [Security Checklist](../SECURITY_CHECKLIST.md) - Security best practices
-- [[He2025] Compliance](../THINKINGMACHINES_COMPLIANCE.md) - Determinism compliance
+- [Determinism](../THINKINGMACHINES_COMPLIANCE.md) - Determinism principles
 - [Mobile API](mobile.md) - REST API reference

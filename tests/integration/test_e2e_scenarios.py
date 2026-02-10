@@ -11,7 +11,7 @@ Test Scenarios:
 4. Cognitive State Transitions - Burnout escalation, recovery
 5. Service Invocation - MCP tool execution with memory
 
-[He2025] Compliance:
+Determinism:
 - Deterministic test execution
 - Fixed seeds for reproducibility
 - Sorted assertions where order matters

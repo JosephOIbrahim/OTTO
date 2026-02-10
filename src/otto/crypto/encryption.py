@@ -4,7 +4,7 @@ AES-256-GCM Encryption
 
 Authenticated encryption using AES-256 in GCM mode.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED algorithm: AES-256-GCM (no runtime selection)
 - FIXED nonce size: 12 bytes (96 bits, GCM optimal)
 - FIXED tag size: 16 bytes (128 bits)

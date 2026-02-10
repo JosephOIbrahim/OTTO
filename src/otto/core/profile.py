@@ -10,13 +10,13 @@ Profile Priority Order:
 3. Base profile (from intake game) - PAYLOADS
 4. System defaults (when no profile exists) - SPECIALIZES
 
-[He2025] Compliance:
+Determinism:
 - Profile composition uses deterministic LIVRPS order
 - All fields use fixed vocabularies
 - Serialization uses sorted keys
 
 Reference:
-    [He2025] He, Horace and Thinking Machines Lab,
+    He, Horace and Thinking Machines Lab,
     "Defeating Nondeterminism in LLM Inference", Sep 2025.
     See also: docs/HE2025_DETERMINISM_ADDENDUM.md
 """
@@ -153,7 +153,7 @@ class Profile:
         """
         Serialize to dictionary.
 
-        [He2025] Compliance: Keys sorted for deterministic serialization.
+        Determinism: Keys sorted for deterministic serialization.
         """
         data = asdict(self)
         return {k: data[k] for k in sorted(data.keys())}
@@ -170,7 +170,7 @@ class Profile:
         """
         Compute deterministic hash of profile.
 
-        [He2025] Compliance: Uses sorted serialization.
+        Determinism: Uses sorted serialization.
         """
         serialized = json.dumps(self.to_dict(), sort_keys=True)
         return hashlib.sha256(serialized.encode()).hexdigest()[:12]
@@ -545,7 +545,7 @@ class ProfileManager:
         """
         Serialize manager state.
 
-        [He2025] Compliance: Deterministic serialization.
+        Determinism: Deterministic serialization.
         """
         return {
             "resolver": self._resolver.to_dict(),

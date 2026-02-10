@@ -4,7 +4,7 @@ Tests for TUI Bridge
 
 Tests for the bridge connecting agent progress to TUI dashboard.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Bounded update frequency
 - Deterministic state serialization
 - Fixed history limits

@@ -16,7 +16,7 @@ Resolution Rule:
     First layer with a value wins.
     Safety floors from Specializes are ADDITIVE (never overridden below floor).
 
-[He2025] Compliance:
+[He2025]-inspired determinism:
 - Fixed evaluation order (L → I → V → R → P → S)
 - Deterministic key iteration (sorted keys)
 - Float comparisons use round(value, 6)
@@ -48,7 +48,7 @@ class LayerType(Enum):
     SPECIALIZES = 6 # Base profile, constitutional defaults
 
 
-# Fixed evaluation order - CRITICAL for [He2025] compliance
+# Fixed evaluation order - Deterministic ordering (inspired by [He2025])
 LIVRPS_ORDER: List[LayerType] = [
     LayerType.LOCAL,
     LayerType.INHERITS,
@@ -178,7 +178,7 @@ class LIVRPSResolver:
         assert result.get("burnout_level") == "YELLOW"  # From LOCAL
         assert result.get("energy") == "medium"         # From SPECIALIZES
 
-    [He2025] Compliance:
+    [He2025]-inspired determinism:
         - Layers evaluated in FIXED LIVRPS order
         - Keys within layers iterated in sorted order
         - Float comparisons rounded to 6 decimal places
@@ -247,7 +247,7 @@ class LIVRPSResolver:
         Returns:
             CompositionResult with resolved values and provenance
 
-        [He2025] Compliance:
+        [He2025]-inspired determinism:
             - FIXED evaluation order (L → I → V → R → P → S)
             - Keys processed in sorted order
             - Safety floors applied deterministically
@@ -369,7 +369,7 @@ class LIVRPSResolver:
         """
         Serialize the resolver state to a dictionary.
 
-        [He2025] Compliance: Keys sorted for deterministic serialization.
+        [He2025]-inspired determinism: Keys sorted for deterministic serialization.
         """
         return {
             "layers": {

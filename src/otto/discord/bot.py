@@ -4,7 +4,7 @@ OTTO Discord Bot
 
 Discord bot using discord.py library with slash commands.
 
-[He2025] Compliance:
+Determinism:
 - Deterministic message processing order
 - Fixed evaluation sequence in handlers
 - Session state managed by DiscordAdapter
@@ -41,7 +41,7 @@ except ImportError:
     create_response_generator = None
     ResponseGenerator = None
 
-# [He2025] Fixed constants
+# Fixed constants
 _DEFAULT_SESSION_PATH: Final[str] = "data/discord_sessions.json"
 _CLEANUP_INTERVAL_SECONDS: Final[int] = 3600  # 1 hour
 _MAX_EMBED_DESCRIPTION: Final[int] = 4096
@@ -66,7 +66,7 @@ if DISCORD_AVAILABLE:
         """
         Discord bot for OTTO cognitive support.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed command registration order
         - Deterministic message processing
         - Session cleanup on fixed interval
@@ -135,7 +135,7 @@ if DISCORD_AVAILABLE:
             """
             Called when the bot is starting up.
 
-            [He2025] Fixed setup order:
+            Fixed setup order:
             1. Register slash commands
             2. Start background tasks
             """
@@ -151,7 +151,7 @@ if DISCORD_AVAILABLE:
             """
             Register slash commands.
 
-            [He2025] Fixed registration order.
+            Fixed registration order.
             """
             # 1. /start - Welcome
             @self.tree.command(name="start", description="Get started with OTTO")
@@ -188,7 +188,7 @@ if DISCORD_AVAILABLE:
             """
             Process slash command through adapter.
 
-            [He2025] Fixed processing order:
+            Fixed processing order:
             1. Defer response (for long operations)
             2. Convert to message
             3. Process through adapter
@@ -219,7 +219,7 @@ if DISCORD_AVAILABLE:
             """
             Handle incoming messages.
 
-            [He2025] Processing order:
+            Processing order:
             1. Ignore bot messages
             2. Check if bot is mentioned or in DM
             3. Convert to normalized message

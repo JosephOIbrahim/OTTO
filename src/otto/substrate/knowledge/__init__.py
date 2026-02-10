@@ -13,7 +13,7 @@ Performance:
 - Retrieval: ~0.001ms (vs 150ms LLM inference = 170,000x speedup)
 - Trigger search: ~0.1ms for 357 indexed triggers
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic retrieval (same path = same prim)
 - Consistent search ordering (by confidence, then path)
 - Fixed confidence values (USDA: 0.95, Personal: 0.85)

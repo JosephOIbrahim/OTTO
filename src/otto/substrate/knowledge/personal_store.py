@@ -7,7 +7,7 @@ Bridges the CLI 'remember' command with the Knowledge Retriever.
 Stores personal knowledge in JSON format and converts to KnowledgePrims
 for unified search across all knowledge sources.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED confidence for personal knowledge: 0.85
 - DETERMINISTIC path generation: /Knowledge/Personal/{id}
 - BOUNDED: Max 1000 personal items (configurable)

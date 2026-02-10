@@ -4,7 +4,7 @@ Storage Adapter Interface
 
 Abstract interface for cloud storage backends.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED chunk size (5 MiB)
 - FIXED retry limits (3 attempts)
 - DETERMINISTIC file naming (content-addressed)

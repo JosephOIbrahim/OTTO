@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The Public REST API v1.0.0 is feature-complete with 2350 passing tests and [He2025] determinism compliance. This document outlines the path to:
+The Public REST API v1.0.0 is feature-complete with 2350 passing tests and Determinism. This document outlines the path to:
 
 1. **Production Readiness** - Deployment, security hardening, observability
 2. **Frontier AI Readiness** - Optimizations for AI agent interaction patterns
@@ -26,7 +26,7 @@ The Public REST API v1.0.0 is feature-complete with 2350 passing tests and [He20
 | Authorization (scopes) | Complete | `scopes.py` |
 | Rate limiting | Complete | `middleware.py` |
 | Audit logging | Complete | `audit.py` |
-| [He2025] determinism | Verified | `API_HE2025_CONSISTENCY_REPORT.md` |
+| determinism | Verified | `API_HE2025_CONSISTENCY_REPORT.md` |
 | OpenAPI spec | Auto-generated | `openapi.py` |
 | CLI commands | Complete | `cli/main.py` |
 | Test coverage | 261+ API tests | 9 test files |
@@ -68,7 +68,7 @@ class TLSConfig:
     """
     TLS configuration for production.
 
-    [He2025] Compliance: FIXED cipher suites, no runtime negotiation variance.
+    Determinism: FIXED cipher suites, no runtime negotiation variance.
     """
     MIN_VERSION = ssl.TLSVersion.TLSv1_3
     CIPHERS = [
@@ -113,7 +113,7 @@ class InputValidationMiddleware(Middleware):
     """
     Validate request bodies against JSON schemas.
 
-    [He2025] Compliance: FIXED schemas, deterministic validation.
+    FIXED schemas, deterministic validation.
     """
     SCHEMAS: Dict[str, dict] = {
         "/api/v1/state": STATE_UPDATE_SCHEMA,
@@ -178,7 +178,7 @@ class APIMetrics:
     """
     Prometheus metrics for API observability.
 
-    [He2025] Compliance: FIXED metric names, DETERMINISTIC labels.
+    Determinism: FIXED metric names, DETERMINISTIC labels.
     """
     requests = Counter('otto_api_requests_total', 'Total requests',
                        ['method', 'path', 'status'])
@@ -267,7 +267,7 @@ class ConnectionPool:
     """
     Connection pool for HTTP server.
 
-    [He2025] Compliance: FIXED pool sizes, DETERMINISTIC connection selection.
+    Determinism: FIXED pool sizes, DETERMINISTIC connection selection.
     """
     MAX_CONNECTIONS = 1000
     MAX_KEEPALIVE = 100
@@ -290,7 +290,7 @@ class ResponseCache:
     """
     Response caching with TTL.
 
-    [He2025] Compliance: DETERMINISTIC cache keys, FIXED TTLs.
+    Determinism: DETERMINISTIC cache keys, FIXED TTLs.
     """
     @staticmethod
     def cache_key(method: str, path: str, key_id: str) -> str:
@@ -400,7 +400,7 @@ class IdempotencyMiddleware(Middleware):
     """
     Idempotency key handling for safe retries.
 
-    [He2025] Compliance: DETERMINISTIC key matching, FIXED TTL.
+    Determinism: DETERMINISTIC key matching, FIXED TTL.
     """
     TTL_SECONDS = 86400  # 24 hours
 

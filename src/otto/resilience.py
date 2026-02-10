@@ -270,7 +270,7 @@ class CircuitBreaker:
                     self.record_success(name)
                     return result
                 except asyncio.CancelledError:
-                    # Don't count cancellation as failure [He2025]
+                    # Don't count cancellation as failure
                     raise
                 except Exception as e:
                     # Log for observability before recording failure
@@ -361,9 +361,9 @@ async def with_retry(
         logger.debug(f"{operation_name}: Using seeded RNG (seed={seed}) for deterministic jitter")
     else:
         # NOTE: Intentionally unseeded for production retry jitter.
-        # This is NOT a [He2025] violation - jitter randomness prevents
+        # This is NOT a violation - jitter randomness prevents
         # thundering herd and is outside the deterministic routing path.
-        # [He2025] principles apply to cognitive routing, not retry timing.
+        # principles apply to cognitive routing, not retry timing.
         rng = random.Random()
 
     for attempt in range(1, max_attempts + 1):

@@ -4,7 +4,7 @@ Mock Inference Backend
 
 Deterministic mock backend for testing.
 
-[He2025] Compliance:
+Determinism:
 - Completely deterministic (same input → same output always)
 - No network calls
 - Configurable response patterns
@@ -254,7 +254,7 @@ class MockBackend(InferenceBackend):
         """
         Generate deterministic response.
 
-        [He2025] Compliance: Same inputs always produce same output.
+        Determinism: Same inputs always produce same output.
         """
         # 1. Check for exact match in responses dict
         if prompt in self._responses:
@@ -300,7 +300,7 @@ class DeterministicMockBackend(MockBackend):
     Strictly deterministic mock backend.
 
     Guarantees bit-identical responses for identical inputs.
-    Useful for testing [He2025] compliance.
+    Useful for testing Determinism.
 
     Example:
         >>> backend = DeterministicMockBackend()

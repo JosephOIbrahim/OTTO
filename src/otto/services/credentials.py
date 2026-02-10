@@ -9,7 +9,7 @@ All credentials flow through this module with:
 - Audit logging of all access
 - Automatic expiration
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed hashing algorithm (SHA-256)
 - Deterministic key naming
 - Sorted iteration for consistent behavior
@@ -31,7 +31,7 @@ from typing import Any, Dict, Final, List, Optional, Set
 logger = logging.getLogger(__name__)
 
 
-# === Constants (Fixed per [He2025]) ===
+# === Constants (Fixed) ===
 
 CREDENTIAL_SEED: Final[int] = 0xC7ED5EED
 CREDENTIAL_HASH_ALGORITHM: Final[str] = "sha256"
@@ -117,7 +117,7 @@ class Credential:
 
     def _compute_checksum(self) -> str:
         """Compute deterministic checksum."""
-        # Per [He2025]: Fixed algorithm, fixed field order
+        # Fixed algorithm, fixed field order
         data = f"{self.service}|{self.key_name}|{len(self._value)}|{self.scope.value}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
 
@@ -203,7 +203,7 @@ class CredentialManager:
     - All access is logged
     - Automatic credential rotation alerts
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism:
     - Deterministic key naming
     - Fixed iteration order (sorted)
     - No timing-based decisions
@@ -254,7 +254,7 @@ class CredentialManager:
         """
         Generate deterministic key identifier.
 
-        Per [He2025]: Fixed naming scheme for reproducibility.
+        Fixed naming scheme for reproducibility.
         """
         return f"{CREDENTIAL_NAMESPACE}.{service}.{key_name}"
 
@@ -266,7 +266,7 @@ class CredentialManager:
                 with open(index_path) as f:
                     index = json.load(f)
 
-                # Sorted iteration per [He2025]
+                # Sorted iteration
                 for key in sorted(index.get("credentials", {}).keys()):
                     meta = index["credentials"][key]
                     # Don't load values, just metadata
@@ -280,7 +280,7 @@ class CredentialManager:
         """Save credential metadata index."""
         index_path = self._credentials_dir / "index.json"
 
-        # Sorted keys per [He2025]
+        # Sorted keys
         index = {
             "version": CREDENTIAL_VERSION,
             "credentials": {
@@ -547,7 +547,7 @@ class CredentialManager:
         Returns:
             List of credential metadata dicts
         """
-        # Sorted iteration per [He2025]
+        # Sorted iteration
         result = []
         for key_id in sorted(self._cache.keys()):
             cred = self._cache[key_id]

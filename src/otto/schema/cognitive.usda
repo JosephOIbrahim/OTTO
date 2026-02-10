@@ -24,7 +24,7 @@
     No existing system uses Pixar's USD scene graph composition
     to resolve cognitive state priority. This is genuine technical novelty.
 
-    [He2025] Determinism Compliance:
+    [He2025]-inspired determinism:
     ================================
     This schema is CONCEPTUAL documentation, not runtime-parsed USD.
     See docs/USD_ARCHITECTURE_DECISION.md for rationale.

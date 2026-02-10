@@ -13,7 +13,7 @@ Philosophy:
     Research is about synthesis, not just gathering.
     Surface insights, not just data.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed research phases
 - Deterministic source prioritization
 - Bounded search depth

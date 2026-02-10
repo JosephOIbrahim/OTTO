@@ -44,7 +44,7 @@ pytest tests/test_cognitive_engine.py -v
 
 ## Architecture Overview
 
-Otto implements a **5-Phase NEXUS Pipeline** based on ThinkingMachines [He2025] batch-invariance principles.
+Otto implements a **5-Phase NEXUS Pipeline** based on ThinkingMachines batch-invariance principles.
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -73,7 +73,7 @@ Otto implements a **5-Phase NEXUS Pipeline** based on ThinkingMachines [He2025] 
 
 ## Coding Standards
 
-### ThinkingMachines [He2025] Compliance
+### ThinkingMachines Determinism
 
 All contributions must maintain batch-invariance:
 

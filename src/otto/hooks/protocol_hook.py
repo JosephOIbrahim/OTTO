@@ -22,7 +22,7 @@ Output format:
         "hookSpecificOutput": {...}
     }
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Format detection is FIXED order (JSON-RPC → regular)
 - Same input → same output
 """

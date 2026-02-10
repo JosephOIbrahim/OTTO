@@ -622,7 +622,7 @@ class TestEdgeCases:
 
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_reconstruction_deterministic(self):
         """Test same shares always produce same secret."""

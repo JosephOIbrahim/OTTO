@@ -5,7 +5,7 @@ Local Filesystem Storage Provider
 Implements StorageProvider for local filesystem.
 This is the default provider for desktop/CLI usage.
 
-[He2025] Compliance:
+Determinism:
 - Atomic writes (temp file + rename)
 - Deterministic backup naming
 - Fixed file operation order
@@ -337,7 +337,7 @@ class LocalStorageProvider(StorageProvider):
         """
         Remove old backups beyond the configured limit.
 
-        [He2025] Deterministic: sorted by name (includes timestamp)
+        Deterministic: sorted by name (includes timestamp)
         """
         pattern = f"{base_name}.*.bak"
         backups = sorted(backup_dir.glob(pattern))

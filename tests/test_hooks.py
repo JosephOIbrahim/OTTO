@@ -5,7 +5,7 @@ Tests for the Hook System
 Tests Hook base classes, registry, and trail-based hooks.
 
 Focus areas:
-- [He2025] determinism (fixed execution order)
+- determinism (fixed execution order)
 - Trail deposit/read integration
 - Context injection formatting
 - Collision detection
@@ -283,7 +283,7 @@ class TestHookRegistry:
 # =============================================================================
 
 class TestAutoValidateHook:
-    """Tests for [He2025] validation."""
+    """Tests for validation."""
 
     def test_detect_max_on_dict_items(self):
         """Should detect max() on dict.items()."""
@@ -416,7 +416,7 @@ class TestTrailContextHook:
 
         lines = format_quality_trails(trails)
 
-        assert any("[He2025] Compliant" in line for line in lines)
+        assert any("Determinism" in line for line in lines)
 
     def test_format_quality_trails_violation(self):
         """Should format violation trails."""
@@ -461,7 +461,7 @@ class TestTrailContextHook:
         assert result.success
         assert result.trails_read > 0
         assert result.context_injection is not None
-        assert "[He2025] Compliant" in result.context_injection
+        assert "Determinism" in result.context_injection
         assert "utils.py" in result.context_injection
 
     def test_work_trail_hook_deposits_editing(self, store):

@@ -7,7 +7,7 @@ Connects the agent progress tracking system to the TUI dashboard.
 This module provides real-time updates from agent execution to the
 enhanced TUI dashboard via state files.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed update frequency (max 10 Hz)
 - Deterministic state serialization
 - Bounded history size

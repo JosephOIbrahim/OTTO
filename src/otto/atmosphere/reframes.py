@@ -9,7 +9,7 @@ Rules:
 - Acknowledge before reframing
 - One reframe per response max
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Sorted struggle patterns for deterministic detection
 - Fixed reframe lists for reproducible selection
 - Same inputs always produce same outputs
@@ -31,7 +31,7 @@ class Reframe:
     followup: Optional[str]   # Optional next step
 
 
-# [He2025] Sorted reframe list for deterministic matching
+# Sorted reframe list for deterministic matching
 REFRAMES: Final[List[Reframe]] = sorted([
     # Core struggle patterns
     Reframe(
@@ -251,7 +251,7 @@ def detect_struggle(message: str) -> Optional[Reframe]:
     """
     Detect if the message contains a struggle narrative.
 
-    [He2025] Deterministic: patterns checked in sorted order.
+    Deterministic: patterns checked in sorted order.
 
     Args:
         message: User's message

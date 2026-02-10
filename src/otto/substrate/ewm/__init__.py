@@ -10,7 +10,7 @@ Components:
 - ProjectFriction: Multi-project management with warnings
 - EWMManager: Unified state management
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic state persistence
 - Fixed beacon intervals
 - Consistent friction thresholds

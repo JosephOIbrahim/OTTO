@@ -7,7 +7,7 @@ Provides platform-agnostic storage abstraction to support:
 - Cloud storage (future: S3, GCS, Azure Blob)
 - Mobile storage (future: secure enclave, app sandbox)
 
-[He2025] Compliance:
+Determinism:
 - Fixed path resolution order
 - Deterministic provider selection
 - No runtime variation in path computation

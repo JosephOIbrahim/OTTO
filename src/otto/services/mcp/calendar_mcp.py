@@ -5,7 +5,7 @@ Calendar MCP Server
 MCP server for calendar operations.
 Integrates with Google Calendar, iCal, and local calendars.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic event ordering (by start time)
 - Fixed date formatting (ISO8601)
 - Sorted iteration

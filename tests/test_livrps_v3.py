@@ -16,9 +16,9 @@ import dataclasses
 
 import pytest
 
-from otto.core.livrps.layers import Layer, LayerName, LayerStack
-from otto.core.livrps.properties import CognitiveProperty
-from otto.core.livrps.compositor import LIVRPSCompositor
+from otto_v3.core.livrps.layers import Layer, LayerName, LayerStack
+from otto_v3.core.livrps.properties import CognitiveProperty
+from otto_v3.core.livrps.compositor import LIVRPSCompositor
 
 
 # ===================================================================
@@ -357,7 +357,7 @@ class TestResolveAll:
     def test_output_sorted_by_property_name(
         self, loaded_compositor: LIVRPSCompositor
     ) -> None:
-        """Keys must be in sorted order for [He2025] compliance."""
+        """Keys must be in sorted order for determinism."""
         resolved = loaded_compositor.resolve_all()
         keys = list(resolved.keys())
         assert keys == sorted(keys)
@@ -428,7 +428,7 @@ class TestPackageImports:
     """Verify the __init__.py re-exports work correctly."""
 
     def test_import_from_package(self) -> None:
-        from otto.core.livrps import (
+        from otto_v3.core.livrps import (
             CognitiveProperty,
             Layer,
             LayerName,

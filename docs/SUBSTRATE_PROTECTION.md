@@ -227,7 +227,7 @@ print(f"Last verification: {status.last_verification}")
 4. **Atomic Writes**: All writes are atomic to prevent corruption
 5. **Tamper Evidence**: Any unauthorized modification is detectable
 
-## ThinkingMachines [He2025] Compliance
+## ThinkingMachines Determinism
 
 The protection layer maintains determinism guarantees:
 - Signatures are deterministic (same content = same signature hash)

@@ -3,7 +3,7 @@ Voice System Prompts.
 
 Injected into LLM context to shape response style.
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - All prompts are fixed strings
 - Prompt building uses deterministic concatenation
 """
@@ -139,7 +139,7 @@ def get_voice_prompt(register: Register, expert: Optional[str] = None) -> str:
     """
     Build complete voice prompt.
 
-    [He2025] Deterministic string concatenation.
+    Deterministic string concatenation.
 
     Args:
         register: Detected register

@@ -1,7 +1,7 @@
 """
 Speech-to-Text (STT) module using OpenAI Whisper.
 
-Provides deterministic speech transcription with [He2025] compliance.
+Provides deterministic speech transcription with Determinism.
 """
 
 import asyncio
@@ -68,7 +68,7 @@ class SpeechToText:
     """
     Speech-to-text transcription using OpenAI Whisper.
 
-    [He2025] Compliance:
+    Determinism:
     - Temperature = 0.0 for deterministic output
     - Seeded text normalization
     - Checksum verification
@@ -174,7 +174,7 @@ class SpeechToText:
         """
         Normalize transcribed text deterministically.
 
-        Operations (fixed order per [He2025]):
+        Operations (fixed order):
         1. Strip whitespace
         2. Normalize unicode
         3. Fix common transcription errors

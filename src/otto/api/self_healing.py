@@ -20,7 +20,7 @@ Automated security incident detection and remediation:
    - System restoration
    - Post-incident analysis
 
-[He2025] Compliance:
+Determinism:
 - FIXED response policies (no runtime variation)
 - DETERMINISTIC threat classification
 - Pre-computed response thresholds
@@ -53,7 +53,7 @@ class ThreatCategory(Enum):
     """
     Categories of security threats.
 
-    [He2025] FIXED: Immutable threat taxonomy.
+    FIXED: Immutable threat taxonomy.
     """
     CREDENTIAL_COMPROMISE = "credential_compromise"   # API key leaked/stolen
     BRUTE_FORCE = "brute_force"                       # Password/key guessing
@@ -98,7 +98,7 @@ class ThreatEvent:
     """
     A detected security threat.
 
-    [He2025] Compliance: Deterministic structure.
+    Determinism: Deterministic structure.
     """
     event_id: str
     category: ThreatCategory
@@ -156,7 +156,7 @@ class ResponsePolicy:
     """
     Policy defining automated response to threats.
 
-    [He2025] FROZEN: Policies are immutable at runtime.
+    Immutable: Policies are immutable at runtime.
     """
     name: str
     threat_category: ThreatCategory
@@ -198,7 +198,7 @@ class ThreatDetector(ABC):
     """
     Abstract base class for threat detectors.
 
-    [He2025] Compliance: Deterministic detection.
+    Determinism: Deterministic detection.
     """
 
     @property
@@ -231,14 +231,14 @@ class BruteForceDetector(ThreatDetector):
     """
     Detect brute force attacks.
 
-    [He2025] FIXED thresholds:
+    FIXED thresholds:
     - 5 failures in 1 minute = LOW
     - 10 failures in 1 minute = MEDIUM
     - 20 failures in 1 minute = HIGH
     - 50 failures in 1 minute = CRITICAL
     """
 
-    # [He2025] FIXED thresholds
+    # FIXED thresholds
     THRESHOLDS = {
         5: ThreatSeverity.LOW,
         10: ThreatSeverity.MEDIUM,
@@ -314,7 +314,7 @@ class CredentialStuffingDetector(ThreatDetector):
 
     Pattern: Multiple accounts accessed from same IP in short time.
 
-    [He2025] FIXED thresholds:
+    FIXED thresholds:
     - 3 different keys in 5 minutes = MEDIUM
     - 5 different keys in 5 minutes = HIGH
     - 10 different keys in 5 minutes = CRITICAL
@@ -398,7 +398,7 @@ class DataExfiltrationDetector(ThreatDetector):
 
     Pattern: Unusually high data volume or access frequency.
 
-    [He2025] FIXED thresholds:
+    FIXED thresholds:
     - 100 requests in 1 minute = LOW
     - 500 requests in 1 minute = MEDIUM
     - 1000 requests in 1 minute = HIGH
@@ -635,7 +635,7 @@ class AlertHandler(ResponseHandler):
 class TemporaryBlockHandler(ResponseHandler):
     """Temporarily block an IP address."""
 
-    # [He2025] FIXED block duration
+    # FIXED block duration
     BLOCK_DURATION_SECONDS = 3600  # 1 hour
 
     @property
@@ -694,7 +694,7 @@ class TemporaryBlockHandler(ResponseHandler):
 class RateLimitHandler(ResponseHandler):
     """Apply stricter rate limits."""
 
-    # [He2025] FIXED rate limit reduction
+    # FIXED rate limit reduction
     REDUCED_RATE_MULTIPLIER = 0.1  # 10% of normal rate
 
     @property
@@ -913,7 +913,7 @@ class SelfHealingEngine:
     3. Applies automated responses per policy
     4. Escalates when automated response is insufficient
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED response policies
     - DETERMINISTIC threat classification
     - Auditable response actions
@@ -938,7 +938,7 @@ class SelfHealingEngine:
                     handle_failed_response(response)
     """
 
-    # [He2025] FIXED default policies
+    # FIXED default policies
     _DEFAULT_POLICIES: Tuple[ResponsePolicy, ...] = (
         ResponsePolicy(
             name="brute_force_low",
@@ -1064,7 +1064,7 @@ class SelfHealingEngine:
         """
         Process a security event through detection and response.
 
-        [He2025] DETERMINISTIC: Same event → same detection → same response.
+        DETERMINISTIC: Same event → same detection → same response.
 
         Args:
             event: Security event to process

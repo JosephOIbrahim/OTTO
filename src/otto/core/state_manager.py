@@ -4,14 +4,14 @@ Cognitive State Manager
 
 Extended state management with LIVRPS composition and schema validation.
 
-[He2025] Compliance:
+Determinism:
 - All state transitions are deterministic
 - Float comparisons use round(value, 6)
 - State serialization uses sorted keys
 - No runtime variation in state operations
 
 Reference:
-    [He2025] He, Horace and Thinking Machines Lab,
+    He, Horace and Thinking Machines Lab,
     "Defeating Nondeterminism in LLM Inference", Sep 2025.
     See also: docs/HE2025_DETERMINISM_ADDENDUM.md
 """
@@ -101,7 +101,7 @@ class CognitiveState:
 
     62 fields tracking session, grounding, BCM, and batch invariance state.
 
-    [He2025] Compliance:
+    Determinism:
     - All enum fields use fixed vocabularies
     - Float fields use round(6) for comparison
     - Serialization uses sorted keys
@@ -187,7 +187,7 @@ class CognitiveState:
         """
         Serialize to dictionary.
 
-        [He2025] Compliance: Keys sorted for deterministic serialization.
+        Determinism: Keys sorted for deterministic serialization.
         """
         data = asdict(self)
         # Sort nested dicts too
@@ -210,7 +210,7 @@ class CognitiveState:
         """
         Compute deterministic hash of state.
 
-        [He2025] Compliance: Uses sorted serialization.
+        Determinism: Uses sorted serialization.
         """
         serialized = json.dumps(self.to_dict(), sort_keys=True)
         return hashlib.sha256(serialized.encode()).hexdigest()[:12]
@@ -573,7 +573,7 @@ class CognitiveStateManager:
         """
         Serialize manager state.
 
-        [He2025] Compliance: Deterministic serialization.
+        Determinism: Deterministic serialization.
         """
         return {
             "resolver": self._resolver.to_dict(),

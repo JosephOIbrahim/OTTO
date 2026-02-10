@@ -9,7 +9,7 @@ This document indexes all artifacts created for the Public REST API implementati
 
 ## Source Files (9 files)
 
-| File | Purpose | Lines | [He2025] Markers |
+| File | Purpose | Lines | Markers |
 |------|---------|-------|------------------|
 | `src/otto/api/__init__.py` | Module exports | ~220 | - |
 | `src/otto/api/scopes.py` | Permission scopes, sensitive field filtering | ~150 | FIXED, DETERMINISTIC |
@@ -32,7 +32,7 @@ This document indexes all artifacts created for the Public REST API implementati
 | `tests/test_api_audit.py` | 22 | Audit logging, JSONL format |
 | `tests/test_cli_api_key.py` | 21 | CLI create/list/revoke/delete |
 | `tests/test_api_keyring_integration.py` | 18 | OS keyring integration |
-| `tests/test_api_determinism.py` | 15 | [He2025] batch invariance |
+| `tests/test_api_determinism.py` | 15 | batch invariance |
 | `tests/test_api_real_integration.py` | 65 | Real JSON-RPC handler |
 | `tests/test_api_middleware.py` | 8 | Middleware chain tests |
 | `tests/test_api_integration.py` | 4 | E2E with mocks |
@@ -112,7 +112,7 @@ This document indexes all artifacts created for the Public REST API implementati
 
 ---
 
-## [He2025] Compliance Summary
+## Determinism Summary
 
 | Component | Compliance | Evidence |
 |-----------|------------|----------|

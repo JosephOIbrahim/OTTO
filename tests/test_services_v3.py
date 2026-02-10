@@ -21,34 +21,34 @@ from __future__ import annotations
 import pytest
 from datetime import datetime, time, timezone, timedelta
 
-from otto.services.base import CategoricalSignal, OTTOService, ServiceRegistry
-from otto.services.clock import (
+from otto_v3.services.base import CategoricalSignal, OTTOService, ServiceRegistry
+from otto_v3.services.clock import (
     ClockService,
     _classify_time_period,
     _classify_day_type,
     _classify_time_pressure,
 )
-from otto.services.process import (
+from otto_v3.services.process import (
     ProcessMonitor,
     ProcessSnapshot,
     _classify_process,
     _classify_load,
     _classify_context_switches,
 )
-from otto.services.git import (
+from otto_v3.services.git import (
     GitWatcher,
     GitSnapshot,
     _classify_velocity,
     _classify_uncommitted,
     _classify_stuck,
 )
-from otto.services.filesystem import (
+from otto_v3.services.filesystem import (
     FileSystemWatcher,
     FileSystemSnapshot,
     _classify_activity,
     _classify_churn,
 )
-from otto.services.platform import PlatformInfo, detect_platform
+from otto_v3.services.platform import PlatformInfo, detect_platform
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -755,7 +755,7 @@ class TestPrivacyBoundary:
 
 
 class TestServiceDeterminism:
-    """Same inputs must produce identical outputs [He2025]."""
+    """Same inputs must produce identical outputs."""
 
     def test_clock_deterministic_100x(self) -> None:
         dt = datetime(2026, 2, 10, 14, 30, tzinfo=timezone.utc)
@@ -798,14 +798,14 @@ class TestServiceImports:
     """Verify all public exports are accessible."""
 
     def test_all_exports_importable(self) -> None:
-        from otto.services import __all__
-        import otto.services as svc_module
+        from otto_v3.services import __all__
+        import otto_v3.services as svc_module
 
         for name in __all__:
             assert hasattr(svc_module, name), f"Missing export: {name}"
 
     def test_key_types_importable(self) -> None:
-        from otto.services import (
+        from otto_v3.services import (
             CategoricalSignal,
             ClockService,
             FileSystemSnapshot,

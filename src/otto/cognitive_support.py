@@ -17,7 +17,7 @@ Core Constraints (based on human cognitive science):
 - Body check: Every 20 rapid exchanges
 - Task chunking: Max 5 subtasks visible at once
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed constraint values
 - Deterministic behavior
 - No soft modes - constraints always active

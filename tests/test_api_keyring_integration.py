@@ -11,7 +11,7 @@ ISOLATION:
 - Cleans up all test keys after each test
 - Skips gracefully if keyring backend is not available
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - DETERMINISTIC: same key → same validation result
 - FIXED: storage and retrieval formats
 - REPRODUCIBLE: key lifecycle operations
@@ -258,7 +258,7 @@ class TestKeyringVsMemory:
 
 
 # =============================================================================
-# Determinism Tests [He2025]
+# Determinism Tests
 # =============================================================================
 
 @requires_keyring
@@ -266,7 +266,7 @@ class TestKeyringDeterminism:
     """
     Test determinism of keyring operations.
 
-    [He2025] Principle: Same input → same output.
+    Principle: Same input → same output.
     """
 
     def test_validation_is_deterministic(self, keyring_manager):

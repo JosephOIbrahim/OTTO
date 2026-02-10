@@ -11,7 +11,7 @@ information about:
 
 Also detects potential collision when another session is editing.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Trails read in deterministic order
 - Context format is consistent
 - Same trails → same context injection
@@ -46,15 +46,15 @@ def format_quality_trails(trails: List[Trail]) -> List[str]:
     partial = any(t.signal == "he2025_partial" for t in trails)
 
     if compliant:
-        lines.append("- [He2025] Compliant")
+        lines.append("- Determinism")
     elif partial:
-        lines.append(f"- [He2025] Partial compliance ({len(violations)} issues)")
+        lines.append(f"- partial conformance ({len(violations)} issues)")
     elif violations:
         for v in violations[:3]:  # Limit to first 3
             # Extract line number from signal like "he2025_violation:type:line45"
             parts = v.signal.split(":")
             if len(parts) >= 3:
-                lines.append(f"- [He2025] Violation at line {parts[-1].replace('line', '')}")
+                lines.append(f"- Violation at line {parts[-1].replace('line', '')}")
 
     # Check for import cleanliness
     clean_imports = any("imports_clean" in t.signal for t in trails)

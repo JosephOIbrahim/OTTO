@@ -2,7 +2,7 @@
 Deterministic Inference Layer
 =============================
 
-Tier 1, 2, 3 & 4 implementation of [He2025]-inspired deterministic inference.
+Tier 1, 2, 3 & 4 implementation of Deterministic deterministic inference.
 
 This module provides:
 
@@ -18,7 +18,7 @@ This module provides:
 - VerifiedInferenceWrapper: Auto-verification based on criticality
 
 **Tier 3 - Kernel-Level Determinism:**
-- He2025KernelConfig: [He2025]-compliant kernel configuration
+- He2025KernelConfig: Deterministic kernel configuration
 - DeterministicEnvironment: CUDA environment management for determinism
 - ServerConfigValidator: Validates server determinism settings
 - DeterministicVLLMBackend: Local inference with kernel-level guarantees
@@ -30,7 +30,7 @@ This module provides:
 - CryptographicProof: Complete proof of deterministic execution
 - CryptographicBackend: Backend producing verified inference results
 
-[He2025] Principles Applied:
+Principles Applied:
 - Fixed evaluation order for cache key computation (sorted keys)
 - No dynamic algorithm switching based on load
 - Deterministic serialization throughout

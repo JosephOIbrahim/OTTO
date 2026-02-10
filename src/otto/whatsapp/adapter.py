@@ -383,7 +383,7 @@ class WhatsAppVoiceAdapter:
         """
         Record a conversation episode to memory backbone.
 
-        [He2025] Fixed data structure for deterministic recording.
+        Fixed data structure for deterministic recording.
         """
         timestamp_ms = int(datetime.now().timestamp() * 1000)
         unique_episode_type = f"surface.whatsapp.message.{phone_number}.{timestamp_ms}"
@@ -413,7 +413,7 @@ class WhatsAppVoiceAdapter:
         """
         Retrieve recent conversation history for a WhatsApp user.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed order: oldest to newest
         - Deterministic filtering and sorting
 
@@ -442,7 +442,7 @@ class WhatsAppVoiceAdapter:
                 if ep.data.get("phone_number") == phone_number
             ]
 
-            # [He2025] Sort oldest first
+            # Sort oldest first
             user_episodes = sorted(
                 user_episodes,
                 key=lambda e: e.timestamp,

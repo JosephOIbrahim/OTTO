@@ -10,7 +10,7 @@ Metrics collected:
 - Transformation latency
 - Session-level aggregates
 
-[He2025] Compliance:
+Determinism:
 - Metrics collection is deterministic (no side effects on output)
 - Counters use atomic operations where possible
 - Same inputs produce same outputs (metrics are observational)

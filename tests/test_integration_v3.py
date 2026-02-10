@@ -7,7 +7,7 @@ Tests cross-module interactions end-to-end:
     - Pheromone trail lifecycle
     - MCP dispatch through full stack
     - Constitutional enforcement across all modules
-    - [He2025] determinism verification
+    - determinism verification
     - Privacy boundary enforcement
     - Automated audit (no bare dict.items, no clinical language)
     - Performance benchmarks
@@ -54,11 +54,11 @@ def _make_real_pipeline(
     client: MagicMock | None = None,
 ) -> "NEXUSPipeline":
     """Build a real NEXUSPipeline with real detector/router, mock client."""
-    from otto.api.effort import EffortController
-    from otto.api.nexus import NEXUSPipeline
-    from otto.core.constitution import SafetyFloors
-    from otto.core.experts.router import NEXUSRouter
-    from otto.core.prism.detector import PRISMDetector
+    from otto_v3.api.effort import EffortController
+    from otto_v3.api.nexus import NEXUSPipeline
+    from otto_v3.core.constitution import SafetyFloors
+    from otto_v3.core.experts.router import NEXUSRouter
+    from otto_v3.core.prism.detector import PRISMDetector
 
     return NEXUSPipeline(
         client=client or _make_mock_client(),
@@ -138,11 +138,11 @@ class TestFullPipelineIntegration:
             user_message="implement feature X",
             dry_run=True,
         )
-        from otto.core.constitution import validate
+        from otto_v3.core.constitution import validate
         validate()  # Would raise if floors were modified
 
     def test_effort_override_respected(self):
-        from otto.api.effort import EffortLevel
+        from otto_v3.api.effort import EffortLevel
 
         pipeline = _make_real_pipeline()
         result = pipeline.process(
@@ -160,7 +160,7 @@ class TestChatSessionServicesIntegration:
     """ChatSession collects service signals and passes them to pipeline."""
 
     def test_session_with_real_pipeline(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         client = _make_mock_client(content="Got it!")
         pipeline = _make_real_pipeline(client=client)
@@ -172,7 +172,7 @@ class TestChatSessionServicesIntegration:
         assert session.exchange_count == 1
 
     def test_session_accumulates_history(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         client = _make_mock_client()
         pipeline = _make_real_pipeline(client=client)
@@ -186,8 +186,8 @@ class TestChatSessionServicesIntegration:
         assert session.history.count == 6  # 3 user + 3 assistant
 
     def test_session_with_service_registry(self):
-        from otto.services.base import CategoricalSignal, ServiceRegistry
-        from otto.ui.chat import ChatSession
+        from otto_v3.services.base import CategoricalSignal, ServiceRegistry
+        from otto_v3.ui.chat import ChatSession
 
         class FakeService:
             name = "test_service"
@@ -222,8 +222,8 @@ class TestChatSessionServicesIntegration:
         assert response.content == "Test response"
 
     def test_session_with_compaction_manager(self):
-        from otto.api.compaction import CompactionManager
-        from otto.ui.chat import ChatSession
+        from otto_v3.api.compaction import CompactionManager
+        from otto_v3.ui.chat import ChatSession
 
         client = _make_mock_client()
         pipeline = _make_real_pipeline(client=client)
@@ -244,8 +244,8 @@ class TestMemoryEncryptionIntegration:
     """Write memory → encrypt → store → decrypt → read back."""
 
     def test_memory_store_roundtrip(self):
-        from otto.core.memory.manager import MemoryManager
-        from otto.core.memory.types import MemoryType
+        from otto_v3.core.memory.manager import MemoryManager
+        from otto_v3.core.memory.types import MemoryType
 
         mgr = MemoryManager()  # :memory: by default
 
@@ -258,8 +258,8 @@ class TestMemoryEncryptionIntegration:
         assert entry.content == "Hello from test"
 
     def test_identity_memory_isolated(self):
-        from otto.core.memory.manager import MemoryManager
-        from otto.core.memory.types import MemoryType
+        from otto_v3.core.memory.manager import MemoryManager
+        from otto_v3.core.memory.types import MemoryType
 
         mgr = MemoryManager()
 
@@ -272,15 +272,15 @@ class TestMemoryEncryptionIntegration:
         assert "IDENTITY" not in syncable
 
     def test_read_before_write_enforced(self):
-        from otto.core.memory.manager import MemoryManager, ReadBeforeWriteViolation
-        from otto.core.memory.types import MemoryType
+        from otto_v3.core.memory.manager import MemoryManager, ReadBeforeWriteViolation
+        from otto_v3.core.memory.types import MemoryType
 
         mgr = MemoryManager()
         with pytest.raises(ReadBeforeWriteViolation):
             mgr.write(MemoryType.EPISODIC, "key", "value")
 
     def test_encryption_roundtrip(self):
-        from otto.core.encryption.crypto import CryptoEngine
+        from otto_v3.core.encryption.crypto import CryptoEngine
 
         key = CryptoEngine.generate_key()
         plaintext = b"OTTO cognitive data - sensitive"
@@ -292,7 +292,7 @@ class TestMemoryEncryptionIntegration:
         assert decrypted == plaintext
 
     def test_wrong_key_fails_gracefully(self):
-        from otto.core.encryption.crypto import CryptoEngine, DecryptionError
+        from otto_v3.core.encryption.crypto import CryptoEngine, DecryptionError
 
         key1 = CryptoEngine.generate_key()
         key2 = CryptoEngine.generate_key()
@@ -309,8 +309,8 @@ class TestPheromoneLifecycleIntegration:
     """Deposit → follow → decay → prune end-to-end."""
 
     def test_full_lifecycle(self):
-        from otto.core.pheromones.trails import TrailManager
-        from otto.core.pheromones.decay import DecayEngine
+        from otto_v3.core.pheromones.trails import TrailManager
+        from otto_v3.core.pheromones.decay import DecayEngine
 
         mgr = TrailManager()
         decay = DecayEngine(half_life_hours=0.001, prune_threshold=0.001)
@@ -332,7 +332,7 @@ class TestPheromoneLifecycleIntegration:
 
     def test_kahan_summation_precision(self):
         """Verify Kahan summation produces more precise results."""
-        from otto.core.determinism.kahan import KahanAccumulator
+        from otto_v3.core.determinism.kahan import KahanAccumulator
 
         kahan = KahanAccumulator()
         naive = 0.0
@@ -352,8 +352,8 @@ class TestMCPEndToEnd:
     """Full MCP dispatch through ChatSession to pipeline."""
 
     def test_chat_tool_end_to_end(self):
-        from otto.mcp.server import OTTOMCPHandler
-        from otto.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
+        from otto_v3.ui.chat import ChatSession
 
         client = _make_mock_client(content="I understand how you feel")
         pipeline = _make_real_pipeline(client=client)
@@ -366,8 +366,8 @@ class TestMCPEndToEnd:
         assert "expert" in result.metadata
 
     def test_status_tool_after_chat(self):
-        from otto.mcp.server import OTTOMCPHandler
-        from otto.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
+        from otto_v3.ui.chat import ChatSession
 
         client = _make_mock_client()
         pipeline = _make_real_pipeline(client=client)
@@ -379,9 +379,9 @@ class TestMCPEndToEnd:
         assert "1 exchanges" in status.content
 
     def test_signals_tool_with_services(self):
-        from otto.mcp.server import OTTOMCPHandler
-        from otto.services.base import CategoricalSignal, ServiceRegistry
-        from otto.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
+        from otto_v3.services.base import CategoricalSignal, ServiceRegistry
+        from otto_v3.ui.chat import ChatSession
 
         class FakeClockService:
             name = "clock"
@@ -420,14 +420,14 @@ class TestConstitutionEnforcement:
     """Safety floors enforced across the full routing pipeline."""
 
     def test_safety_floors_immutable(self):
-        from otto.core.constitution import SafetyFloors
+        from otto_v3.core.constitution import SafetyFloors
 
         floors = SafetyFloors()
         with pytest.raises(FrozenInstanceError):
             floors.protector = 0.0  # type: ignore[misc]
 
     def test_safety_floors_values_correct(self):
-        from otto.core.constitution import SafetyFloors
+        from otto_v3.core.constitution import SafetyFloors
 
         floors = SafetyFloors()
         assert floors.protector == 0.10
@@ -435,14 +435,14 @@ class TestConstitutionEnforcement:
         assert floors.restorer == 0.05
 
     def test_constitution_validates(self):
-        from otto.core.constitution import validate
+        from otto_v3.core.constitution import validate
         validate()
 
     def test_routing_respects_floors_for_all_inputs(self):
         """Run 20 varied inputs through NEXUS, verify floors hold."""
-        from otto.core.constitution import SafetyFloors
-        from otto.core.experts.router import NEXUSRouter
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.constitution import SafetyFloors
+        from otto_v3.core.experts.router import NEXUSRouter
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         router = NEXUSRouter(safety_floors=SafetyFloors())
@@ -460,7 +460,7 @@ class TestConstitutionEnforcement:
             signals = detector.detect(text)
             selection = router.route(signals, state={})
             # Constitution must still validate after any routing
-            from otto.core.constitution import validate
+            from otto_v3.core.constitution import validate
             validate()
 
 
@@ -474,7 +474,7 @@ class TestPerformance:
 
     def test_prism_detection_speed(self):
         """Signal detection should be fast (<10ms per call)."""
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         text = "I'm so frustrated and stuck, I CAN'T do this anymore"
@@ -490,9 +490,9 @@ class TestPerformance:
 
     def test_nexus_routing_speed(self):
         """Routing should be fast (<5ms per call)."""
-        from otto.core.constitution import SafetyFloors
-        from otto.core.experts.router import NEXUSRouter
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.constitution import SafetyFloors
+        from otto_v3.core.experts.router import NEXUSRouter
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         router = NEXUSRouter(safety_floors=SafetyFloors())
@@ -509,8 +509,8 @@ class TestPerformance:
 
     def test_livrps_resolve_speed(self):
         """Layer resolution should be fast (<1ms per call)."""
-        from otto.core.livrps.compositor import LIVRPSCompositor
-        from otto.core.livrps.layers import LayerName
+        from otto_v3.core.livrps.compositor import LIVRPSCompositor
+        from otto_v3.core.livrps.layers import LayerName
 
         comp = LIVRPSCompositor()
         comp.set_property(LayerName.INHERITED, "mood", "neutral")
@@ -544,7 +544,7 @@ class TestPerformance:
 
     def test_conversation_history_token_estimation_speed(self):
         """Token estimation should scale linearly."""
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         history = ConversationHistory()
         for i in range(200):
@@ -561,7 +561,7 @@ class TestPerformance:
 
     def test_pheromone_deposit_speed(self):
         """Pheromone deposits should be fast (<1ms)."""
-        from otto.core.pheromones.trails import TrailManager
+        from otto_v3.core.pheromones.trails import TrailManager
 
         mgr = TrailManager()
 
@@ -577,13 +577,13 @@ class TestPerformance:
     def test_import_time(self):
         """Core imports should complete quickly (<500ms total)."""
         modules = [
-            "otto.core.constitution",
-            "otto.core.livrps",
-            "otto.core.prism",
-            "otto.core.experts.router",
-            "otto.api.nexus",
-            "otto.ui.chat",
-            "otto.mcp",
+            "otto_v3.core.constitution",
+            "otto_v3.core.livrps",
+            "otto_v3.core.prism",
+            "otto_v3.core.experts.router",
+            "otto_v3.api.nexus",
+            "otto_v3.ui.chat",
+            "otto_v3.mcp",
         ]
 
         start = time.perf_counter()
@@ -616,7 +616,7 @@ def _read_source(path: pathlib.Path) -> str:
 
 
 class TestAuditDictIteration:
-    """[He2025] All dict iteration must use sorted()."""
+    """All dict iteration must use sorted()."""
 
     def test_no_bare_dict_items(self):
         """Every .items() call must be inside sorted().
@@ -733,7 +733,7 @@ class TestAuditMinimizingLanguage:
     """No "just", "simply", "easy" in user-facing strings."""
 
     def test_no_minimizing_in_expert_voices(self):
-        from otto.api.nexus import EXPERT_VOICES
+        from otto_v3.api.nexus import EXPERT_VOICES
 
         for expert, voice in sorted(EXPERT_VOICES.items()):
             words = voice.lower().split()
@@ -743,8 +743,8 @@ class TestAuditMinimizingLanguage:
                 )
 
     def test_no_minimizing_in_descriptions(self):
-        from otto.ui.dashboard import EFFORT_DESCRIPTIONS, EXPERT_DESCRIPTIONS
-        from otto.ui.styles import SIGNAL_LABELS
+        from otto_v3.ui.dashboard import EFFORT_DESCRIPTIONS, EXPERT_DESCRIPTIONS
+        from otto_v3.ui.styles import SIGNAL_LABELS
 
         all_strings = {}
         for k, v in sorted(EXPERT_DESCRIPTIONS.items()):
@@ -769,7 +769,7 @@ class TestAuditSafetyFloors:
     """Safety floors cannot be modified at runtime."""
 
     def test_floors_frozen(self):
-        from otto.core.constitution import SafetyFloors
+        from otto_v3.core.constitution import SafetyFloors
 
         floors = SafetyFloors()
         for attr in ("protector", "decomposer", "restorer"):
@@ -777,7 +777,7 @@ class TestAuditSafetyFloors:
                 setattr(floors, attr, 0.0)
 
     def test_floor_values_exact(self):
-        from otto.core.constitution import SafetyFloors
+        from otto_v3.core.constitution import SafetyFloors
 
         floors = SafetyFloors()
         assert floors.protector == pytest.approx(0.10)
@@ -785,7 +785,7 @@ class TestAuditSafetyFloors:
         assert floors.restorer == pytest.approx(0.05)
 
     def test_floor_total(self):
-        from otto.core.constitution import SafetyFloors
+        from otto_v3.core.constitution import SafetyFloors
 
         floors = SafetyFloors()
         assert floors.total == pytest.approx(0.20)
@@ -798,7 +798,7 @@ class TestAuditPrivacyBoundary:
     """Raw data never crosses into categorical signals."""
 
     def test_categorical_signal_has_no_raw_field(self):
-        from otto.services.base import CategoricalSignal
+        from otto_v3.services.base import CategoricalSignal
         import dataclasses
 
         field_names = {f.name for f in dataclasses.fields(CategoricalSignal)}
@@ -807,7 +807,7 @@ class TestAuditPrivacyBoundary:
         assert not overlap, f"CategoricalSignal has raw data field: {overlap}"
 
     def test_categorical_signal_fields_are_categorical(self):
-        from otto.services.base import CategoricalSignal
+        from otto_v3.services.base import CategoricalSignal
         import dataclasses
 
         expected = {"category", "value", "confidence", "source", "timestamp"}
@@ -816,8 +816,8 @@ class TestAuditPrivacyBoundary:
 
     def test_services_only_emit_categoricals(self):
         """Verify service get_signals() returns CategoricalSignal type."""
-        from otto.services.clock import ClockService
-        from otto.services.base import CategoricalSignal
+        from otto_v3.services.clock import ClockService
+        from otto_v3.services.base import CategoricalSignal
 
         service = ClockService()
         signals = service.get_signals()
@@ -834,7 +834,7 @@ class TestAuditDeterminism:
     """Same input → same output, verified across repeated runs."""
 
     def test_prism_deterministic_100x(self):
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         text = "I'm stuck and frustrated, can't handle this"
@@ -845,9 +845,9 @@ class TestAuditDeterminism:
             assert result == baseline
 
     def test_nexus_routing_deterministic_100x(self):
-        from otto.core.constitution import SafetyFloors
-        from otto.core.experts.router import NEXUSRouter
-        from otto.core.prism.detector import PRISMDetector
+        from otto_v3.core.constitution import SafetyFloors
+        from otto_v3.core.experts.router import NEXUSRouter
+        from otto_v3.core.prism.detector import PRISMDetector
 
         detector = PRISMDetector()
         router = NEXUSRouter(safety_floors=SafetyFloors())
@@ -867,8 +867,8 @@ class TestAuditDeterminism:
                 assert supporting == baseline_supporting
 
     def test_livrps_deterministic(self):
-        from otto.core.livrps.compositor import LIVRPSCompositor
-        from otto.core.livrps.layers import LayerName
+        from otto_v3.core.livrps.compositor import LIVRPSCompositor
+        from otto_v3.core.livrps.layers import LayerName
 
         comp = LIVRPSCompositor()
         comp.set_property(LayerName.LEARNED, "a", 1)
@@ -901,7 +901,7 @@ class TestAuditDeterminism:
                 assert current == baseline
 
     def test_mcp_tools_deterministic(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         baseline = [(t.name, t.description) for t in get_tool_definitions()]
         for _ in range(100):
@@ -953,7 +953,7 @@ class TestAuditEncryption:
     """Verify encryption module doesn't write plaintext."""
 
     def test_crypto_engine_produces_different_output(self):
-        from otto.core.encryption.crypto import CryptoEngine
+        from otto_v3.core.encryption.crypto import CryptoEngine
 
         key = CryptoEngine.generate_key()
         data = b"cognitive state: overwhelmed, frustrated"
@@ -964,7 +964,7 @@ class TestAuditEncryption:
         assert b"frustrated" not in encrypted
 
     def test_key_derivation_deterministic(self):
-        from otto.core.encryption.kdf import TEST_PARAMS, derive_key, generate_salt
+        from otto_v3.core.encryption.kdf import TEST_PARAMS, derive_key, generate_salt
 
         salt = b"fixed_salt_for_test_0000"  # 24 bytes, >= 8
 
@@ -973,7 +973,7 @@ class TestAuditEncryption:
         assert key1 == key2
 
     def test_different_passwords_different_keys(self):
-        from otto.core.encryption.kdf import TEST_PARAMS, derive_key
+        from otto_v3.core.encryption.kdf import TEST_PARAMS, derive_key
 
         salt = b"fixed_salt_for_test_0000"
 
@@ -990,18 +990,18 @@ class TestAuditPackageStructure:
 
     EXPECTED_PACKAGES = [
         "otto",
-        "otto.core",
-        "otto.core.livrps",
-        "otto.core.prism",
-        "otto.core.experts",
-        "otto.core.memory",
-        "otto.core.encryption",
-        "otto.core.pheromones",
-        "otto.core.determinism",
-        "otto.api",
-        "otto.services",
-        "otto.ui",
-        "otto.mcp",
+        "otto_v3.core",
+        "otto_v3.core.livrps",
+        "otto_v3.core.prism",
+        "otto_v3.core.experts",
+        "otto_v3.core.memory",
+        "otto_v3.core.encryption",
+        "otto_v3.core.pheromones",
+        "otto_v3.core.determinism",
+        "otto_v3.api",
+        "otto_v3.services",
+        "otto_v3.ui",
+        "otto_v3.mcp",
     ]
 
     def test_all_packages_importable(self):
@@ -1019,21 +1019,21 @@ class TestAuditPackageStructure:
     def test_key_modules_importable(self):
         """Verify critical modules can be imported."""
         modules = [
-            "otto.core.constitution",
-            "otto.core.livrps.compositor",
-            "otto.core.prism.detector",
-            "otto.core.experts.router",
-            "otto.api.nexus",
-            "otto.api.effort",
-            "otto.api.client",
-            "otto.api.compaction",
-            "otto.services.base",
-            "otto.services.clock",
-            "otto.ui.chat",
-            "otto.ui.dashboard",
-            "otto.ui.styles",
-            "otto.mcp.tools",
-            "otto.mcp.server",
+            "otto_v3.core.constitution",
+            "otto_v3.core.livrps.compositor",
+            "otto_v3.core.prism.detector",
+            "otto_v3.core.experts.router",
+            "otto_v3.api.nexus",
+            "otto_v3.api.effort",
+            "otto_v3.api.client",
+            "otto_v3.api.compaction",
+            "otto_v3.services.base",
+            "otto_v3.services.clock",
+            "otto_v3.ui.chat",
+            "otto_v3.ui.dashboard",
+            "otto_v3.ui.styles",
+            "otto_v3.mcp.tools",
+            "otto_v3.mcp.server",
         ]
         for mod_name in modules:
             mod = importlib.import_module(mod_name)

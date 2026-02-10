@@ -12,7 +12,7 @@ This module provides:
 5. Proof Generation - Cryptographic proofs of deterministic execution
 6. Verification - Anyone can verify execution was deterministic
 
-[He2025] Tier 4 Guarantees:
+Tier 4 Guarantees:
 - Cryptographic proof that same inputs produce same outputs
 - TEE attestation of execution environment
 - Merkle proofs for intermediate state verification
@@ -24,7 +24,7 @@ Security Model:
 - Proofs are publicly verifiable without trusted third party
 
 References:
-    [He2025] He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
+    He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
     in LLM Inference", Thinking Machines Lab, Sep 2025.
 """
 

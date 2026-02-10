@@ -6,7 +6,7 @@ Post-processes LLM responses to:
 - Match user's register
 - Enforce voice principles
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Pattern lists are sorted for deterministic iteration
 - Transformations applied in fixed order
 - Same inputs always produce same outputs
@@ -69,7 +69,7 @@ class VoiceAdapter:
     """
     Adapts LLM responses to match user's voice.
 
-    [He2025] Deterministic transformation pipeline:
+    Deterministic transformation pipeline:
     1. Strip forbidden phrases
     2. Fix "I" starts
     3. Apply register transformations
@@ -94,7 +94,7 @@ class VoiceAdapter:
         """
         Adapt response to match voice profile.
 
-        [He2025] Fixed transformation order for determinism.
+        Fixed transformation order for determinism.
         """
         result = response
 

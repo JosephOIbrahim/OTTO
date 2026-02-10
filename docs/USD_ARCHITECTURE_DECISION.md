@@ -84,14 +84,14 @@ Without `pxr-usd`:
 - Smaller package size
 - Fewer dependency conflicts
 
-### 5. [He2025] Determinism
+### 5. Determinism
 
 USD file parsing introduces potential non-determinism:
 - File I/O timing
 - Layer composition order edge cases
 - Attribute resolution caching
 
-Pure Python LIVRPS implementation is easier to verify for [He2025] compliance.
+Pure Python LIVRPS implementation is easier to verify for determinism.
 
 ---
 
@@ -101,7 +101,7 @@ Pure Python LIVRPS implementation is easier to verify for [He2025] compliance.
 
 1. Mobile builds remain lightweight
 2. Simpler installation and deployment
-3. Easier [He2025] compliance verification
+3. Easier Determinism verification
 4. Full control over composition behavior
 
 ### Negative
@@ -206,7 +206,7 @@ They are **human-readable specifications**, not runtime-parsed data.
 
 ## References
 
-- [He2025] Determinism requirements: `docs/HE2025_DETERMINISM_ADDENDUM.md`
+- Determinism requirements: `docs/HE2025_DETERMINISM_ADDENDUM.md`
 - Mobile architecture: `docs/MOBILE_TUI_REMOVAL.md`
 - Blueprint v1.0: `BLUEPRINT.md`
 - USD specification: https://openusd.org/release/spec.html

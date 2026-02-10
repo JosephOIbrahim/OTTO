@@ -4,7 +4,7 @@ OpenAI Inference Backend
 
 Backend implementation for OpenAI models via the OpenAI API.
 
-[He2025] Compliance:
+Determinism:
 - Uses temperature=0 for deterministic sampling
 - Provides seed parameter for reproducibility
 - Fixed parameter handling
@@ -129,7 +129,7 @@ class OpenAIBackend(InferenceBackend):
         """
         Perform inference using OpenAI.
 
-        [He2025] Compliance:
+        Determinism:
         - temperature=0 by default for deterministic output
         - seed parameter for reproducibility
         """

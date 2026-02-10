@@ -6,7 +6,7 @@ Tests:
 - Parameter locking (MAX3, safety gating)
 - Convergence tracking (RC^+xi)
 - Full pipeline orchestration
-- Determinism guarantees (ThinkingMachines [He2025])
+- Determinism guarantees (ThinkingMachines)
 - Session reset logic
 """
 
@@ -214,7 +214,7 @@ class TestParameterLocker:
 
     def test_batch_invariance_different_reflection_count(self):
         """
-        ThinkingMachines [He2025]: Same routing params → same checksum
+        Same routing params → same checksum
         even with different reflection_count values (within MAX3 bounds).
 
         This is the core batch-invariance test: routing checksum excludes
@@ -717,7 +717,7 @@ class TestIntegration:
 
     def test_batch_invariance_orchestrator_level(self):
         """
-        ThinkingMachines [He2025]: Same message → same routing checksum.
+        Same message → same routing checksum.
 
         Full batch-invariance test at orchestrator level:
         Two fresh sessions processing the same message should produce

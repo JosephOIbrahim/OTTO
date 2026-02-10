@@ -10,7 +10,7 @@ Components:
 - JSONFormatter: Structured JSON output
 - ANSIFormatter: Terminal with ANSI colors (desktop only)
 
-[He2025] Compliance:
+Determinism:
 - Fixed format selection order
 - Deterministic formatting (same state → same output)
 - No runtime variation

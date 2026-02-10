@@ -1,7 +1,7 @@
 """
 Text-to-Speech (TTS) module using OpenAI TTS.
 
-Provides deterministic speech synthesis with [He2025] compliance.
+Provides deterministic speech synthesis with Determinism.
 """
 
 import asyncio
@@ -116,7 +116,7 @@ class TextToSpeech:
     """
     Text-to-speech synthesis using OpenAI TTS.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed voice selection (no dynamic switching)
     - Deterministic text preprocessing
     - Checksum verification

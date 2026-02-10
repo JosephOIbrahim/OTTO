@@ -8,7 +8,7 @@ flow protection into a unified decision surface.
 Philosophy: "Orchestra helps you finish projects by knowing when to do the
 work yourself, when to delegate to agents, and when to protect your flow."
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - Fixed evaluation order
 - Deterministic routing
 - State snapshot before decisions
@@ -248,7 +248,7 @@ class DecisionEngine:
     Evaluates incoming tasks and produces execution plans that
     respect cognitive state and optimize for project completion.
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism (inspired by [He2025]):
     - Pre-computed routing table (ROUTING_TABLE)
     - State snapshot BEFORE decisions
     - Deterministic table lookup (first-match-wins)

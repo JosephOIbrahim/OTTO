@@ -15,7 +15,7 @@
 
 ## What is OTTO?
 
-OTTO is a **cognitive operating system** designed to provide intelligent, context-aware assistance while respecting neurodivergent needs. Built on the [He2025] determinism principles, OTTO ensures predictable, reproducible behavior across all interactions.
+OTTO is a **cognitive operating system** designed to provide intelligent, context-aware assistance while respecting neurodivergent needs. Built on the determinism principles, OTTO ensures predictable, reproducible behavior across all interactions.
 
 ```mermaid
 graph TB
@@ -42,7 +42,7 @@ graph TB
 
     [:octicons-arrow-right-24: Learn more](ARCHITECTURE.md)
 
--   :material-shield-check:{ .lg .middle } **[He2025] Compliant**
+-   :material-shield-check:{ .lg .middle } **Determinism**
 
     ---
 

@@ -1,7 +1,7 @@
 """
 Prepare text for speech synthesis.
 
-Implements a fixed 5-phase pipeline per [He2025] compliance:
+Implements a fixed 5-phase pipeline per Determinism:
 1. Remove visual formatting (markdown, code blocks)
 2. Expand abbreviations deterministically
 3. Convert numbers to speakable text
@@ -311,7 +311,7 @@ def prepare_for_speech(
     """
     Prepare text for speech synthesis using 5-phase pipeline.
 
-    Per [He2025]: Fixed phase order, deterministic operations,
+    Fixed phase order, deterministic operations,
     no dynamic algorithm switching.
 
     Args:
@@ -366,7 +366,7 @@ def prepare_chunks_for_speech(
     """
     Prepare multiple text chunks for speech.
 
-    Uses batch-invariant processing per [He2025].
+    Uses batch-invariant processing.
 
     Args:
         chunks: List of text chunks

@@ -2,15 +2,15 @@
 Tier 3: Kernel-Level Determinism
 ================================
 
-True [He2025] kernel-level compliance for local inference.
+[He2025]-inspired kernel-level determinism for local inference.
 
 This module provides:
-1. KernelConfig - [He2025]-compliant kernel configuration
+1. KernelConfig - [He2025]-inspired kernel configuration
 2. DeterministicEnvironment - CUDA environment management
 3. ServerConfigValidator - Validates server determinism settings
 4. DeterministicVLLMBackend - Backend with kernel-level guarantees
 
-[He2025] Compliance Requirements:
+[He2025]-inspired determinism Requirements:
 - Batch size = 1 (eliminates batch-variance)
 - Fixed reduction order in RMSNorm
 - Fixed tile sizes in MatMul (no split-K)
@@ -44,7 +44,7 @@ from .backends.base import (
 
 class DeterminismMode(Enum):
     """Level of determinism enforcement."""
-    STRICT = "strict"       # Full [He2025] compliance, may reject non-compliant servers
+    STRICT = "strict"       # Full [He2025]-inspired determinism, may reject non-compliant servers
     RELAXED = "relaxed"     # Best effort, warn on non-compliance
     DISABLED = "disabled"   # No enforcement (for debugging)
 
@@ -52,7 +52,7 @@ class DeterminismMode(Enum):
 @dataclass(frozen=True)
 class He2025KernelConfig:
     """
-    [He2025]-compliant kernel configuration.
+    [He2025]-inspired kernel configuration.
 
     This configuration ensures kernel-level determinism by:
     1. Setting batch_size=1 to eliminate batch-variance
@@ -109,12 +109,12 @@ class He2025KernelConfig:
         if self.max_num_batched_tokens != self.batch_size:
             raise ValueError(
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) must equal "
-                f"batch_size ({self.batch_size}) for [He2025] compliance."
+                f"batch_size ({self.batch_size}) for determinism (inspired by [He2025])."
             )
 
     @property
     def is_he2025_compliant(self) -> bool:
-        """Check if configuration is fully [He2025] compliant."""
+        """Check if configuration is fully [He2025]-inspired determinism."""
         return (
             self.batch_size == 1 and
             self.cuda_deterministic and
@@ -338,7 +338,7 @@ class ServerConfigValidator:
         >>> validator = ServerConfigValidator("http://localhost:8000")
         >>> result = await validator.validate()
         >>> if result.he2025_compliant:
-        ...     print("Server is [He2025] compliant!")
+        ...     print("Server is [He2025]-inspired determinism!")
     """
 
     def __init__(
@@ -483,13 +483,13 @@ DETERMINISTIC_VLLM_CAPABILITIES = BackendCapabilities(
     supports_stop_sequences=True,
     supports_temperature_zero=True,
     max_context_window=128000,
-    determinism_level="kernel",  # True [He2025] compliance
+    determinism_level="kernel",  # True [He2025]-inspired determinism
 )
 
 
 class DeterministicVLLMBackend(InferenceBackend):
     """
-    [He2025]-compliant local vLLM backend.
+    [He2025]-inspired local vLLM backend.
 
     This backend provides TRUE kernel-level determinism when used with
     a properly configured vLLM server. It:
@@ -500,7 +500,7 @@ class DeterministicVLLMBackend(InferenceBackend):
     4. Tracks determinism metrics
 
     Compared to LocalVLLMBackend, this backend:
-    - Validates server is [He2025] compliant
+    - Validates server is [He2025]-inspired determinism
     - Can reject servers that don't meet requirements
     - Tracks determinism statistics
     - Provides stronger guarantees
@@ -616,7 +616,7 @@ class DeterministicVLLMBackend(InferenceBackend):
             if not self._validation_result.he2025_compliant:
                 if self._validation_mode == DeterminismMode.STRICT:
                     raise RuntimeError(
-                        "Server is not [He2025] compliant. "
+                        "Server is not [He2025]-inspired determinism. "
                         f"Warnings: {self._validation_result.warnings}"
                     )
 
@@ -643,7 +643,7 @@ class DeterministicVLLMBackend(InferenceBackend):
         **kwargs: Any,
     ) -> InferenceResponse:
         """
-        Perform [He2025]-compliant inference.
+        Perform [He2025]-inspired inference.
 
         Always uses temperature=0 and the configured seed for determinism.
         """
@@ -756,7 +756,7 @@ class DeterministicVLLMBackend(InferenceBackend):
         stop_sequences: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> AsyncIterator[str]:
-        """Perform streaming [He2025]-compliant inference."""
+        """Perform streaming [He2025]-inspired inference."""
         if self._session is None:
             await self.initialize()
 

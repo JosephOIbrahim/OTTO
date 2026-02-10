@@ -3,7 +3,7 @@ Tests for New MCP Tools
 ========================
 
 Tests the MCP tools added for:
-- [He2025] verification (otto_verify_determinism)
+- verification (otto_verify_determinism)
 - Trail operations (otto-trails-mcp)
 
 Note: These tests verify the handler functions directly without
@@ -24,11 +24,11 @@ from otto.trails import Trail, TrailStore, TrailType
 # =============================================================================
 
 class TestVerifyDeterminism:
-    """Tests for [He2025] verification via MCP."""
+    """Tests for verification via MCP."""
 
     @pytest.fixture
     def compliant_code(self):
-        """Python code that is [He2025] compliant."""
+        """Python code that is Determinism."""
         return '''
 from otto.determinism import sorted_max, kahan_sum, DETERMINISM_SEED
 import random
@@ -50,7 +50,7 @@ def process_items(items: set) -> list:
 
     @pytest.fixture
     def non_compliant_code(self):
-        """Python code with [He2025] violations."""
+        """Python code with violations."""
         return '''
 import random
 
@@ -286,7 +286,7 @@ class TestTrailMCPHandlers:
 # =============================================================================
 
 class TestMCPDeterminism:
-    """Tests for [He2025] determinism in MCP handlers."""
+    """Tests for determinism in MCP handlers."""
 
     @pytest.fixture
     def temp_db(self):

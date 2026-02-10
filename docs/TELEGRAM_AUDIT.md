@@ -21,7 +21,7 @@
 - Commands: `/start`, `/help`, `/status`, `/reset`, `/calibrate`
 - Message handler for natural language
 - Session storage path configurable
-- [He2025] Compliant: Fixed handler registration order
+- Determinism: Fixed handler registration order
 - Supports both polling and webhook modes
 
 ### Adapter (`adapter.py`)
@@ -31,7 +31,7 @@
 - Connects to `CognitiveOrchestrator`
 - Expert-specific responses (Validator, Scaffolder, Restorer, Socratic, Direct)
 - Session persistence to JSON
-- [He2025] Compliant: Sorted iteration, deterministic state transitions
+- Determinism: Sorted iteration, deterministic state transitions
 
 ## Missing Pieces
 

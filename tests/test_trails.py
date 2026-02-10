@@ -3,7 +3,7 @@ Tests for the Pheromone Trail System
 =====================================
 
 Tests Trail, TrailQuery, and TrailStore with focus on:
-- [He2025] determinism (same inputs → same outputs)
+- determinism (same inputs → same outputs)
 - Decay and reinforcement mechanics
 - CRUD operations
 - Query ordering guarantees
@@ -594,11 +594,11 @@ class TestTrailStore:
 
 
 # =============================================================================
-# Determinism Tests - [He2025] Compliance
+# Determinism Tests - Determinism
 # =============================================================================
 
 class TestDeterminism:
-    """Tests verifying [He2025] deterministic behavior."""
+    """Tests verifying deterministic behavior."""
 
     @pytest.fixture
     def temp_db(self):

@@ -147,9 +147,9 @@ class TestWebSocketHub:
 
 ---
 
-## [He2025] Compliance
+## Determinism
 
-All contributions must maintain determinism per [He2025]:
+All contributions must maintain determinism:
 
 ### Required
 
@@ -189,7 +189,7 @@ Brief description of changes.
 - [ ] Breaking change
 - [ ] Documentation
 
-## [He2025] Compliance
+## Determinism
 - [ ] Fixed evaluation order maintained
 - [ ] No new sources of non-determinism
 - [ ] Determinism tests added/updated

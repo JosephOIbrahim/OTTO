@@ -2,7 +2,7 @@
 Tests for Tier 4: Cryptographically Verified Inference
 =======================================================
 
-Tests [He2025] cryptographic verification including:
+Tests cryptographic verification including:
 - Commitment scheme (hiding + binding)
 - Merkle trees for execution traces
 - TEE abstraction (simulated)
@@ -10,7 +10,7 @@ Tests [He2025] cryptographic verification including:
 - Cryptographic proofs
 - Proof verification
 
-[He2025] Tier 4 provides CRYPTOGRAPHIC determinism guarantees:
+Tier 4 provides CRYPTOGRAPHIC determinism guarantees:
 - Same inputs produce same outputs (provable)
 - TEE attestation of execution environment
 - Merkle proofs for intermediate state verification

@@ -7,7 +7,7 @@ Fixtures for memory backbone integration tests.
 These fixtures create REAL instances (not mocks) to test
 actual memory behavior, trail deposits, and cross-surface state.
 
-[He2025] Compliance:
+Determinism:
 - All fixtures use real implementations
 - Temporary directories ensure test isolation
 - Fixed seeds where applicable

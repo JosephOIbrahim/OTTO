@@ -7,7 +7,7 @@ Adds nuanced confidence scores to signal detection, enabling:
 - Context-aware sensitivity
 - Accumulation across messages
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Fixed scoring formulas (deterministic)
 - Sorted signal evaluation order
 - Same inputs always produce same scores
@@ -170,7 +170,7 @@ def calculate_confidence(
     """
     Calculate confidence score for a signal category.
 
-    [He2025] Deterministic: signals checked in sorted order,
+    Deterministic: signals checked in sorted order,
     weights combined using fixed formula.
 
     Args:
@@ -220,7 +220,7 @@ def detect_with_confidence(
     """
     Detect all signal categories with confidence scores.
 
-    [He2025] Deterministic: categories checked in fixed order.
+    Deterministic: categories checked in fixed order.
 
     Args:
         message: User message to analyze

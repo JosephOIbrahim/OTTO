@@ -74,7 +74,7 @@ class HumanRender:
             Unseeded by default for natural output variation.
             This affects human-readable phrasing only, not routing decisions.
             For deterministic output, pass seed parameter.
-            This is NOT a [He2025] violation - [He2025] principles apply to
+            This is NOT a violation - principles apply to
             cognitive routing, not presentation layer phrase selection.
         """
         self.otto_role = otto_role

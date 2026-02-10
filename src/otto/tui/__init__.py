@@ -4,7 +4,7 @@ OTTO TUI Dashboard
 
 Terminal User Interface for OTTO OS cognitive state monitoring.
 
-[He2025] Compliance:
+Determinism:
 - All visual mappings from fixed constants
 - Immutable state management
 - Deterministic rendering pipeline

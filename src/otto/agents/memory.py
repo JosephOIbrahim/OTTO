@@ -14,7 +14,7 @@ Philosophy:
     Remember what matters, forget what doesn't.
     Preferences inform behavior; history enables continuity.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed memory categories
 - Deterministic storage format
 - Bounded memory size

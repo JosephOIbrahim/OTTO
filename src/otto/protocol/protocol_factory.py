@@ -17,7 +17,7 @@ Usage:
     >>> router = create_protocol_router()
     >>> response = await router.route({"jsonrpc": "2.0", "method": "otto.status", "id": 1})
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed initialization order
 - Deterministic component wiring
 - All dependencies explicitly declared

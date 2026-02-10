@@ -6,7 +6,7 @@ and safety properties. These tests verify the core value proposition:
 
     Same signals -> Same routing -> Same behavior
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Roundtrip properties for state serialization
 - Idempotence properties for state transitions
 - Monotonicity properties for safety gating
@@ -14,7 +14,7 @@ ThinkingMachines [He2025] Compliance:
 
 References:
     Property-Based Testing Guide (skill: property-based-testing)
-    ThinkingMachines batch-invariance [He2025]
+    ThinkingMachines batch-invariance
 """
 
 import pytest
@@ -124,7 +124,7 @@ class TestRoundtripProperties:
         Property: checksum(state) == checksum(state)
 
         The same state must always produce the same checksum.
-        ThinkingMachines [He2025] batch-invariance requirement.
+        ThinkingMachines batch-invariance requirement.
         """
         checksum1 = state.checksum()
         checksum2 = state.checksum()
@@ -286,7 +286,7 @@ class TestDeterminismProperties:
         Property: route(state) == route(state)
 
         The same state must always route to the same expert.
-        ThinkingMachines [He2025] batch-invariance requirement.
+        ThinkingMachines batch-invariance requirement.
         """
         router = create_router()
         detector = create_detector()

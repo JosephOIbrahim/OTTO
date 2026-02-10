@@ -8,7 +8,7 @@ This module provides threshold cryptography where N shares are distributed
 to M parties, and any K (threshold) shares can reconstruct the secret or
 produce a valid signature. No single party has access to the full key.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED field prime (256-bit)
 - FIXED polynomial degree = threshold - 1
 - DETERMINISTIC reconstruction (same shares → same secret)
@@ -66,7 +66,7 @@ import json
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines [He2025] Compliant)
+# Constants (FIXED - ThinkingMachines Determinism)
 # =============================================================================
 
 # 256-bit prime for finite field arithmetic
@@ -370,7 +370,7 @@ class ThresholdScheme:
     - Any K shares can reconstruct the secret
     - K-1 shares reveal NO information about the secret
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED field prime (256-bit)
     - FIXED polynomial degree (threshold - 1)
     - Deterministic reconstruction
@@ -544,7 +544,7 @@ class ThresholdSigner:
     is reconstructed during signing. For production use with higher security
     requirements, consider MPC-based threshold ECDSA (e.g., GG18, GG20).
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED signing algorithm (HMAC-SHA256 for simplicity)
     - FIXED key derivation
     - Deterministic signature combination

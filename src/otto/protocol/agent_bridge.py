@@ -12,7 +12,7 @@ Connects:
 This is the translation layer between structured protocol messages and
 the existing orchestration logic.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed message → method mapping
 - State snapshot via DecisionEngine (already compliant)
 - Deterministic result formatting

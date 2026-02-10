@@ -8,7 +8,7 @@ This module provides quantum-resistant key exchange that protects against
 "harvest now, decrypt later" attacks where adversaries store encrypted
 traffic to decrypt once quantum computers become available.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED algorithms: X25519 (classical) + ML-KEM-768 (post-quantum)
 - FIXED KDF: HKDF-SHA256 for key derivation
 - DETERMINISTIC: same keys → same shared secret
@@ -66,7 +66,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - ThinkingMachines [He2025] Compliant)
+# Constants (FIXED - ThinkingMachines Determinism)
 # =============================================================================
 
 # Key sizes

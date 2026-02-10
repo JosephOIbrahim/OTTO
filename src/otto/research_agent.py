@@ -14,7 +14,7 @@ Distinguishes from routing agents:
 - Routing agents: echo_curator, domain_intel, moe_router (produce metadata)
 - Worker agents: research_agent, synthesis_agent, code_generator (produce real output)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic search ordering
 - Reproducible result synthesis
 - Fixed evaluation patterns
@@ -357,7 +357,7 @@ class ResearchAgent:
                 title=pattern,
                 content=f"Found {count} occurrences",
                 confidence=min(count / 10, 1.0),
-                # [He2025] Use sorted_max_value for deterministic max
+                # Use sorted_max_value for deterministic max
                 relevance=count / sorted_max_value(patterns_found) if patterns_found else 0
             ))
 

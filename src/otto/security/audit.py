@@ -10,7 +10,7 @@ Provides verifiable audit trail using Merkle tree structure:
 - Inclusion proofs verify specific events exist
 - Tampering detection via hash chain verification
 
-[He2025] Compliance:
+Determinism:
 - FIXED hash algorithm (SHA-256)
 - FIXED tree structure (binary Merkle tree)
 - Deterministic proof generation
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - [He2025] Compliant)
+# Constants (FIXED - Determinism)
 # =============================================================================
 
 # Hash algorithm - FIXED, never changes

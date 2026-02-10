@@ -10,7 +10,7 @@ Components:
 - Self-Healing Security: Automatic issue detection and remediation
 - HSM Interface: Hardware Security Module support
 
-[He2025] Compliance:
+Determinism:
 - FIXED security algorithms and thresholds
 - Deterministic assessments (same state → same score)
 - Bounded operations across all components

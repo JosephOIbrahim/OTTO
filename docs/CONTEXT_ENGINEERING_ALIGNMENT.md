@@ -130,7 +130,7 @@ Based on: Production experience from leading AI labs
 ```
 Source: USD Cognitive Substrate v4.4.0
 Author: Independent development based on USD composition semantics
-Based on: Pixar USD + ThinkingMachines [He2025] batch-invariance
+Based on: Pixar USD + ThinkingMachines batch-invariance
 ```
 
 ### Convergence Analysis
@@ -173,7 +173,7 @@ Both systems converged on the same solutions for the same problems:
 - [Context Engineering Collection](https://github.com/anthropics/context-engineering-collection) - Community skill
 - [USD Cognitive Substrate](https://github.com/JosephOIbrahim/usd-cognitive-substrate) - Specification
 - [Otto](https://github.com/JosephOIbrahim/Otto) - Implementation
-- [ThinkingMachines [He2025]](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/) - Batch-invariance theory
+- [ThinkingMachines](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/) - Batch-invariance theory
 
 ---
 

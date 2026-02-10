@@ -2,7 +2,7 @@
 Tests for Tier 1 Deterministic Inference Layer
 ==============================================
 
-Comprehensive tests verifying [He2025] compliance at the application level.
+Comprehensive tests verifying Determinism at the application level.
 
 Test Categories:
 1. Configuration determinism
@@ -677,12 +677,12 @@ class TestDeterminismReport:
 
 
 # =============================================================================
-# [He2025] Compliance Tests
+# Determinism Tests
 # =============================================================================
 
 class TestHe2025Compliance:
     """
-    Tests specifically verifying [He2025] principle compliance.
+    Tests verifying Determinism principles.
 
     These tests ensure the implementation follows:
     1. Fixed evaluation order
@@ -692,7 +692,7 @@ class TestHe2025Compliance:
 
     def test_cache_key_fixed_order(self):
         """
-        [He2025] Compliance: Cache key computation uses fixed order.
+        Determinism: Cache key computation uses fixed order.
 
         This is analogous to fixed reduction order in RMSNorm.
         """
@@ -711,7 +711,7 @@ class TestHe2025Compliance:
 
     def test_no_dynamic_algorithm_switching(self):
         """
-        [He2025] Compliance: No algorithm switching based on load.
+        Determinism: No algorithm switching based on load.
 
         The wrapper always uses the same logic regardless of cache state.
         """
@@ -722,7 +722,7 @@ class TestHe2025Compliance:
     @pytest.mark.asyncio
     async def test_deterministic_across_runs(self):
         """
-        [He2025] Compliance: Same input produces same output across runs.
+        Determinism: Same input produces same output across runs.
         """
         results = []
 
@@ -740,7 +740,7 @@ class TestHe2025Compliance:
 
     def test_config_immutability(self):
         """
-        [He2025] Compliance: Configuration is immutable (frozen dataclass).
+        Determinism: Configuration is immutable (frozen dataclass).
 
         Prevents runtime parameter modification that could cause variance.
         """
@@ -751,7 +751,7 @@ class TestHe2025Compliance:
 
     def test_cache_entry_integrity(self):
         """
-        [He2025] Compliance: Cache entries have integrity verification.
+        Determinism: Cache entries have integrity verification.
 
         Ensures cached data hasn't been corrupted.
         """

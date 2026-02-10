@@ -1,7 +1,7 @@
 """
 Tests for API Audit Logging.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests verify deterministic log format
 - Tests verify append-only behavior
 - Tests verify fixed structure
@@ -277,7 +277,7 @@ class TestAuditLoggerConvenienceMethods:
 
 class TestDeterminismHe2025:
     """
-    Test determinism compliance per [He2025].
+    Test determinism.
 
     Key principle: Same event → same log structure.
     """

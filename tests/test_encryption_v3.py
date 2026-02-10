@@ -19,14 +19,14 @@ from pathlib import Path
 
 import pytest
 
-from otto.core.encryption.crypto import (
+from otto_v3.core.encryption.crypto import (
     CryptoEngine,
     DecryptionError,
     KEY_SIZE_BYTES,
     NONCE_SIZE_BYTES,
     TAG_SIZE_BYTES,
 )
-from otto.core.encryption.kdf import (
+from otto_v3.core.encryption.kdf import (
     KDFParams,
     PRODUCTION_PARAMS,
     SALT_SIZE_BYTES,
@@ -34,7 +34,7 @@ from otto.core.encryption.kdf import (
     derive_key,
     generate_salt,
 )
-from otto.core.encryption.keystore import (
+from otto_v3.core.encryption.keystore import (
     InvalidRecoveryKeyError,
     KeyStore,
     KeyStoreAlreadyInitializedError,
@@ -227,7 +227,7 @@ class TestCryptoEngineProperties:
         """Same plaintext + key → different blobs (random nonce).
 
         This is the ONE intentional non-determinism in the crypto
-        layer, documented per [He2025].
+        layer, documented.
         """
         key = _random_key()
         blob1 = CryptoEngine.encrypt(b"same", key)
@@ -256,7 +256,7 @@ class TestKeyDerivation:
         assert key1 == key2
 
     def test_deterministic_100x(self) -> None:
-        """KDF is deterministic over 100 repetitions [He2025]."""
+        """KDF is deterministic over 100 repetitions."""
         salt = generate_salt()
         reference = derive_key("determinism test", salt, TEST_PARAMS)
         for _ in range(100):
@@ -623,7 +623,7 @@ class TestKeyStoreNoPlaintextOnDisk:
         ks.setup("pass")
 
         data = json.loads(path.read_text())
-        # [He2025]: sorted keys in JSON
+        # sorted keys in JSON
         expected_keys = ["salt", "verification", "version", "wrapped_key"]
         assert sorted(data.keys()) == expected_keys
 
@@ -734,11 +734,11 @@ class TestFullEncryptionFlow:
 
 
 # ============================================================
-# Determinism [He2025]
+# Determinism
 # ============================================================
 
 class TestEncryptionDeterminism:
-    """[He2025] determinism requirements for the encryption layer."""
+    """determinism requirements for the encryption layer."""
 
     def test_kdf_deterministic_100x(self) -> None:
         """KDF produces identical output across 100 runs."""
@@ -758,7 +758,7 @@ class TestEncryptionDeterminism:
             assert CryptoEngine.decrypt(blob, key) == reference
 
     def test_keystore_json_sorted_keys(self, tmp_path: Path) -> None:
-        """Keystore JSON has sorted keys [He2025]."""
+        """Keystore JSON has sorted keys."""
         path = _tmp_keystore_path(tmp_path)
         ks = KeyStore(path, kdf_params=TEST_PARAMS)
         ks.setup("pass")

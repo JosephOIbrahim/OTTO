@@ -13,7 +13,7 @@
 
 **Core Thesis**: Attention fluctuates, crashes, surges, and drifts — and that variation is **feature, not failure**.
 
-**Key Innovation**: A 5-phase deterministic cognitive pipeline (DETECT → CASCADE → LOCK → EXECUTE → UPDATE) routes requests through 7 specialist modes based on detected cognitive state, with [He2025] batch-invariant execution guarantees.
+**Key Innovation**: A 5-phase deterministic cognitive pipeline (DETECT → CASCADE → LOCK → EXECUTE → UPDATE) routes requests through 7 specialist modes based on detected cognitive state, with batch-invariant execution guarantees.
 
 ---
 
@@ -189,7 +189,7 @@ Personality/state resolution follows USD composition semantics:
 | `render/human_render.py` | Dignity-first language | `HumanRender`, `render_status`, `FORBIDDEN_WORDS` |
 | `intake/game.py` | Personality intake experience | `IntakeGame`, `run_intake` |
 | `trails/store.py` | Pheromone trail persistence | `TrailStore`, `Trail`, `TrailType` |
-| `hooks/auto_validate.py` | [He2025] compliance checking | `AutoValidateHook` |
+| `hooks/auto_validate.py` | Determinism checking | `AutoValidateHook` |
 
 ---
 
@@ -205,7 +205,7 @@ Personality/state resolution follows USD composition semantics:
 | `otto_goal` | Set/get session goal |
 | `otto_protection` | Query protection status |
 | `otto_intake` | Run personality intake |
-| `otto_verify_determinism` | [He2025] compliance check |
+| `otto_verify_determinism` | Determinism check |
 | `otto_get_test_coverage` | Module test coverage |
 | `otto_run_module_tests` | Run specific module tests |
 
@@ -243,7 +243,7 @@ Personality/state resolution follows USD composition semantics:
 
 ---
 
-## 8. [He2025] Determinism Compliance
+## 8. Determinism
 
 ### 8.1 Core Patterns (MUST Use)
 
@@ -301,7 +301,7 @@ assert all(r == results[0] for r in results)
 | **Total** | 3853 | 3849 passing, 4 skipped |
 | Unit tests | ~2500 | Full coverage |
 | Integration | ~800 | End-to-end flows |
-| Determinism | ~200 | [He2025] compliance |
+| Determinism | ~200 | Determinism |
 | Chaos engineering | ~100 | Failure scenarios |
 
 ### 10.2 Test Locations (`tests/` — 128 files)
@@ -329,7 +329,7 @@ assert all(r == results[0] for r in results)
 | `docs/USER_GUIDE.md` | Complete usage documentation |
 | `docs/INTEGRATION_GUIDE.md` | External service connections |
 | `docs/API.md` | API reference |
-| `docs/DETERMINISM.md` | [He2025] compliance guide |
+| `docs/DETERMINISM.md` | Determinism guide |
 
 ### 11.2 Technical Specs
 
@@ -465,7 +465,7 @@ tests/**/*.py  # 128 files
 
 1. **Stealth Accommodation Design**: How the system serves neurodivergent users without labeling them
 
-2. **Determinism Strategy**: [He2025] compliance at application level vs kernel level
+2. **Determinism Strategy**: Determinism at application level vs kernel level
 
 3. **Trail-Based Learning**: Stigmergic patterns from ant colony optimization applied to code intelligence
 

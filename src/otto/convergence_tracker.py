@@ -14,7 +14,7 @@ Attractor Basins (from CLAUDE.md):
 - recovery  → Restorer + Cortex + ORANGE + crashed
 - teaching  → Socratic + Cortex + GREEN + 15000ft
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed attractor definitions
 - Deterministic tension calculation
 - Reproducible convergence detection
@@ -26,7 +26,7 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 import logging
 
-# [He2025] Determinism utilities
+# Determinism utilities
 from .determinism import kahan_sum
 
 from .expert_router import Expert
@@ -159,7 +159,7 @@ class StateVector:
 
         Formula: ||A - B||_2 = sqrt(sum((a_i - b_i)^2))
 
-        [He2025] Uses Kahan summation for batch-invariant accumulation.
+        Uses Kahan summation for batch-invariant accumulation.
         """
         arr_a = a.to_array()
         arr_b = b.to_array()
@@ -355,7 +355,7 @@ class ConvergenceTracker:
         min_distance = float('inf')
         closest = AttractorBasin.FOCUSED
 
-        # [He2025] Use deterministic iteration order (sort by enum value for stability)
+        # Use deterministic iteration order (sort by enum value for stability)
         for attractor in sorted(ATTRACTOR_DEFINITIONS.keys(), key=lambda x: x.value):
             definition = ATTRACTOR_DEFINITIONS[attractor]
             # Create target state vector

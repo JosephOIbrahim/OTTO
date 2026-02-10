@@ -2,7 +2,7 @@
 Discord Adapter Tests
 =====================
 
-[He2025] Compliance Tests:
+Determinism Tests:
 - Deterministic session creation
 - Fixed evaluation order
 - Sorted key iteration
@@ -33,7 +33,7 @@ from otto.discord.adapter import (
 )
 
 
-# [He2025] Fixed test constants
+# Fixed test constants
 _TEST_USER_ID: Final[int] = 12345
 _TEST_CHANNEL_ID: Final[int] = 67890
 _TEST_GUILD_ID: Final[int] = 11111
@@ -136,7 +136,7 @@ class TestDiscordSession:
         assert session.guild_id == _TEST_GUILD_ID
 
     def test_session_id_determinism(self):
-        """[He2025] Session ID must be deterministic."""
+        """Session ID must be deterministic."""
         # Same inputs should produce same session ID
         created_at = 1704067200.0  # Fixed timestamp
 
@@ -648,7 +648,7 @@ class TestSessionPersistence:
             assert 2 not in adapter._sessions
 
     def test_persistence_json_sorted_keys(self, mock_orchestrator):
-        """[He2025] Verify JSON output has sorted keys."""
+        """Verify JSON output has sorted keys."""
         with tempfile.TemporaryDirectory() as tmpdir:
             session_path = Path(tmpdir) / "sessions.json"
 
@@ -680,14 +680,14 @@ class TestSessionPersistence:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestDeterminism:
-    """[He2025] Determinism verification tests."""
+    """Determinism verification tests."""
 
     def test_session_iteration_order(self, adapter, sample_message):
-        """[He2025] Sessions should iterate in sorted order."""
+        """Sessions should iterate in sorted order."""
         # Create sessions in random order
         for user_id in [5, 1, 3, 2, 4]:
             msg = DiscordMessage(
@@ -708,7 +708,7 @@ class TestDeterminism:
         assert list(sorted(adapter._sessions.keys())) == [1, 2, 3, 4, 5]
 
     def test_same_input_same_session(self, mock_orchestrator):
-        """[He2025] Same inputs should create same session state."""
+        """Same inputs should create same session state."""
         fixed_timestamp = 1704067200.0
 
         # Create two sessions with same inputs
@@ -733,7 +733,7 @@ class TestDeterminism:
         assert session1.session_id == session2.session_id
 
     def test_response_determinism(self, adapter):
-        """[He2025] Same command should produce consistent response."""
+        """Same command should produce consistent response."""
         responses = []
 
         for _ in range(5):
@@ -752,7 +752,7 @@ class TestDeterminism:
         assert all(r == responses[0] for r in responses)
 
     def test_session_hash_determinism(self):
-        """[He2025] Session ID hash is deterministic."""
+        """Session ID hash is deterministic."""
         # Same inputs, multiple trials
         results = set()
 

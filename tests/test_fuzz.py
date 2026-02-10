@@ -1,7 +1,7 @@
 """
 Fuzz testing for Orchestra safety gating and routing.
 
-ThinkingMachines [He2025] compliance: Test that edge cases don't break
+Determinism: Test that edge cases don't break
 safety invariants or determinism guarantees.
 
 Note: Atheris requires Linux. On Windows, these tests run as standard

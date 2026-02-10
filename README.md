@@ -18,7 +18,7 @@
 
 <p align="center">
   <a href="#security"><img src="https://img.shields.io/badge/encryption-AES--256--GCM-purple.svg" alt="AES-256-GCM"></a>
-  <a href="#"><img src="https://img.shields.io/badge/%5BHe2025%5D-compliant-blueviolet.svg" alt="[He2025] Compliant"></a>
+  <a href="#"><img src="https://img.shields.io/badge/%5BHe2025%5D-inspired-blueviolet.svg" alt="Inspired by [He2025]"></a>
   <a href="#platform-support"><img src="https://img.shields.io/badge/platforms-Discord%20%7C%20WhatsApp%20%7C%20Telegram%20%7C%20CLI-informational.svg" alt="Multi-Platform"></a>
 </p>
 
@@ -55,7 +55,7 @@ OTTO: "Joe."
 | **Response Latency** | <800ms (cognitive pipeline) |
 | **Memory Persistence** | SQLite-backed trail storage |
 | **Encryption** | AES-256-GCM at rest |
-| **Determinism** | [He2025] compliant, batch-invariant |
+| **Determinism** | [He2025]-inspired determinism, batch-invariant |
 
 ---
 
@@ -331,9 +331,9 @@ otto-os/
 
 ---
 
-## [He2025] Compliance
+## Determinism (Inspired by [He2025])
 
-OTTO implements application-level determinism inspired by ThinkingMachines:
+OTTO applies [He2025] principles at the application layer, not at GPU kernel level:
 
 | Principle | Implementation |
 |-----------|----------------|

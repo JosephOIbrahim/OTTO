@@ -189,7 +189,7 @@ async def generate(
     # ...
 
     # Build messages array
-    # [He2025] Fixed order: conversation history + current prompt
+    # Fixed order: conversation history + current prompt
     api_messages = []
 
     # Add conversation history if provided
@@ -284,7 +284,7 @@ def _get_conversation_history(
     Queries memory backbone for recent episodes and builds
     ConversationTurn list for multi-turn context.
 
-    [He2025] Fixed order: oldest to newest.
+    Fixed order: oldest to newest.
     """
     from ..memory import EpisodeQuery
     from ..llm.response_generator import ConversationTurn
@@ -299,7 +299,7 @@ def _get_conversation_history(
         episodes = self._memory.query_episodes(query)
 
         # Filter by user_id and build turns
-        # [He2025] Sort by timestamp (oldest first)
+        # Sort by timestamp (oldest first)
         user_episodes = sorted(
             [ep for ep in episodes if ep.data.get("user_id") == user_id],
             key=lambda e: e.timestamp,
@@ -482,7 +482,7 @@ pytest tests/test_llm/ -v
 
 ---
 
-## [He2025] Compliance Notes
+## Determinism Notes
 
 All changes maintain determinism principles:
 - Fixed message ordering (oldest to newest)

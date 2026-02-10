@@ -2,7 +2,7 @@
 OTTO TUI WebSocket Client
 =========================
 
-[He2025] Compliant WebSocket client for real-time updates.
+Determinism WebSocket client for real-time updates.
 
 Principles:
 1. Fixed reconnection intervals (no exponential backoff variance)
@@ -41,17 +41,17 @@ class TUIWebSocketClient:
     """
     WebSocket client for TUI real-time updates.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed reconnection interval (no jitter)
     - Deterministic message type → handler mapping
     - Fixed channel subscription order
     - State updates dispatched in arrival order
     """
 
-    # [He2025]: Fixed channel list, subscribed in this order
+    # Fixed channel list, subscribed in this order
     CHANNELS = ("state", "alerts", "projects")
 
-    # [He2025]: Fixed message type → handler mapping
+    # Fixed message type → handler mapping
     MESSAGE_HANDLERS = (
         "welcome",
         "state_update",
@@ -93,7 +93,7 @@ class TUIWebSocketClient:
         """
         Connect to WebSocket server.
 
-        [He2025] Compliance: Deterministic connection sequence.
+        Determinism: Deterministic connection sequence.
         """
         try:
             # Import here to avoid dependency if not using websockets
@@ -132,12 +132,12 @@ class TUIWebSocketClient:
         """
         Subscribe to channels in fixed order.
 
-        [He2025] Compliance: Fixed channel order from CHANNELS tuple.
+        Determinism: Fixed channel order from CHANNELS tuple.
         """
         if not self._websocket:
             return
 
-        # [He2025]: Subscribe in fixed order
+        # Subscribe in fixed order
         message = json.dumps({
             "type": "subscribe",
             "data": {"channels": list(self.CHANNELS)},
@@ -171,7 +171,7 @@ class TUIWebSocketClient:
         """
         Run the WebSocket client with automatic reconnection.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed reconnection interval (no exponential backoff)
         - Deterministic reconnection loop
         """
@@ -181,7 +181,7 @@ class TUIWebSocketClient:
             if self._state != ConnectionState.CONNECTED:
                 connected = await self.connect()
                 if not connected:
-                    # [He2025]: Fixed interval, no jitter
+                    # Fixed interval, no jitter
                     await asyncio.sleep(self._reconnect_interval)
                     continue
 
@@ -210,16 +210,16 @@ class TUIWebSocketClient:
                 "error": "Reconnecting...",
             })
 
-            # [He2025]: Fixed interval
+            # Fixed interval
             await asyncio.sleep(self._reconnect_interval)
 
     async def _ping_loop(self) -> None:
         """
         Send periodic pings.
 
-        [He2025] Compliance: Fixed ping interval.
+        Determinism: Fixed ping interval.
         """
-        PING_INTERVAL = 30.0  # [He2025]: Fixed interval
+        PING_INTERVAL = 30.0  # Fixed interval
 
         while self._running and self._websocket:
             await asyncio.sleep(PING_INTERVAL)
@@ -239,7 +239,7 @@ class TUIWebSocketClient:
         """
         Receive and process messages.
 
-        [He2025] Compliance:
+        Determinism:
         - Messages processed in arrival order
         - Fixed message type → handler mapping
         """
@@ -255,7 +255,7 @@ class TUIWebSocketClient:
         """
         Handle incoming message.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed message type → handler mapping
         - Deterministic dispatch order
         """
@@ -267,7 +267,7 @@ class TUIWebSocketClient:
 
         message_type = data.get("type")
 
-        # [He2025]: Fixed handler mapping
+        # Fixed handler mapping
         handlers = {
             "welcome": self._handle_welcome,
             "state_update": self._handle_state_update,
@@ -299,11 +299,11 @@ class TUIWebSocketClient:
         """
         Handle state update message.
 
-        [He2025] Compliance: Dispatch in fixed field order.
+        Determinism: Dispatch in fixed field order.
         """
         state_data = data.get("data", {})
 
-        # [He2025]: Extract fields in fixed order
+        # Extract fields in fixed order
         update = {}
         for field in (
             "active_mode",
@@ -355,7 +355,7 @@ class TUIWebSocketClient:
         """
         Send a command to the server.
 
-        [He2025] Compliance: Fixed message structure.
+        Determinism: Fixed message structure.
         """
         if not self._websocket:
             return

@@ -4,7 +4,7 @@ Telegram Approval Handler
 
 Inline button approval flow for Telegram surface.
 
-[He2025] Compliance:
+Determinism:
 - Fixed callback data format
 - Deterministic request matching
 - Sorted pending request iteration
@@ -27,7 +27,7 @@ from ..services.approval import ApprovalRequest, get_approval_gate
 logger = logging.getLogger(__name__)
 
 
-# [He2025] Fixed constants
+# Fixed constants
 APPROVAL_CALLBACK_PREFIX: Final[str] = "approval:"
 APPROVAL_SEED: Final[int] = 0xA990BEAD
 DEFAULT_TIMEOUT_SECONDS: Final[float] = 60.0
@@ -38,7 +38,7 @@ class PendingApproval:
     """
     Tracks a pending approval request in Telegram.
 
-    [He2025] Deterministic state tracking.
+    Deterministic state tracking.
     """
     request_id: str
     chat_id: int
@@ -66,7 +66,7 @@ class TelegramApprovalHandler:
     """
     Handles approval requests via Telegram inline buttons.
 
-    [He2025] Compliance:
+    Determinism:
     - Deterministic callback parsing
     - Sorted pending iteration
     - Fixed evaluation order
@@ -169,7 +169,7 @@ class TelegramApprovalHandler:
         """
         Format approval request for Telegram display.
 
-        [He2025] Deterministic formatting.
+        Deterministic formatting.
         """
         policy = request.policy
 
@@ -344,7 +344,7 @@ class TelegramApprovalHandler:
         """
         Clean up expired pending approvals.
 
-        [He2025] Iterate in sorted order.
+        Iterate in sorted order.
 
         Returns:
             Number of approvals cleaned up

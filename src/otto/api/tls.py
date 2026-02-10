@@ -4,7 +4,7 @@ TLS Configuration for OTTO API
 
 Provides TLS/HTTPS configuration for secure API communication.
 
-[He2025] Compliance:
+Determinism:
 - FIXED cipher suites (no runtime negotiation variance)
 - FIXED TLS version (TLS 1.3 minimum)
 - DETERMINISTIC certificate validation
@@ -39,7 +39,7 @@ class TLSConfig:
     """
     TLS configuration for HTTPS.
 
-    [He2025] Compliance: FIXED cipher suites and TLS version.
+    Determinism: FIXED cipher suites and TLS version.
     No runtime variation in security parameters.
 
     Attributes:
@@ -58,7 +58,7 @@ class TLSConfig:
     verify_client: bool = False
     check_hostname: bool = True
 
-    # [He2025] FIXED cipher suites - no runtime variation
+    # FIXED cipher suites - no runtime variation
     # These are the recommended TLS 1.3 cipher suites
     CIPHERS_TLS13: List[str] = field(default_factory=lambda: [
         "TLS_AES_256_GCM_SHA384",
@@ -535,7 +535,7 @@ class HSTSConfig:
     """
     HTTP Strict Transport Security configuration.
 
-    [He2025] Compliance: FIXED HSTS parameters.
+    Determinism: FIXED HSTS parameters.
     """
 
     max_age: int = 31536000  # 1 year in seconds
@@ -578,7 +578,7 @@ class CertificateHealthStatus:
     """
     Health status of a certificate.
 
-    [He2025] FIXED thresholds for expiry warnings.
+    FIXED thresholds for expiry warnings.
     """
     cert_path: Path
     level: CertificateExpiryLevel
@@ -588,7 +588,7 @@ class CertificateHealthStatus:
     subject: str
     message: str
 
-    # [He2025] FIXED thresholds - no runtime variation
+    # FIXED thresholds - no runtime variation
     EXPIRY_WARNING_DAYS: int = 30
     EXPIRY_CRITICAL_DAYS: int = 14
     EXPIRY_URGENT_DAYS: int = 7
@@ -610,7 +610,7 @@ class CertificateMonitor:
     """
     Monitors certificate health and expiry.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED expiry thresholds (30/14/7 days)
     - DETERMINISTIC health checks
     - Alerting hooks for integration
@@ -624,7 +624,7 @@ class CertificateMonitor:
         monitor.on_expiry_warning(lambda status: send_alert(status))
     """
 
-    # [He2025] FIXED thresholds
+    # FIXED thresholds
     WARNING_DAYS = 30
     CRITICAL_DAYS = 14
     URGENT_DAYS = 7
@@ -861,7 +861,7 @@ class ACMEConfig:
     """
     ACME configuration for automatic certificate management.
 
-    [He2025] FIXED provider URLs and settings.
+    FIXED provider URLs and settings.
 
     Note: Full ACME implementation requires additional dependencies.
     This provides the configuration hooks for integration.
@@ -873,7 +873,7 @@ class ACMEConfig:
     auto_renew: bool = True
     renew_before_days: int = 30
 
-    # [He2025] FIXED provider directories
+    # FIXED provider directories
     PROVIDER_URLS: Dict[ACMEProvider, str] = field(default_factory=lambda: {
         ACMEProvider.LETS_ENCRYPT: "https://acme-v02.api.letsencrypt.org/directory",
         ACMEProvider.LETS_ENCRYPT_STAGING: "https://acme-staging-v02.api.letsencrypt.org/directory",

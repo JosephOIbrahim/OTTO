@@ -5,7 +5,7 @@ Repository MCP Server
 MCP server for repository operations.
 Integrates with GitHub, GitLab, and local git repositories.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic commit ordering (by timestamp)
 - Fixed diff format
 - Sorted file listing

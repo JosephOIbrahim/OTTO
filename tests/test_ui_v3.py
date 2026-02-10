@@ -7,7 +7,7 @@ Covers:
     - TUI skeleton guard
     - MCP tools, handler, dispatch
     - Constitutional language checks
-    - [He2025] determinism
+    - determinism
 
 Run: python -m pytest tests/test_ui_v3.py -v --noconftest --tb=short
 """
@@ -28,7 +28,7 @@ import pytest
 
 class TestChatMessage:
     def test_creation(self):
-        from otto.ui.chat import ChatMessage
+        from otto_v3.ui.chat import ChatMessage
 
         msg = ChatMessage(role="user", content="hello")
         assert msg.role == "user"
@@ -36,20 +36,20 @@ class TestChatMessage:
         assert isinstance(msg.timestamp, datetime)
 
     def test_frozen(self):
-        from otto.ui.chat import ChatMessage
+        from otto_v3.ui.chat import ChatMessage
 
         msg = ChatMessage(role="user", content="hello")
         with pytest.raises(FrozenInstanceError):
             msg.role = "assistant"  # type: ignore[misc]
 
     def test_metadata_default_empty(self):
-        from otto.ui.chat import ChatMessage
+        from otto_v3.ui.chat import ChatMessage
 
         msg = ChatMessage(role="user", content="hello")
         assert msg.metadata == {}
 
     def test_metadata_preserved(self):
-        from otto.ui.chat import ChatMessage
+        from otto_v3.ui.chat import ChatMessage
 
         msg = ChatMessage(
             role="assistant",
@@ -59,7 +59,7 @@ class TestChatMessage:
         assert msg.metadata["expert"] == "executor"
 
     def test_timestamp_utc(self):
-        from otto.ui.chat import ChatMessage
+        from otto_v3.ui.chat import ChatMessage
 
         msg = ChatMessage(role="user", content="test")
         assert msg.timestamp.tzinfo is not None
@@ -70,7 +70,7 @@ class TestChatMessage:
 
 class TestConversationHistory:
     def test_empty(self):
-        from otto.ui.chat import ConversationHistory
+        from otto_v3.ui.chat import ConversationHistory
 
         h = ConversationHistory()
         assert h.count == 0
@@ -78,7 +78,7 @@ class TestConversationHistory:
         assert h.messages == []
 
     def test_add_and_count(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         h.add(ChatMessage(role="user", content="a"))
@@ -86,7 +86,7 @@ class TestConversationHistory:
         assert h.count == 2
 
     def test_last_message(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         h.add(ChatMessage(role="user", content="first"))
@@ -95,7 +95,7 @@ class TestConversationHistory:
         assert h.last.content == "second"
 
     def test_max_messages_fifo(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory(max_messages=3)
         for i in range(5):
@@ -105,7 +105,7 @@ class TestConversationHistory:
         assert h.messages[2].content == "msg4"
 
     def test_to_api_format_excludes_system(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         h.add(ChatMessage(role="system", content="system prompt"))
@@ -117,13 +117,13 @@ class TestConversationHistory:
         assert api[1] == {"role": "assistant", "content": "hi"}
 
     def test_estimate_tokens_empty(self):
-        from otto.ui.chat import ConversationHistory
+        from otto_v3.ui.chat import ConversationHistory
 
         h = ConversationHistory()
         assert h.estimate_tokens() == 0
 
     def test_estimate_tokens_rough(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         # 100 chars -> ~25 tokens
@@ -132,7 +132,7 @@ class TestConversationHistory:
         assert tokens == 25
 
     def test_estimate_tokens_minimum_one(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         h.add(ChatMessage(role="user", content="hi"))
@@ -140,7 +140,7 @@ class TestConversationHistory:
         assert tokens >= 1
 
     def test_clear(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         h.add(ChatMessage(role="user", content="test"))
@@ -148,7 +148,7 @@ class TestConversationHistory:
         assert h.count == 0
 
     def test_messages_returns_copy(self):
-        from otto.ui.chat import ChatMessage, ConversationHistory
+        from otto_v3.ui.chat import ChatMessage, ConversationHistory
 
         h = ConversationHistory()
         h.add(ChatMessage(role="user", content="test"))
@@ -177,14 +177,14 @@ def _make_mock_pipeline(content: str = "response", expert: str = "executor"):
 
 class TestChatSession:
     def test_initial_state(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         session = ChatSession(pipeline=_make_mock_pipeline())
         assert session.exchange_count == 0
         assert session.history.count == 0
 
     def test_send_basic(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         pipeline = _make_mock_pipeline(content="hello back")
         session = ChatSession(pipeline=pipeline)
@@ -196,7 +196,7 @@ class TestChatSession:
         assert session.history.count == 2  # user + assistant
 
     def test_send_metadata(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         pipeline = _make_mock_pipeline(expert="protector")
         session = ChatSession(pipeline=pipeline)
@@ -207,7 +207,7 @@ class TestChatSession:
         assert "signal_count" in response.metadata
 
     def test_send_with_supporting_experts(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         pipeline = _make_mock_pipeline()
         sup1 = MagicMock()
@@ -221,7 +221,7 @@ class TestChatSession:
         assert response.metadata["supporting"] == ["decomposer", "restorer"]
 
     def test_send_with_services(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         pipeline = _make_mock_pipeline()
         registry = MagicMock()
@@ -238,7 +238,7 @@ class TestChatSession:
         assert "time_period" in call_kwargs.kwargs.get("state", call_kwargs[1].get("state", {}))
 
     def test_send_explicit_state_overrides_ambient(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         pipeline = _make_mock_pipeline()
         registry = MagicMock()
@@ -255,7 +255,7 @@ class TestChatSession:
         assert state["time_period"] == "evening"
 
     def test_send_with_compaction(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         pipeline = _make_mock_pipeline()
         compaction = MagicMock()
@@ -267,14 +267,14 @@ class TestChatSession:
         )
 
     def test_session_duration(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         session = ChatSession(pipeline=_make_mock_pipeline())
         duration = session.session_duration_minutes()
         assert duration >= 0.0
 
     def test_services_accessor(self):
-        from otto.ui.chat import ChatSession
+        from otto_v3.ui.chat import ChatSession
 
         session = ChatSession(pipeline=_make_mock_pipeline())
         assert session.services is None
@@ -289,8 +289,8 @@ class TestChatSession:
 
 class TestDashboardState:
     def test_frozen(self):
-        from otto.services.base import CategoricalSignal
-        from otto.ui.dashboard import DashboardState
+        from otto_v3.services.base import CategoricalSignal
+        from otto_v3.ui.dashboard import DashboardState
 
         state = DashboardState(
             primary_expert="executor",
@@ -305,7 +305,7 @@ class TestDashboardState:
             state.primary_expert = "protector"  # type: ignore[misc]
 
     def test_all_fields(self):
-        from otto.ui.dashboard import DashboardState
+        from otto_v3.ui.dashboard import DashboardState
 
         state = DashboardState(
             primary_expert="guide",
@@ -323,31 +323,31 @@ class TestDashboardState:
 
 class TestCognitiveSummary:
     def test_describe_known_expert(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_expert("protector")
         assert "wellbeing" in desc.lower()
 
     def test_describe_unknown_expert(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_expert("unknown_expert")
         assert desc == "Helping you out"
 
     def test_describe_known_effort(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_effort("max")
         assert "deep" in desc.lower()
 
     def test_describe_unknown_effort(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_effort("unknown")
         assert desc == "Thinking"
 
     def test_describe_state(self):
-        from otto.ui.dashboard import CognitiveSummary, DashboardState
+        from otto_v3.ui.dashboard import CognitiveSummary, DashboardState
 
         state = DashboardState(
             primary_expert="executor",
@@ -363,20 +363,20 @@ class TestCognitiveSummary:
         assert "|" in summary
 
     def test_describe_compaction_low(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_compaction(0.3)
         assert "plenty" in desc.lower()
         assert "30%" in desc
 
     def test_describe_compaction_medium(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_compaction(0.65)
         assert "getting full" in desc.lower()
 
     def test_describe_compaction_high(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         desc = CognitiveSummary.describe_compaction(0.9)
         assert "almost full" in desc.lower()
@@ -385,7 +385,7 @@ class TestCognitiveSummary:
 
 class TestExpertDescriptions:
     def test_all_seven_experts(self):
-        from otto.ui.dashboard import EXPERT_DESCRIPTIONS
+        from otto_v3.ui.dashboard import EXPERT_DESCRIPTIONS
 
         expected = {
             "acknowledger", "decomposer", "executor",
@@ -394,7 +394,7 @@ class TestExpertDescriptions:
         assert set(EXPERT_DESCRIPTIONS.keys()) == expected
 
     def test_sorted_keys(self):
-        from otto.ui.dashboard import EXPERT_DESCRIPTIONS
+        from otto_v3.ui.dashboard import EXPERT_DESCRIPTIONS
 
         keys = list(EXPERT_DESCRIPTIONS.keys())
         assert keys == sorted(keys)
@@ -402,13 +402,13 @@ class TestExpertDescriptions:
 
 class TestEffortDescriptions:
     def test_all_four_levels(self):
-        from otto.ui.dashboard import EFFORT_DESCRIPTIONS
+        from otto_v3.ui.dashboard import EFFORT_DESCRIPTIONS
 
         expected = {"high", "low", "max", "medium"}
         assert set(EFFORT_DESCRIPTIONS.keys()) == expected
 
     def test_sorted_keys(self):
-        from otto.ui.dashboard import EFFORT_DESCRIPTIONS
+        from otto_v3.ui.dashboard import EFFORT_DESCRIPTIONS
 
         keys = list(EFFORT_DESCRIPTIONS.keys())
         assert keys == sorted(keys)
@@ -419,26 +419,26 @@ class TestEffortDescriptions:
 
 class TestThemeColors:
     def test_defaults(self):
-        from otto.ui.styles import ThemeColors
+        from otto_v3.ui.styles import ThemeColors
 
         theme = ThemeColors()
         assert theme.primary == "#6C63FF"
         assert theme.background == "#1E1E2E"
 
     def test_frozen(self):
-        from otto.ui.styles import ThemeColors
+        from otto_v3.ui.styles import ThemeColors
 
         theme = ThemeColors()
         with pytest.raises(FrozenInstanceError):
             theme.primary = "#000000"  # type: ignore[misc]
 
     def test_default_theme_instance(self):
-        from otto.ui.styles import DEFAULT_THEME, ThemeColors
+        from otto_v3.ui.styles import DEFAULT_THEME, ThemeColors
 
         assert isinstance(DEFAULT_THEME, ThemeColors)
 
     def test_all_colors_hex(self):
-        from otto.ui.styles import DEFAULT_THEME
+        from otto_v3.ui.styles import DEFAULT_THEME
 
         for field_name in (
             "primary", "secondary", "success", "warning",
@@ -450,7 +450,7 @@ class TestThemeColors:
 
 class TestExpertColors:
     def test_seven_experts(self):
-        from otto.ui.styles import EXPERT_COLORS
+        from otto_v3.ui.styles import EXPERT_COLORS
 
         assert len(EXPERT_COLORS) == 7
         expected = {
@@ -460,13 +460,13 @@ class TestExpertColors:
         assert set(EXPERT_COLORS.keys()) == expected
 
     def test_sorted_keys(self):
-        from otto.ui.styles import EXPERT_COLORS
+        from otto_v3.ui.styles import EXPERT_COLORS
 
         keys = list(EXPERT_COLORS.keys())
         assert keys == sorted(keys)
 
     def test_all_hex(self):
-        from otto.ui.styles import EXPERT_COLORS
+        from otto_v3.ui.styles import EXPERT_COLORS
 
         for name, color in sorted(EXPERT_COLORS.items()):
             assert re.match(r"^#[0-9A-Fa-f]{6}$", color), f"{name}: {color}"
@@ -474,13 +474,13 @@ class TestExpertColors:
 
 class TestEffortColors:
     def test_four_levels(self):
-        from otto.ui.styles import EFFORT_COLORS
+        from otto_v3.ui.styles import EFFORT_COLORS
 
         expected = {"high", "low", "max", "medium"}
         assert set(EFFORT_COLORS.keys()) == expected
 
     def test_sorted_keys(self):
-        from otto.ui.styles import EFFORT_COLORS
+        from otto_v3.ui.styles import EFFORT_COLORS
 
         keys = list(EFFORT_COLORS.keys())
         assert keys == sorted(keys)
@@ -488,13 +488,13 @@ class TestEffortColors:
 
 class TestSignalLabels:
     def test_sorted_keys(self):
-        from otto.ui.styles import SIGNAL_LABELS
+        from otto_v3.ui.styles import SIGNAL_LABELS
 
         keys = list(SIGNAL_LABELS.keys())
         assert keys == sorted(keys)
 
     def test_no_clinical_language(self):
-        from otto.ui.styles import SIGNAL_LABELS
+        from otto_v3.ui.styles import SIGNAL_LABELS
 
         clinical = {"adhd", "executive dysfunction", "deficit", "disorder"}
         for key, label in sorted(SIGNAL_LABELS.items()):
@@ -507,7 +507,7 @@ class TestSignalLabels:
 
 class TestTUI:
     def test_run_raises_not_implemented(self):
-        from otto.ui.tui import run
+        from otto_v3.ui.tui import run
 
         # Even if textual is installed, should raise NotImplementedError
         try:
@@ -525,14 +525,14 @@ class TestTUI:
 
 class TestMCPToolDefinition:
     def test_frozen(self):
-        from otto.mcp.tools import MCPToolDefinition
+        from otto_v3.mcp.tools import MCPToolDefinition
 
         tool = MCPToolDefinition(name="test", description="a test tool")
         with pytest.raises(FrozenInstanceError):
             tool.name = "other"  # type: ignore[misc]
 
     def test_default_schema(self):
-        from otto.mcp.tools import MCPToolDefinition
+        from otto_v3.mcp.tools import MCPToolDefinition
 
         tool = MCPToolDefinition(name="test", description="a test tool")
         assert tool.input_schema == {}
@@ -540,34 +540,34 @@ class TestMCPToolDefinition:
 
 class TestGetToolDefinitions:
     def test_returns_three_tools(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         tools = get_tool_definitions()
         assert len(tools) == 3
 
     def test_sorted_by_name(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         tools = get_tool_definitions()
         names = [t.name for t in tools]
         assert names == sorted(names)
 
     def test_expected_names(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         tools = get_tool_definitions()
         names = {t.name for t in tools}
         assert names == {"otto_chat", "otto_signals", "otto_status"}
 
     def test_all_have_descriptions(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         for tool in get_tool_definitions():
             assert tool.description
             assert len(tool.description) > 10
 
     def test_chat_requires_message(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         tools = {t.name: t for t in get_tool_definitions()}
         chat = tools["otto_chat"]
@@ -575,7 +575,7 @@ class TestGetToolDefinitions:
         assert "message" in chat.input_schema.get("required", [])
 
     def test_deterministic(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         results = [
             [t.name for t in get_tool_definitions()]
@@ -589,14 +589,14 @@ class TestGetToolDefinitions:
 
 class TestMCPToolResult:
     def test_frozen(self):
-        from otto.mcp.server import MCPToolResult
+        from otto_v3.mcp.server import MCPToolResult
 
         result = MCPToolResult(content="hello")
         with pytest.raises(FrozenInstanceError):
             result.content = "other"  # type: ignore[misc]
 
     def test_defaults(self):
-        from otto.mcp.server import MCPToolResult
+        from otto_v3.mcp.server import MCPToolResult
 
         result = MCPToolResult(content="hello")
         assert result.is_error is False
@@ -608,15 +608,15 @@ class TestMCPToolResult:
 
 class TestOTTOMCPHandler:
     def _make_handler(self, **kwargs):
-        from otto.ui.chat import ChatSession
-        from otto.mcp.server import OTTOMCPHandler
+        from otto_v3.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
 
         pipeline = _make_mock_pipeline(**kwargs)
         session = ChatSession(pipeline=pipeline)
         return OTTOMCPHandler(session=session)
 
     def test_list_tools(self):
-        from otto.mcp.server import OTTOMCPHandler
+        from otto_v3.mcp.server import OTTOMCPHandler
 
         tools = OTTOMCPHandler.list_tools()
         assert len(tools) == 3
@@ -648,8 +648,8 @@ class TestOTTOMCPHandler:
         assert "no services" in result.content.lower()
 
     def test_handle_signals_with_services(self):
-        from otto.ui.chat import ChatSession
-        from otto.mcp.server import OTTOMCPHandler
+        from otto_v3.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
 
         pipeline = _make_mock_pipeline()
         registry = MagicMock()
@@ -668,8 +668,8 @@ class TestOTTOMCPHandler:
         assert result.metadata["signal_count"] == 1
 
     def test_handle_signals_empty(self):
-        from otto.ui.chat import ChatSession
-        from otto.mcp.server import OTTOMCPHandler
+        from otto_v3.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
 
         pipeline = _make_mock_pipeline()
         registry = MagicMock()
@@ -710,8 +710,8 @@ class TestConstitutionalLanguage:
 
     def _get_all_descriptions(self) -> list[tuple[str, str]]:
         """Collect all user-facing strings with their source."""
-        from otto.ui.dashboard import EXPERT_DESCRIPTIONS, EFFORT_DESCRIPTIONS
-        from otto.ui.styles import SIGNAL_LABELS
+        from otto_v3.ui.dashboard import EXPERT_DESCRIPTIONS, EFFORT_DESCRIPTIONS
+        from otto_v3.ui.styles import SIGNAL_LABELS
 
         items = []
         for k, v in sorted(EXPERT_DESCRIPTIONS.items()):
@@ -739,7 +739,7 @@ class TestConstitutionalLanguage:
                 )
 
     def test_mcp_tool_descriptions_constitutional(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         for tool in get_tool_definitions():
             text_lower = tool.description.lower()
@@ -750,8 +750,8 @@ class TestConstitutionalLanguage:
 
     def test_mcp_error_messages_constitutional(self):
         """Verify MCP error messages don't use clinical language."""
-        from otto.ui.chat import ChatSession
-        from otto.mcp.server import OTTOMCPHandler
+        from otto_v3.ui.chat import ChatSession
+        from otto_v3.mcp.server import OTTOMCPHandler
 
         pipeline = _make_mock_pipeline()
         session = ChatSession(pipeline=pipeline)
@@ -769,7 +769,7 @@ class TestConstitutionalLanguage:
                 assert term not in text_lower
 
     def test_compaction_descriptions_constitutional(self):
-        from otto.ui.dashboard import CognitiveSummary
+        from otto_v3.ui.dashboard import CognitiveSummary
 
         for util in [0.1, 0.3, 0.5, 0.65, 0.8, 0.95]:
             desc = CognitiveSummary.describe_compaction(util)
@@ -783,37 +783,37 @@ class TestConstitutionalLanguage:
 
 class TestDeterminism:
     def test_expert_descriptions_sorted(self):
-        from otto.ui.dashboard import EXPERT_DESCRIPTIONS
+        from otto_v3.ui.dashboard import EXPERT_DESCRIPTIONS
 
         keys = list(EXPERT_DESCRIPTIONS.keys())
         assert keys == sorted(keys)
 
     def test_effort_descriptions_sorted(self):
-        from otto.ui.dashboard import EFFORT_DESCRIPTIONS
+        from otto_v3.ui.dashboard import EFFORT_DESCRIPTIONS
 
         keys = list(EFFORT_DESCRIPTIONS.keys())
         assert keys == sorted(keys)
 
     def test_expert_colors_sorted(self):
-        from otto.ui.styles import EXPERT_COLORS
+        from otto_v3.ui.styles import EXPERT_COLORS
 
         keys = list(EXPERT_COLORS.keys())
         assert keys == sorted(keys)
 
     def test_effort_colors_sorted(self):
-        from otto.ui.styles import EFFORT_COLORS
+        from otto_v3.ui.styles import EFFORT_COLORS
 
         keys = list(EFFORT_COLORS.keys())
         assert keys == sorted(keys)
 
     def test_signal_labels_sorted(self):
-        from otto.ui.styles import SIGNAL_LABELS
+        from otto_v3.ui.styles import SIGNAL_LABELS
 
         keys = list(SIGNAL_LABELS.keys())
         assert keys == sorted(keys)
 
     def test_mcp_tools_deterministic_100x(self):
-        from otto.mcp.tools import get_tool_definitions
+        from otto_v3.mcp.tools import get_tool_definitions
 
         baseline = [(t.name, t.description) for t in get_tool_definitions()]
         for _ in range(100):
@@ -821,7 +821,7 @@ class TestDeterminism:
             assert current == baseline
 
     def test_cognitive_summary_deterministic(self):
-        from otto.ui.dashboard import CognitiveSummary, DashboardState
+        from otto_v3.ui.dashboard import CognitiveSummary, DashboardState
 
         state = DashboardState(
             primary_expert="executor",
@@ -842,7 +842,7 @@ class TestDeterminism:
 
 class TestUIExports:
     def test_ui_package_exports(self):
-        from otto.ui import (
+        from otto_v3.ui import (
             ChatMessage,
             ChatSession,
             CognitiveSummary,
@@ -860,7 +860,7 @@ class TestUIExports:
         assert ChatSession is not None
 
     def test_mcp_package_exports(self):
-        from otto.mcp import (
+        from otto_v3.mcp import (
             MCPToolDefinition,
             MCPToolResult,
             OTTOMCPHandler,

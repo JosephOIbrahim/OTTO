@@ -325,7 +325,7 @@ class TestGrading:
 
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_same_state_same_score(self):
         """Same state produces same score."""

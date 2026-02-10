@@ -14,10 +14,10 @@ Components:
     - Cognitive Hook: NEXUS pipeline processing
     - Protocol Hook: JSON-RPC request handling
     - Hook Base: Abstract base classes for custom hooks
-    - Auto-Validate: [He2025] compliance checking
+    - Auto-Validate: Determinism checking
     - Trail Context: Trail-based context injection
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Same message -> same signals -> same routing -> same params
 - Deterministic execution anchor
 - FIXED evaluation order (5 phases)

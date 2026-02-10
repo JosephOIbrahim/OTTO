@@ -10,7 +10,7 @@ All actions are recorded with:
 - Data accessed/modified
 - Approval status
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed hash algorithm (SHA-256)
 - Deterministic entry ordering
 - Kahan summation for chain verification
@@ -34,14 +34,14 @@ import threading
 logger = logging.getLogger(__name__)
 
 
-# === Constants (Fixed per [He2025]) ===
+# === Constants (Fixed) ===
 
 AUDIT_SEED: Final[int] = 0xA0D17109
 AUDIT_HASH_ALGORITHM: Final[str] = "sha256"
 AUDIT_VERSION: Final[str] = "1.0.0"
 GENESIS_HASH: Final[str] = "0" * 64  # SHA-256 zero hash
 MAX_ENTRIES_PER_FILE: Final[int] = 10000
-COGNITIVE_TILE_SIZE: Final[int] = 32  # Per [He2025] batch invariance
+COGNITIVE_TILE_SIZE: Final[int] = 32  # batch invariance
 
 
 class AuditAction(str, Enum):
@@ -169,7 +169,7 @@ class AuditEntry:
         """
         Compute deterministic hash of entry content.
 
-        Per [He2025]: Fixed field order, fixed algorithm.
+        Fixed field order, fixed algorithm.
         """
         # Canonical representation - sorted keys, deterministic format
         data = {
@@ -261,7 +261,7 @@ class AuditLog:
     - Periodic verification
     - File rotation when limit reached
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism:
     - Deterministic hash computation
     - Fixed iteration order
     - Kahan summation for chain verification
@@ -446,7 +446,7 @@ class AuditLog:
         issues = []
         previous: Optional[AuditEntry] = None
 
-        # Per [He2025]: Fixed iteration order, batch-invariant
+        # Fixed iteration order, batch-invariant
         for i, entry in enumerate(self._entries):
             # Verify entry hash
             if not entry.verify_hash():

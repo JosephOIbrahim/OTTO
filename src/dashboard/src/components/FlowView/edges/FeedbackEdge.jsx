@@ -10,7 +10,7 @@ import { TOKENS } from '../../StatusView/StatusView'
  * - Green color to indicate feedback flow
  * - Always visible to show continuous loop
  *
- * ThinkingMachines [He2025]: 5-phase loop - UPDATE feeds back to DETECT
+ * 5-phase loop - UPDATE feeds back to DETECT
  */
 
 function FeedbackEdge({

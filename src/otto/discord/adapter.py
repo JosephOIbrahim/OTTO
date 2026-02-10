@@ -4,7 +4,7 @@ Discord Adapter
 
 Adapter layer connecting Discord messages to OTTO's cognitive orchestrator.
 
-[He2025] Compliance:
+Determinism:
 - Fixed seed for any randomized operations
 - Sorted key iteration in session management
 - Deterministic state transitions
@@ -56,7 +56,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-# [He2025] Fixed constants
+# Fixed constants
 _DETERMINISM_SEED: Final[int] = 0xCAFEBABE
 _SESSION_TIMEOUT_SECONDS: Final[int] = 7200  # 2 hours
 _MAX_MESSAGE_LENGTH: Final[int] = 2000  # Discord limit
@@ -67,7 +67,7 @@ class DiscordSession:
     """
     Session state for a Discord user.
 
-    [He2025] Compliance:
+    Determinism:
     - All fields have fixed defaults
     - State transitions are deterministic
     - Session timeout is fixed (2 hours)
@@ -94,7 +94,7 @@ class DiscordSession:
         """
         Deterministic session ID from user_id and created_at.
 
-        [He2025] Uses fixed hash algorithm.
+        Uses fixed hash algorithm.
         """
         data = f"{self.user_id}:{self.created_at}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
@@ -124,7 +124,7 @@ class DiscordSession:
         """
         Update session with cognitive state.
 
-        [He2025] Only updates non-None values.
+        Only updates non-None values.
         """
         if burnout is not None:
             self.burnout_level = burnout.value
@@ -216,7 +216,7 @@ class DiscordAdapter:
     """
     Adapter connecting Discord to OTTO's cognitive orchestrator.
 
-    [He2025] Compliance:
+    Determinism:
     - Sessions stored in sorted dict by user_id
     - Fixed evaluation order in process_message
     - Deterministic state transitions
@@ -250,7 +250,7 @@ class DiscordAdapter:
         # Memory backbone integration
         self._memory = memory or get_memory()
 
-        # [He2025] Session dict - iterate in sorted order
+        # Session dict - iterate in sorted order
         self._sessions: Dict[int, DiscordSession] = {}
 
         # Load persisted sessions if path provided
@@ -261,7 +261,7 @@ class DiscordAdapter:
         """
         Process a Discord message through the cognitive pipeline.
 
-        [He2025] Fixed evaluation order:
+        Fixed evaluation order:
         1. Get/create session
         2. Check for commands
         3. Route through orchestrator
@@ -334,7 +334,7 @@ class DiscordAdapter:
 
         Same as process_message but uses ResponseGenerator for actual LLM responses.
 
-        [He2025] Fixed evaluation order:
+        Fixed evaluation order:
         1. Get/create session
         2. Check for commands
         3. Route through orchestrator
@@ -405,7 +405,7 @@ class DiscordAdapter:
         """
         Get existing session or create new one.
 
-        [He2025] Deterministic session creation.
+        Deterministic session creation.
         """
         user_id = message.user_id
 
@@ -601,7 +601,7 @@ class DiscordAdapter:
         """
         Build Discord response from orchestrator result.
 
-        [He2025] Fixed response building order.
+        Fixed response building order.
         """
         # Get anchor and expert from result
         anchor = result.to_anchor()
@@ -636,7 +636,7 @@ class DiscordAdapter:
         """
         Build Discord response with async LLM generation.
 
-        [He2025] Fixed response building order.
+        Fixed response building order.
         """
         # Get anchor and expert from result
         anchor = result.to_anchor()
@@ -675,7 +675,7 @@ class DiscordAdapter:
 
         Uses ResponseGenerator if available, falls back to sync render.
 
-        [He2025] Compliance:
+        Determinism:
         - Retrieves conversation history in fixed order (oldest to newest)
         - Deterministic context building
         """
@@ -787,7 +787,7 @@ class DiscordAdapter:
         Uses encrypted storage if protection is set up, otherwise falls
         back to plaintext with a warning.
 
-        [He2025] Compliance: Fixed evaluation order, sorted iteration.
+        Determinism: Fixed evaluation order, sorted iteration.
         """
         # Try encrypted storage first (preferred)
         try:
@@ -837,9 +837,9 @@ class DiscordAdapter:
         Uses encrypted storage if protection is set up, otherwise falls
         back to plaintext with a warning.
 
-        [He2025] Compliance: Sorted keys for deterministic output.
+        Determinism: Sorted keys for deterministic output.
         """
-        # [He2025] Sort by user_id for deterministic output
+        # Sort by user_id for deterministic output
         data = {
             str(user_id): session.to_dict()
             for user_id, session in sorted(self._sessions.items())
@@ -888,7 +888,7 @@ class DiscordAdapter:
         This enables cross-surface visibility - actions in Discord
         are visible to other surfaces (Telegram, CLI, etc.)
 
-        [He2025] Fixed data structure for deterministic recording.
+        Fixed data structure for deterministic recording.
         """
         # Generate unique episode type including timestamp for uniqueness
         # This ensures each message gets its own trail entry (not reinforced)
@@ -933,7 +933,7 @@ class DiscordAdapter:
 
         Trails enable auto-approval when trust is established.
 
-        [He2025] Fixed action format for deterministic trail matching.
+        Fixed action format for deterministic trail matching.
         """
         try:
             action = f"discord.{expert.lower()}"
@@ -953,7 +953,7 @@ class DiscordAdapter:
         Queries memory backbone for recent episodes and builds
         ConversationTurn list for multi-turn context.
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed order: oldest to newest for proper conversation flow
         - Deterministic filtering and sorting
         - No random selection of history
@@ -1001,7 +1001,7 @@ class DiscordAdapter:
                 f"[MEMORY DEBUG] After user_id filter ({user_id}): {len(user_episodes)} episodes"
             )
 
-            # [He2025] Sort by timestamp ascending (oldest first)
+            # Sort by timestamp ascending (oldest first)
             # This ensures conversation flows naturally to the LLM
             user_episodes = sorted(
                 user_episodes,
@@ -1046,7 +1046,7 @@ class DiscordAdapter:
         Returns:
             Number of sessions removed
         """
-        # [He2025] Iterate in sorted order
+        # Iterate in sorted order
         expired = [
             user_id for user_id in sorted(self._sessions.keys())
             if self._sessions[user_id].is_expired

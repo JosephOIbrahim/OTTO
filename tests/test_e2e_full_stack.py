@@ -13,7 +13,7 @@ Tests the complete OTTO OS stack working together:
 This validates Phase 5-6 integration: external context flows through
 to agent decisions and protection gates.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic test scenarios
 - Fixed input → Fixed output verification
 - State isolation between tests

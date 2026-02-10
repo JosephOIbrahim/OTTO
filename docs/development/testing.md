@@ -87,7 +87,7 @@ def test_slow_operation():
 
 @pytest.mark.determinism
 def test_deterministic_output():
-    """Verify deterministic behavior per [He2025]."""
+    """Verify deterministic behavior."""
     pass
 
 @pytest.mark.integration
@@ -232,7 +232,7 @@ class TestFullStackIntegration:
 ```python
 @pytest.mark.determinism
 class TestHe2025Compliance:
-    """Verify [He2025] determinism requirements."""
+    """Verify determinism requirements."""
 
     def test_same_input_same_output(self):
         """Verify identical inputs produce identical outputs."""

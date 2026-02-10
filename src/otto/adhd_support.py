@@ -16,7 +16,7 @@ Toggle Mode:
 - When ON: All constraints enforced
 - When OFF: Constraints disabled
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Binary toggle, no soft modes
 - Fixed constraint values
 - Deterministic behavior
@@ -172,7 +172,7 @@ class CognitiveSafetyManager:
     """
     Manages cognitive safety constraints when enabled.
 
-    Toggle mode: Binary ON/OFF, no soft modes per [He2025].
+    Toggle mode: Binary ON/OFF, no soft modes.
     """
 
     def __init__(self, enabled: bool = False):

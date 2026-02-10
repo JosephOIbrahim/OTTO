@@ -4,7 +4,7 @@ Argon2id Key Derivation
 
 Password-based key derivation using Argon2id.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED algorithm: Argon2id (hybrid of Argon2i and Argon2d)
 - FIXED parameters: memory, time, parallelism (no runtime variation)
 - DETERMINISTIC: same password + salt → same key

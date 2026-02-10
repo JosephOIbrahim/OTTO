@@ -6,7 +6,7 @@ Real-time progress visibility for agent execution.
 
 ADHD-Critical: Progress must ALWAYS be visible. No silent background work.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed progress levels
 - Deterministic state transitions
 - Bounded history size

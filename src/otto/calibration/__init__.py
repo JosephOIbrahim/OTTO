@@ -17,7 +17,7 @@ Components:
 - ConfidenceScorer: RC^+xi convergence for learned values
 - CalibrationManager: Orchestrates all calibration operations
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed learning rate and bounds
 - Deterministic weight updates
 - Reproducible calibration values

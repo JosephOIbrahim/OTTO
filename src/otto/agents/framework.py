@@ -10,7 +10,7 @@ Agent Types (increasing autonomy):
 3. BOUNDED: Autonomous within defined limits
 4. AUTONOMOUS: Full autonomy (requires highest trust)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed autonomy levels (no runtime variation)
 - Deterministic approval routing
 - Fixed limit enforcement
@@ -35,7 +35,7 @@ from .base import (
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Constants - [He2025] Compliance
+# Constants - Determinism
 # ============================================================================
 
 AGENT_SEED: Final[int] = 0xA6E77F00

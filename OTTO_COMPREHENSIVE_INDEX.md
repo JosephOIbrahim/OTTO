@@ -17,7 +17,7 @@
 | Test Files | 157 files, 4,392+ tests |
 | Python | 3.10+ |
 | Platforms | Discord, WhatsApp, Telegram, CLI, Web Dashboard |
-| Determinism | [He2025] compliant (application-level) |
+| Determinism | Determinism (application-level) |
 | Encryption | AES-256-GCM at rest |
 | Memory | SQLite-backed trail storage (OTTOMemory) |
 
@@ -89,7 +89,7 @@ cognitive_stage.py           USD-native cognitive stage (prims + attributes)
 decision_engine.py           Task routing (work/delegate/protect)
 agent_coordinator.py         Agent orchestration
 tension_surfacer.py          Conflict detection
-determinism.py               [He2025] utilities (sorted_max, kahan_sum, etc.)
+determinism.py               utilities (sorted_max, kahan_sum, etc.)
 ```
 
 ### 3.2 WhatsApp Module (src/otto/whatsapp/)
@@ -386,7 +386,7 @@ User sends message
   -> _get_conversation_history(phone, limit=10)
      -> EpisodeQuery(type="surface.whatsapp.message", service="whatsapp")
      -> Filter by phone_number
-     -> Sort oldest first [He2025]
+     -> Sort oldest first
      -> Build ConversationTurn list
   -> otto_processor(text, {phone, conversation_history})
      -> ResponseGenerator.generate() with history
@@ -587,7 +587,7 @@ TTS_VOICE_SEED          = 0xFEEDFACE
 STT_NORMALIZATION_SEED  = 0xCAFED00D
 
 # Cognitive
-COGNITIVE_TILE_SIZE     = 32           # [He2025] fixed batch size
+COGNITIVE_TILE_SIZE     = 32           # fixed batch size
 DETERMINISM_SEED        = 0xCAFEBABE   # State hashing
 HASH_ALGORITHM          = "sha256"
 
@@ -657,7 +657,7 @@ pytest tests/test_whatsapp/ -v
 pytest tests/test_voice_core/ -v
 pytest tests/test_voice/ -v
 pytest tests/integration/ -v
-pytest -m determinism              # [He2025] determinism only
+pytest -m determinism              # determinism only
 pytest --cov=src/otto --cov-report=html
 
 # Health Check (when server running)

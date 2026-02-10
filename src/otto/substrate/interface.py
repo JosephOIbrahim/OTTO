@@ -2,14 +2,14 @@
 Cognitive Substrate Interface
 =============================
 
-Three-tier cognitive state management with [He2025] determinism compliance.
+Three-tier cognitive state management with Determinism.
 
 Tiers:
 - CONSTITUTIONAL: Immutable core values (cannot be modified)
 - LEARNED: Mutable with approval (user preferences, patterns)
 - EPHEMERAL: Session-scoped state (current context)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed tier evaluation order (EPHEMERAL > LEARNED > CONSTITUTIONAL)
 - Deterministic merge strategy
 - Sorted iteration
@@ -29,7 +29,7 @@ from typing import Any, Callable, Dict, Final, List, Optional, Set, TypeVar
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Constants - [He2025] Compliance
+# Constants - Determinism
 # ============================================================================
 
 COGNITIVE_TILE_SIZE: Final[int] = 32
@@ -156,7 +156,7 @@ CONSTITUTIONAL_VALUES: Final[Dict[str, Any]] = {
     "principles.one_at_a_time": True,
     "principles.user_knows_best": True,
 
-    # Processing order - FIXED per [He2025]
+    # Processing order - FIXED
     "processing.phase_order": [
         "RETRIEVE", "CLASSIFY", "GROUND",
         "DETECT", "CASCADE", "LOCK",
@@ -266,7 +266,7 @@ class EnumValidator(ValueValidator):
 # ============================================================================
 
 class CognitiveSubstrate:
-    """Three-tier cognitive substrate with [He2025] determinism compliance.
+    """Three-tier cognitive substrate with Determinism.
 
     Manages state across three tiers:
     - CONSTITUTIONAL: Immutable core values

@@ -7,7 +7,7 @@ Per spec: Three approval categories control agent autonomy.
 - TRUST: Can earn auto-approval over time (read, search, summarize)
 - SAFE: Auto-approved (log, format, parse)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic policy evaluation
 - Fixed trust threshold (0.8)
 - No timing-based decisions
@@ -31,7 +31,7 @@ from typing import Any, Callable, Dict, Final, List, Optional, Set, TypeVar, Awa
 logger = logging.getLogger(__name__)
 
 
-# === Constants (Fixed per [He2025]) ===
+# === Constants (Fixed) ===
 
 APPROVAL_SEED: Final[int] = 0xADD70BAD
 APPROVAL_VERSION: Final[str] = "1.0.0"
@@ -246,7 +246,7 @@ class TrustRecord:
         Recalculate trust score.
 
         Formula: trust = approvals / (approvals + denials) * time_factor
-        Per [He2025]: Deterministic calculation, no randomness.
+        Deterministic calculation, no randomness.
         """
         total = self.approval_count + self.denial_count
         if total < MIN_APPROVALS_FOR_TRUST:
@@ -315,7 +315,7 @@ class ApprovalGate:
     - Approval request handling
     - Audit integration
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism:
     - Deterministic policy evaluation
     - Fixed thresholds
     - Sorted iteration
@@ -426,7 +426,7 @@ class ApprovalGate:
             try:
                 with open(trust_file) as f:
                     data = json.load(f)
-                for key in sorted(data.keys()):  # Sorted per [He2025]
+                for key in sorted(data.keys()):  # Sorted
                     self._trust[key] = TrustRecord.from_dict(data[key])
             except Exception as e:
                 logger.error(f"Failed to load trust records: {e}")
@@ -446,7 +446,7 @@ class ApprovalGate:
         """
         Record approval/denial to memory system (pheromone trails).
 
-        Per [He2025]: Deterministic trail deposits for trust tracking.
+        Deterministic trail deposits for trust tracking.
         Trail strength accumulates with approvals, decays with denials.
 
         Args:
@@ -509,7 +509,7 @@ class ApprovalGate:
         """
         Get trust score for action/actor combination.
 
-        Per [He2025]: Deterministic - uses trail strength from memory.
+        Deterministic - uses trail strength from memory.
         Falls back to local trust records if memory unavailable.
         """
         # Try memory-based trust (pheromone trail strength)
@@ -532,7 +532,7 @@ class ApprovalGate:
         """
         Check if action/actor has sufficient trust for auto-approval.
 
-        Per [He2025]: Uses trail strength (>= 0.8) for auto-approval.
+        Uses trail strength (>= 0.8) for auto-approval.
         """
         policy = self.get_policy(action)
         if not policy or not policy.trust_eligible:
@@ -707,7 +707,7 @@ class ApprovalGate:
 
     def get_pending(self) -> List[ApprovalRequest]:
         """Get pending approval requests."""
-        # Sorted by timestamp per [He2025]
+        # Sorted by timestamp
         return sorted(
             self._pending.values(),
             key=lambda r: r.timestamp

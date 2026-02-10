@@ -12,7 +12,7 @@ Message Categories:
 - CONTEXT (0x004X): External integration context (Phase 5)
 - SYSTEM (0x00FX): Heartbeat, errors, control
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed type values (never change once assigned)
 - Deterministic serialization (sorted keys)
 - Checksum generation for message integrity

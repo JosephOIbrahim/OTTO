@@ -5,7 +5,7 @@ Tests for Cryptography Module
 Comprehensive tests for OTTO OS encryption, key derivation,
 keyring integration, and secure file operations.
 
-ThinkingMachines [He2025] Compliance Tests:
+ThinkingMachines Determinism Tests:
 - Fixed algorithm parameters
 - Deterministic operations
 - Bounded memory usage
@@ -795,7 +795,7 @@ class TestCryptoIntegration:
 # =============================================================================
 
 class TestThinkingMachinesCompliance:
-    """Tests verifying ThinkingMachines [He2025] compliance."""
+    """Tests verifying ThinkingMachines Determinism."""
 
     def test_fixed_algorithm_parameters(self):
         """Algorithm parameters are fixed at module level."""

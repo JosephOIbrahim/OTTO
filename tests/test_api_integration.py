@@ -4,7 +4,7 @@ End-to-end integration tests for OTTO Public REST API.
 Tests the full request flow:
   HTTP Request → REST Router → Middleware Chain → JSON-RPC Handler → Response
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests verify deterministic behavior
 - Same input → same output
 """
@@ -674,7 +674,7 @@ class TestPathParameters:
 
 
 class TestDeterministicBehavior:
-    """Test deterministic behavior per [He2025] principles."""
+    """Test deterministic behavior principles."""
 
     @pytest.fixture
     def key_manager(self):

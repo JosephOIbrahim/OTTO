@@ -188,7 +188,7 @@ def _format_altitude(altitude_value: int) -> str:
 
 
 def _get_top_emotional(emotional_signals: Dict[str, float]) -> Optional[str]:
-    """Get top emotional signal with deterministic tie-breaking [He2025]."""
+    """Get top emotional signal with deterministic tie-breaking."""
     if not emotional_signals:
         return None
     # Use sorted_max for deterministic tie-breaking when signals have equal values

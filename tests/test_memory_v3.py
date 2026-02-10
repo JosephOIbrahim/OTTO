@@ -8,7 +8,7 @@ These tests verify:
 5. Contextual memory clearing
 6. SQLite backend CRUD operations
 7. JSON serialization roundtrip
-8. Deterministic key listing [He2025]
+8. Deterministic key listing
 9. Session reset clears read tracking
 """
 
@@ -18,9 +18,9 @@ import dataclasses
 
 import pytest
 
-from otto.core.memory.types import MemoryEntry, MemoryType
-from otto.core.memory.store import SQLiteStore
-from otto.core.memory.manager import MemoryManager, ReadBeforeWriteViolation
+from otto_v3.core.memory.types import MemoryEntry, MemoryType
+from otto_v3.core.memory.store import SQLiteStore
+from otto_v3.core.memory.manager import MemoryManager, ReadBeforeWriteViolation
 
 
 # ===================================================================
@@ -241,7 +241,7 @@ class TestSQLiteStoreIsolation:
 
 
 # ===================================================================
-# Test: SQLiteStore — determinism [He2025]
+# Test: SQLiteStore — determinism
 # ===================================================================
 
 class TestSQLiteStoreDeterminism:
@@ -512,7 +512,7 @@ class TestPackageImports:
     """Verify __init__.py re-exports work correctly."""
 
     def test_import_from_package(self) -> None:
-        from otto.core.memory import (
+        from otto_v3.core.memory import (
             MemoryEntry,
             MemoryManager,
             MemoryType,

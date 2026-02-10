@@ -10,7 +10,7 @@ Components:
 - AsyncInputProvider: Asynchronous input interface
 - MemoryInputProvider: In-memory provider for testing
 
-[He2025] Compliance:
+Determinism:
 - Fixed provider selection order
 - Deterministic input handling
 - No runtime variation

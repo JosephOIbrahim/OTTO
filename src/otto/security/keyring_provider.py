@@ -9,7 +9,7 @@ Supports:
 - Mobile: Secure enclave / app sandbox (future)
 - Testing: In-memory mock provider
 
-[He2025] Compliance:
+Determinism:
 - Fixed provider selection order
 - Deterministic behavior
 - No runtime variation in credential operations
@@ -307,7 +307,7 @@ class KeyringManager:
         """
         Select the best available keyring provider.
 
-        [He2025] Fixed selection order: env override → system → file → none
+        Fixed selection order: env override → system → file → none
         """
         # Check for explicit disable
         if os.environ.get("OTTO_KEYRING_DISABLED", "").lower() == "true":

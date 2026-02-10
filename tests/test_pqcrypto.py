@@ -9,7 +9,7 @@ Tests hybrid post-quantum key exchange including:
 - Key exchange protocol
 - Serialization
 
-[He2025] Compliance Tests:
+Determinism Tests:
 - Determinism: same keys → same shared secrets
 - Fixed algorithms: no runtime switching
 - HKDF key derivation with fixed parameters
@@ -483,11 +483,11 @@ class TestKEMAlgorithm:
 
 
 # =============================================================================
-# Determinism Tests ([He2025] Compliance)
+# Determinism Tests (Determinism)
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_same_keypair_same_decapsulation(self):
         """Same ciphertext + private key → same shared secret."""

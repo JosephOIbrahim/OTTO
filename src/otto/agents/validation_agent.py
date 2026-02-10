@@ -2,10 +2,10 @@
 Validation Agent for OTTO OS
 ============================
 
-A specialized agent that validates files for [He2025] determinism compliance
+A specialized agent that validates files for [He2025]-inspired determinism
 and deposits QUALITY trails based on findings.
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - Uses deterministic pattern matching
 - Deposits trails in sorted order
 - Fixed signal patterns
@@ -109,7 +109,7 @@ class ValidationAgent:
 
     async def validate_file(self, file_path: str | Path) -> ValidationResult:
         """
-        Validate a single file for [He2025] compliance.
+        Validate a single file for determinism (inspired by [He2025]).
 
         Args:
             file_path: Path to the Python file
@@ -135,7 +135,7 @@ class ValidationAgent:
         # Read file content
         content = path.read_text(encoding="utf-8", errors="ignore")
 
-        # Run [He2025] compliance check
+        # Run [He2025]-inspired determinism check
         violations, compliances = check_he2025_compliance(content)
 
         # Convert to findings
@@ -289,7 +289,7 @@ class ValidationAgent:
         """
         lines = []
         lines.append("=" * 60)
-        lines.append("[He2025] Determinism Compliance Report")
+        lines.append("[He2025] Determinism Report")
         lines.append("=" * 60)
         lines.append("")
 

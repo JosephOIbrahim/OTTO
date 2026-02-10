@@ -3,7 +3,7 @@ Tests for InputValidationMiddleware
 
 Tests request body validation against JSON schemas.
 
-[He2025] Compliance: Verifies FIXED schemas, DETERMINISTIC validation.
+Determinism: Verifies FIXED schemas, DETERMINISTIC validation.
 """
 
 import pytest
@@ -413,11 +413,11 @@ class TestNoBodyNoSchema:
 
 
 # =============================================================================
-# Test: [He2025] Determinism
+# Test: Determinism
 # =============================================================================
 
 class TestDeterminism:
-    """Test [He2025] determinism compliance."""
+    """Test Determinism."""
 
     def test_schemas_are_fixed(self):
         """Schemas should be identical across instantiations."""

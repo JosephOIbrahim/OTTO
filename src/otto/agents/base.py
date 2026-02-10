@@ -5,7 +5,7 @@ Agent Base Classes
 Foundation for all OTTO agents with progress tracking, error handling,
 and cognitive state awareness.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed execution phases
 - State snapshot before execution
 - Deterministic error classification

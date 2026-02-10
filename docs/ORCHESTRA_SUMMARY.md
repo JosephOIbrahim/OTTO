@@ -85,7 +85,7 @@ Every message flows through this deterministic pipeline:
 └─────────────────┘
 ```
 
-**ThinkingMachines [He2025] Compliance**: Same signals → Same routing → Same behavior (98/100 score)
+**ThinkingMachines Determinism**: Same signals → Same routing → Same behavior (98/100 score)
 
 ---
 
@@ -262,7 +262,7 @@ It's not about making Claude smarter. It's about making the human-AI collaborati
 
 ## References
 
-- **ThinkingMachines [He2025]**: https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+- **ThinkingMachines**: https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 - **Otto GitHub**: https://github.com/JosephOIbrahim/Otto
 - **USD Cognitive Substrate (Research)**: https://github.com/JosephOIbrahim/usd-cognitive-substrate
 - **aiconductor.studio**: https://aiconductor.studio

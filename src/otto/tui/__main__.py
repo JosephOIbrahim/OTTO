@@ -4,7 +4,7 @@ OTTO TUI CLI Entry Point
 
 Run with: python -m otto.tui
 
-[He2025] Compliance: Fixed initialization sequence.
+Determinism: Fixed initialization sequence.
 """
 
 from .app import main

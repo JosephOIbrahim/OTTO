@@ -5,7 +5,7 @@ Storage Manager
 Global storage manager that provides a single interface to storage operations.
 Manages provider selection and caching.
 
-[He2025] Compliance:
+Determinism:
 - Fixed provider selection order
 - Deterministic initialization
 - No runtime variation

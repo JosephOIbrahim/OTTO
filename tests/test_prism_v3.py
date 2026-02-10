@@ -8,7 +8,7 @@ These tests verify:
 5. Empty/whitespace text → empty list
 6. Determinism (same text → same signals, 100x)
 7. Deduplication (best confidence per signal type)
-8. Pattern list is properly sorted for [He2025]
+8. Pattern list is properly sorted for
 9. Action signal detection (commitments, meetings, etc.)
 """
 
@@ -16,9 +16,9 @@ from __future__ import annotations
 
 import pytest
 
-from otto.core.prism.signals import CognitiveSignal, Signal
-from otto.core.prism.patterns import DetectionPattern, PATTERNS
-from otto.core.prism.detector import PRISMDetector
+from otto_v3.core.prism.signals import CognitiveSignal, Signal
+from otto_v3.core.prism.patterns import DetectionPattern, PATTERNS
+from otto_v3.core.prism.detector import PRISMDetector
 
 
 # ===================================================================
@@ -103,14 +103,14 @@ class TestSignal:
 
 
 # ===================================================================
-# Test: Patterns [He2025] compliance
+# Test: Patterns Determinism
 # ===================================================================
 
 class TestPatterns:
     """Pattern list must be sorted and well-formed."""
 
     def test_patterns_sorted_by_signal_name(self) -> None:
-        """[He2025]: Patterns MUST be sorted by signal_type.name."""
+        """Patterns MUST be sorted by signal_type.name."""
         names = [(p.signal_type.name, p.regex) for p in PATTERNS]
         assert names == sorted(names)
 
@@ -399,7 +399,7 @@ class TestDetectMultipleTypes:
 
 
 # ===================================================================
-# Test: Determinism — [He2025] compliance
+# Test: Determinism — Determinism
 # ===================================================================
 
 class TestDeterminism:
@@ -454,7 +454,7 @@ class TestPackageImports:
     """Verify the __init__.py re-exports work correctly."""
 
     def test_import_from_package(self) -> None:
-        from otto.core.prism import (
+        from otto_v3.core.prism import (
             CognitiveSignal,
             DetectionPattern,
             PATTERNS,

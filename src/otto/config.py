@@ -335,7 +335,7 @@ class OrchestratorConfig:
     ))
 
     # === Reproducibility / ThinkingMachines Compliance ===
-    # Per [He2025]: "Control every source of randomness"
+    # "Control every source of randomness"
     reproducibility_mode: bool = field(default_factory=lambda: _get_env_bool(
         'FO_REPRODUCIBILITY_MODE', False  # Disabled by default for production
     ))

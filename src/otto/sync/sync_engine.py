@@ -4,7 +4,7 @@ Sync Engine
 
 Orchestrates E2E encrypted synchronization between devices.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED sync protocol version
 - DETERMINISTIC conflict resolution (configurable strategy)
 - BOUNDED sync operations (max files per sync)

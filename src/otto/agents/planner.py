@@ -11,7 +11,7 @@ Philosophy:
     Break down complexity while respecting cognitive limits.
     A 3-step plan that's achievable beats a 10-step plan that overwhelms.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed planning phases
 - Deterministic step generation
 - Bounded complexity
@@ -21,7 +21,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-# [He2025] Determinism utilities
+# Determinism utilities
 from ..determinism import sorted_set_to_list
 
 from .base import Agent, AgentConfig, NonRetryableError
@@ -431,7 +431,7 @@ class PlannerAgent(Agent[ExecutionPlan]):
         if parallel_groups:
             notes.append(f"Contains {len(parallel_groups)} parallelizable groups")
         if any(s.agent_type for s in steps):
-            # [He2025] Use sorted_set_to_list for deterministic ordering
+            # Use sorted_set_to_list for deterministic ordering
             agent_types = sorted_set_to_list(set(s.agent_type for s in steps if s.agent_type))
             notes.append(f"Suggested agents: {', '.join(agent_types)}")
 
@@ -468,7 +468,7 @@ class PlannerAgent(Agent[ExecutionPlan]):
     def _generate_summary(self, task: str, steps: List[PlanStep]) -> str:
         """Generate plan summary."""
         step_count = len(steps)
-        # [He2025] Use sorted_set_to_list for deterministic ordering
+        # Use sorted_set_to_list for deterministic ordering
         categories = sorted_set_to_list(set(s.category for s in steps))
 
         if step_count == 1:

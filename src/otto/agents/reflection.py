@@ -14,7 +14,7 @@ Philosophy:
     Reflection prevents drift. Regular check-ins catch problems
     before they become crises.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed reflection questions
 - Deterministic assessment criteria
 - Bounded reflection depth

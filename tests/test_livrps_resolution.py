@@ -12,7 +12,7 @@ Key Properties to Verify:
 4. Opinion stacks correctly track all layer opinions
 5. Resolution is deterministic (same input → same output)
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Tests verify batch-invariance
 - Fixed evaluation order
 - Reproducible checksums

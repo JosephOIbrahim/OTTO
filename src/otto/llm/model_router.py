@@ -4,7 +4,7 @@ USD Cognitive Model Router
 
 Intelligent model selection using USD Cognitive Substrate signals.
 
-[He2025] Compliance:
+Determinism:
 - Fixed evaluation order (LIVRPS)
 - Deterministic model selection
 - Same signals → same model
@@ -31,7 +31,7 @@ from typing import Dict, Final, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 
-# [He2025] Fixed model constants
+# Fixed model constants
 class ModelTier(Enum):
     """Available model tiers."""
     HAIKU = "haiku"      # Fast, cheap, good for simple responses
@@ -84,7 +84,7 @@ class CognitiveModelRouter:
     """
     Route to appropriate model using USD Cognitive Substrate signals.
 
-    [He2025] Fixed evaluation order (LIVRPS):
+    Fixed evaluation order (LIVRPS):
     1. Local - Safety overrides (burnout RED → Sonnet)
     2. Inherits - Conversation complexity
     3. Variants - Mode-based selection
@@ -98,7 +98,7 @@ class CognitiveModelRouter:
         # Returns ModelTier.HAIKU or ModelTier.SONNET
     """
 
-    # [He2025] Fixed expert → model requirements
+    # Fixed expert → model requirements
     EXPERT_MODEL_REQUIREMENTS: Final[Dict[str, ModelTier]] = {
         # Safety-critical experts need Sonnet
         "Validator": ModelTier.SONNET,     # Crisis support needs nuance
@@ -112,7 +112,7 @@ class CognitiveModelRouter:
         "Refocuser": ModelTier.HAIKU,      # Gentle redirects
     }
 
-    # [He2025] Fixed state → model overrides
+    # Fixed state → model overrides
     BURNOUT_OVERRIDES: Final[Dict[str, ModelTier]] = {
         "RED": ModelTier.SONNET,      # Always Sonnet for crisis
         "ORANGE": ModelTier.SONNET,   # Elevated concern
@@ -148,7 +148,7 @@ class CognitiveModelRouter:
         """
         Route to appropriate model using LIVRPS resolution.
 
-        [He2025] Fixed evaluation order - first match wins.
+        Fixed evaluation order - first match wins.
 
         Args:
             context: Routing context with cognitive state

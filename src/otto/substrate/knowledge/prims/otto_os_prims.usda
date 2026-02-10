@@ -6,7 +6,7 @@
     Core knowledge about OTTO OS - the operating system for variable attention.
     Enables answers about OTTO's architecture, commands, and philosophy.
 
-    ThinkingMachines [He2025] Compliance:
+    Determinism:
     - FIXED prim count (deterministic)
     - DETERMINISTIC trigger matching
     - FIXED confidence values
@@ -176,7 +176,7 @@ def "Knowledge" (
         )
         {
             custom string canonical_path = "/Knowledge/OTTO/ThinkingMachinesCompliance"
-            custom string content = """OTTO follows ThinkingMachines [He2025] compliance for determinism. Key constraints: FIXED parameters (chunk sizes, retry limits, thresholds), DETERMINISTIC serialization (sorted keys in JSON), BOUNDED operations (max files per sync, max items), FIXED evaluation order (signal > expert > action), REPRODUCIBLE checksums. No time-based routing, no unseeded random, no unordered iteration. All state mutations atomic. This ensures same inputs produce same outputs across sessions."""
+            custom string content = """OTTO follows ThinkingMachines Determinism for determinism. Key constraints: FIXED parameters (chunk sizes, retry limits, thresholds), DETERMINISTIC serialization (sorted keys in JSON), BOUNDED operations (max files per sync, max items), FIXED evaluation order (signal > expert > action), REPRODUCIBLE checksums. No time-based routing, no unseeded random, no unordered iteration. All state mutations atomic. This ensures same inputs produce same outputs across sessions."""
             custom string summary = "Determinism via fixed parameters, bounded operations, deterministic serialization"
             custom float confidence = 0.95
             custom string provenance = "otto_compliance"

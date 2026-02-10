@@ -1,7 +1,7 @@
 """
 Tests for AgentCoordinator - Work/Delegate/Protect model.
 
-ThinkingMachines [He2025] compliance:
+Determinism:
 - Deterministic routing tests
 - Bounded queue tests
 - Flow protection tests
@@ -287,7 +287,7 @@ class TestCognitiveContext:
 
 
 class TestDeterminism:
-    """Test determinism requirements [He2025]."""
+    """Test determinism requirements."""
 
     def test_context_reproducible(self):
         """Same inputs produce same context."""
@@ -310,7 +310,7 @@ class TestDeterminism:
         assert len(set(budgets)) == 1
 
     def test_queue_sort_deterministic(self, tmp_path):
-        """Queue sorting is deterministic [He2025]."""
+        """Queue sorting is deterministic."""
         # Test the sorting logic directly
         base_time = datetime.now()
         results = [

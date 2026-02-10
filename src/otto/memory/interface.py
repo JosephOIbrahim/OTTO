@@ -5,7 +5,7 @@ Unified Memory Interface
 Single interface for all OTTO memory operations.
 Wraps existing systems - no parallel storage.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed seeds for determinism
 - Sorted iteration
 - Kahan summation for aggregations
@@ -22,7 +22,7 @@ from typing import Any, Dict, Final, List, Optional, Set, Union
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Constants - [He2025] Compliance
+# Constants - Determinism
 # ============================================================================
 
 MEMORY_SEED: Final[int] = 0xAE0717E5
@@ -195,6 +195,11 @@ class TrailStrength:
     last_deposit: Optional[datetime]
 
     @property
+    def name(self) -> str:
+        """Alias for action (used in query results)."""
+        return self.action
+
+    @property
     def auto_approvable(self) -> bool:
         """Check if strength warrants auto-approval."""
         return self.strength >= AUTO_APPROVE_THRESHOLD
@@ -229,19 +234,29 @@ class OTTOMemory:
 
     _instance: Optional["OTTOMemory"] = None
 
-    def __new__(cls):
-        """Singleton pattern - one memory instance for all surfaces."""
+    def __new__(cls, data_dir: Optional[Path] = None):
+        """Singleton pattern - one memory instance for all surfaces.
+
+        When data_dir is specified, creates an isolated (non-singleton)
+        instance for testing.
+        """
+        if data_dir is not None:
+            # Non-singleton: isolated instance for testing
+            instance = super().__new__(cls)
+            instance._initialized = False
+            return instance
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, data_dir: Optional[Path] = None):
         """Initialize memory systems (once)."""
         if self._initialized:
             return
 
         self._initialized = True
+        self._data_dir = data_dir
         self._trail_store = None
         self._substrate = None
         self._ewm_manager = None
@@ -266,7 +281,11 @@ class OTTOMemory:
         """Initialize trail store."""
         try:
             from otto.trails.store import TrailStore
-            self._trail_store = TrailStore()
+            if self._data_dir is not None:
+                db_path = Path(self._data_dir) / "trails.db"
+                self._trail_store = TrailStore(db_path=db_path)
+            else:
+                self._trail_store = TrailStore()
             logger.info("TrailStore connected")
         except ImportError:
             logger.warning("TrailStore not available - using mock")
@@ -368,18 +387,38 @@ class OTTOMemory:
             self._metrics.episodes_recorded += 1
             self._metrics.record_latency((datetime.now() - start).total_seconds() * 1000)
 
-    def query_episodes(self, query: EpisodeQuery) -> List[Episode]:
+    def query_episodes(
+        self,
+        query: Optional[EpisodeQuery] = None,
+        *,
+        event_type: Optional[str] = None,
+        event_type_prefix: Optional[str] = None,
+        service: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Episode]:
         """
         Query episodic memories.
 
         Queries pheromone trails and converts to episodes.
+        Accepts either an EpisodeQuery object or keyword args.
 
         Args:
-            query: Query parameters
+            query: Query parameters (EpisodeQuery object)
+            event_type: Filter by exact event type
+            event_type_prefix: Filter by event type prefix
+            service: Filter by service name
+            limit: Max results
 
         Returns:
             List of matching episodes (sorted by timestamp, newest first)
         """
+        # Build query from kwargs if not provided
+        if query is None:
+            query = EpisodeQuery(
+                type=event_type or event_type_prefix,
+                service=service,
+                limit=limit,
+            )
         # Track metrics
         if self._metrics:
             self._metrics.episodes_queried += 1
@@ -405,18 +444,27 @@ class OTTOMemory:
             logger.info(f"[MEMORY DEBUG] REAL query returned {len(trails)} trails")
 
             episodes = []
-            for trail in trails[:query.limit]:
+            for trail in trails:
                 metadata = trail.metadata or {}
+                ep_service = metadata.get("service")
+
+                # Post-query service filter (TrailQuery doesn't support service)
+                if query.service and ep_service != query.service:
+                    continue
+
                 episodes.append(Episode(
                     type=trail.path,
                     data=metadata.get("data", {}),
                     outcome=Outcome(trail.signal) if trail.signal in Outcome.__members__.values() else Outcome.SUCCESS,
                     timestamp=trail.deposited_at,
                     actor=trail.deposited_by,
-                    service=metadata.get("service"),
+                    service=ep_service,
                     resource=metadata.get("resource"),
                     context=metadata.get("context"),
                 ))
+
+                if len(episodes) >= query.limit:
+                    break
 
             return sorted(episodes, key=lambda e: e.timestamp, reverse=True)
 
@@ -465,9 +513,20 @@ class OTTOMemory:
         if self._metrics:
             self._metrics.trails_deposited += 1
 
+    # Normalization constant for trail strength calculation.
+    # Higher K means more deposits needed to approach strength=1.0.
+    _TRAIL_STRENGTH_K: int = 5
+
     def follow_trail(self, action: str) -> TrailStrength:
         """
         Follow a procedural trail to get strength.
+
+        Computes composite strength from success/failure deposit counts:
+          strength = (total / (total + K)) * (successes / total)
+
+        This ensures:
+          - More deposits → higher strength (asymptotic to 1.0)
+          - Failures reduce the success ratio → lower strength
 
         Used for auto-approval decisions.
 
@@ -484,16 +543,31 @@ class OTTOMemory:
         try:
             from otto.trails.models import TrailQuery, TrailType
 
-            # Query for success trails
-            query = TrailQuery(
+            # Query success trails
+            success_query = TrailQuery(
                 trail_type=TrailType.PATTERN,
                 path=action,
                 signal="success",
             )
+            success_trails = self._trail_store.query(success_query)
 
-            trails = self._trail_store.query(query)
+            # Query failure trails
+            failure_query = TrailQuery(
+                trail_type=TrailType.PATTERN,
+                path=action,
+                signal="failure",
+            )
+            failure_trails = self._trail_store.query(failure_query)
 
-            if not trails:
+            success_trail = success_trails[0] if success_trails else None
+            failure_trail = failure_trails[0] if failure_trails else None
+
+            # Count deposits (reinforced_count starts at 0, so +1 for initial)
+            success_count = (success_trail.reinforced_count + 1) if success_trail else 0
+            failure_count = (failure_trail.reinforced_count + 1) if failure_trail else 0
+            total = success_count + failure_count
+
+            if total == 0:
                 return TrailStrength(
                     action=action,
                     signal="success",
@@ -502,19 +576,62 @@ class OTTOMemory:
                     last_deposit=None,
                 )
 
-            # Get strongest trail
-            trail = max(trails, key=lambda t: t.strength)
+            # Composite strength: quantity * quality
+            K = self._TRAIL_STRENGTH_K
+            quantity_factor = total / (total + K)
+            quality_factor = success_count / total
+            strength = quantity_factor * quality_factor
+
+            last_deposit = None
+            if success_trail:
+                last_deposit = success_trail.deposited_at
+            elif failure_trail:
+                last_deposit = failure_trail.deposited_at
 
             return TrailStrength(
                 action=action,
-                signal=trail.signal,
-                strength=trail.strength,
-                reinforced_count=trail.reinforced_count,
-                last_deposit=trail.deposited_at,
+                signal="success",
+                strength=strength,
+                reinforced_count=total,
+                last_deposit=last_deposit,
             )
 
         except ImportError:
             return self._trail_store.get_strength_mock(action)
+
+    def query_trails(self) -> List[TrailStrength]:
+        """
+        Query all active trails.
+
+        Returns:
+            List of TrailStrength for all known trail paths,
+            sorted by action name for determinism.
+        """
+        try:
+            from otto.trails.models import TrailQuery, TrailType
+
+            query = TrailQuery(trail_type=TrailType.PATTERN)
+            trails = self._trail_store.query(query)
+
+            # Group by path, take strongest per path
+            by_path: Dict[str, Any] = {}
+            for t in trails:
+                if t.path not in by_path or t.strength > by_path[t.path].strength:
+                    by_path[t.path] = t
+
+            return sorted([
+                TrailStrength(
+                    action=t.path,
+                    signal=t.signal,
+                    strength=t.strength,
+                    reinforced_count=t.reinforced_count,
+                    last_deposit=t.deposited_at,
+                )
+                for t in by_path.values()
+            ], key=lambda ts: ts.action)
+
+        except ImportError:
+            return self._trail_store.query_trails_mock()
 
     # =========================================================================
     # Contextual Memory (Where You Are) - via EWM + LIVRPS
@@ -884,7 +1001,7 @@ class OTTOMemory:
         """
         Query knowledge by trigger match.
 
-        Per [He2025]: Results sorted deterministically by path.
+        Results sorted deterministically by path.
 
         Args:
             query: Search query
@@ -917,7 +1034,7 @@ class OTTOMemory:
         """
         Run trail decay if needed.
 
-        Per [He2025]: Deterministic decay using fixed half-life.
+        Deterministic decay using fixed half-life.
 
         Args:
             force: Run even if recent decay occurred
@@ -1030,7 +1147,7 @@ class MockTrailStore:
         """
         Query stored episodes from mock trail storage.
 
-        [He2025] Fixed order: sorted by timestamp, newest first.
+        Fixed order: sorted by timestamp, newest first.
         """
         logger.info(f"[MEMORY DEBUG] query_mock called. Total trails in store: {len(self._trails)}")
         for i, t in enumerate(self._trails):
@@ -1081,16 +1198,47 @@ class MockTrailStore:
         return episodes
 
     def get_strength_mock(self, action: str) -> TrailStrength:
-        matching = [t for t in self._trails if t["path"] == action and t["signal"] == "success"]
-        if matching:
-            return TrailStrength(
-                action=action,
-                signal="success",
-                strength=matching[-1]["strength"],
-                reinforced_count=len(matching),
-                last_deposit=matching[-1]["deposited_at"],
+        successes = [t for t in self._trails if t["path"] == action and t["signal"] == "success"]
+        failures = [t for t in self._trails if t["path"] == action and t["signal"] == "failure"]
+        success_count = len(successes)
+        failure_count = len(failures)
+        total = success_count + failure_count
+
+        if total == 0:
+            return TrailStrength(action=action, signal="success", strength=0.0, reinforced_count=0, last_deposit=None)
+
+        # Same composite formula as OTTOMemory.follow_trail
+        K = OTTOMemory._TRAIL_STRENGTH_K
+        quantity_factor = total / (total + K)
+        quality_factor = success_count / total
+        strength = quantity_factor * quality_factor
+
+        last = successes[-1]["deposited_at"] if successes else (failures[-1]["deposited_at"] if failures else None)
+        return TrailStrength(
+            action=action,
+            signal="success",
+            strength=strength,
+            reinforced_count=total,
+            last_deposit=last,
+        )
+
+    def query_trails_mock(self) -> List[TrailStrength]:
+        """Return all unique trails as TrailStrength objects."""
+        by_path: Dict[str, Dict] = {}
+        for t in self._trails:
+            path = t["path"]
+            if path not in by_path or t.get("strength", 0) > by_path[path].get("strength", 0):
+                by_path[path] = t
+        return sorted([
+            TrailStrength(
+                action=path,
+                signal=t.get("signal", "success"),
+                strength=t.get("strength", 0.0),
+                reinforced_count=len([x for x in self._trails if x["path"] == path]),
+                last_deposit=t.get("deposited_at"),
             )
-        return TrailStrength(action=action, signal="success", strength=0.0, reinforced_count=0, last_deposit=None)
+            for path, t in by_path.items()
+        ], key=lambda ts: ts.action)
 
 
 class MockSubstrate:
@@ -1193,7 +1341,7 @@ class KnowledgeGraph:
     """
     Knowledge Graph for O(1) factual retrieval.
 
-    Per [He2025]: Deterministic retrieval, fixed evaluation order.
+    Deterministic retrieval, fixed evaluation order.
 
     Example:
         >>> kg = KnowledgeGraph()
@@ -1223,7 +1371,7 @@ class KnowledgeGraph:
         self._register(KnowledgePrim(
             path="/Knowledge/OTTO/Trails",
             summary="Pheromone trail system for procedural memory",
-            content="Trails record action outcomes with decay (7-day half-life). Trail strength >= 0.8 enables auto-approval. Deposits are deterministic per [He2025].",
+            content="Trails record action outcomes with decay (7-day half-life). Trail strength >= 0.8 enables auto-approval. Deposits are deterministic.",
             triggers=["pheromone", "trails", "auto-approval", "trail strength"],
             confidence=0.95,
             domain="otto",
@@ -1240,7 +1388,7 @@ class KnowledgeGraph:
 
         self._register(KnowledgePrim(
             path="/Knowledge/He2025/Determinism",
-            summary="ThinkingMachines [He2025] determinism principles",
+            summary="ThinkingMachines determinism principles",
             content="Fixed seeds, fixed evaluation order, sorted iteration, Kahan summation, COGNITIVE_TILE_SIZE=32. Same inputs -> same outputs.",
             triggers=["he2025", "determinism", "thinkingmachines", "batch invariance"],
             confidence=0.95,
@@ -1267,7 +1415,7 @@ class KnowledgeGraph:
         """
         Query knowledge prims by trigger match.
 
-        Per [He2025]: Results sorted deterministically by path.
+        Results sorted deterministically by path.
         """
         start = datetime.now()
         results = []
@@ -1315,7 +1463,7 @@ class TrailDecayWorker:
     """
     Worker for decaying trail strength over time.
 
-    Per [He2025]:
+   :
     - Deterministic decay formula
     - Kahan summation for aggregations
     - COGNITIVE_TILE_SIZE=32 for batch processing
@@ -1334,7 +1482,7 @@ class TrailDecayWorker:
 
         Formula: factor = 0.5 ** (hours_elapsed / half_life_hours)
 
-        Per [He2025]: Deterministic - same input always gives same output.
+        Deterministic - same input always gives same output.
         """
         if hours_elapsed <= 0:
             return 1.0
@@ -1349,7 +1497,7 @@ class TrailDecayWorker:
         """
         Decay all trails in the store.
 
-        Per [He2025]:
+       :
         - Process in batches of COGNITIVE_TILE_SIZE
         - Sort by path for deterministic order
         - Use Kahan summation for aggregate calculations
@@ -1363,7 +1511,7 @@ class TrailDecayWorker:
         try:
             from otto.trails.models import TrailQuery, TrailType
 
-            # Query all trails (sorted by path per [He2025])
+            # Query all trails (sorted by path)
             query = TrailQuery(trail_type=TrailType.PATTERN)
             all_trails = trail_store.query(query)
 
@@ -1428,7 +1576,7 @@ class MemoryMetrics:
     """
     Metrics for memory system instrumentation.
 
-    Per [He2025]: All counters are deterministic - no sampling.
+    All counters are deterministic - no sampling.
     """
     # Episode metrics
     episodes_recorded: int = 0
@@ -1464,7 +1612,7 @@ class MemoryMetrics:
 
         total = 0.0
         compensation = 0.0
-        for lat in sorted(self._latencies):  # Sorted per [He2025]
+        for lat in sorted(self._latencies):  # Sorted
             y = lat - compensation
             t = total + y
             compensation = (t - total) - y

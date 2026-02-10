@@ -8,7 +8,7 @@ Tests the wiring of SubstrateProtection encryption to actual storage:
 - Trail database encryption
 - CLI encryption commands
 
-[He2025] Compliance:
+Determinism:
     - Deterministic encryption (fixed parameters)
     - Sorted iteration for deterministic JSON
     - Fixed seeds where applicable
@@ -189,7 +189,7 @@ class TestCLIEncryptionCommands:
 
 
 class TestEncryptionDeterminism:
-    """Test [He2025] compliance for encryption determinism."""
+    """Test Determinism for encryption determinism."""
 
     def test_protection_module_uses_fixed_algorithms(self):
         """Protection module uses fixed encryption algorithms."""

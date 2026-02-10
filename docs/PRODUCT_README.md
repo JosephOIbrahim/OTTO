@@ -12,7 +12,7 @@ The Framework Ottotor provides a deterministic, reproducible cognitive routing s
 - **V5 Intervention Experts**: protector, decomposer, restorer, redirector, acknowledger, guide, executor
 - **Safety Floors**: Hard minimums (protector: 10%, decomposer: 5%, restorer: 5%)
 - **5-Phase Routing**: ACTIVATE → WEIGHT → BOUND → SELECT → UPDATE
-- **ThinkingMachines Compliance**: Batch-invariant execution [He2025]
+- **Determinism**: Batch-invariant execution
 - **USD Payload Architecture**: Lazy-loadable framework modules
 
 ## Installation
@@ -125,7 +125,7 @@ print(f"Strategy: {strategy['strategy']}")  # fast/weighted/thorough
 1. **No Automatic Self-Improvement**: Weights are static, calibrated manually. This preserves:
    - Determinism (same signals → same routing)
    - Auditability (weights don't change unexpectedly)
-   - ThinkingMachines compliance [He2025]
+   - Determinism
 
 2. **Safety Floors are HARD**: Protector can never drop below 10% weight. This ensures safety experts are always available.
 
@@ -178,7 +178,7 @@ The principles layer is NEVER compressed. Create `~/.framework-ottotor/principle
 ## References
 
 - USD Cognitive Substrate: `~/.claude/substrate/cognitive_substrate_v4.usda`
-- ThinkingMachines [He2025]: https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+- https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
 - V5 Framework Synthesis: `V5_FRAMEWORK_SYNTHESIS.md`
 
 ---

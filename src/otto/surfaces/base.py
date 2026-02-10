@@ -8,7 +8,7 @@ A surface is the interface between a user and the system.
 Different surfaces (CLI, desktop, voice, API) have different
 interaction patterns but share the same core interface.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed message normalization
 - Deterministic rendering order
 - Sorted metadata iteration
@@ -27,7 +27,7 @@ from typing import Any, Callable, Dict, Final, List, Optional, TypeVar
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# Constants - [He2025] Compliance
+# Constants - Determinism
 # ============================================================================
 
 SURFACE_SEED: Final[int] = 0x50BFAC3
@@ -403,7 +403,7 @@ class Surface(ABC):
     def receive_input(self, raw_input: str) -> InputContext:
         """Receive and process user input.
 
-        Per [He2025]: Deterministic input processing.
+        Deterministic input processing.
 
         Args:
             raw_input: Raw input from user
@@ -430,7 +430,7 @@ class Surface(ABC):
     def send_response(self, response: SurfaceResponse) -> None:
         """Send response to user.
 
-        Per [He2025]: Deterministic response handling.
+        Deterministic response handling.
 
         Args:
             response: Response to send
@@ -517,7 +517,7 @@ class Surface(ABC):
         """Start a new session with goal.
 
         Uses unified memory interface for cross-session persistence.
-        Per [He2025]: Deterministic session initialization.
+        Deterministic session initialization.
 
         Args:
             goal: Session goal
@@ -541,7 +541,7 @@ class Surface(ABC):
         """End current session with handoff data.
 
         Persists session state to memory for cross-session continuity.
-        Per [He2025]: Deterministic session termination.
+        Deterministic session termination.
 
         Args:
             progress: List of completed items
@@ -567,7 +567,7 @@ class Surface(ABC):
         """Increment session exchange count.
 
         Called after each exchange for time tracking.
-        Per [He2025]: Deterministic exchange counting.
+        Deterministic exchange counting.
         """
         memory = self._get_memory()
 
@@ -615,7 +615,7 @@ class Surface(ABC):
     ) -> None:
         """Record an interaction to memory as episode.
 
-        Per [He2025]: Deterministic episode recording.
+        Deterministic episode recording.
 
         Args:
             input_text: User input

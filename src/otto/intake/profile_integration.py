@@ -8,7 +8,7 @@ The intake game uses descriptive trait names (e.g., "night_owl", "deep_work")
 while the Profile dataclass uses normalized vocabularies from the cognitive
 substrate spec (e.g., "late", "deep").
 
-[He2025] Compliance:
+Determinism:
 - Trait mapping uses sorted key iteration
 - All float values use round(value, 6)
 - Deterministic conversion functions
@@ -68,7 +68,7 @@ def map_chronotype(value: str) -> str:
     """
     Map intake chronotype to Profile vocabulary.
 
-    [He2025]: Uses lookup table for determinism.
+    Uses lookup table for determinism.
     """
     return CHRONOTYPE_MAP.get(value, "flexible")
 
@@ -77,7 +77,7 @@ def map_work_style(value: str) -> str:
     """
     Map intake work_style to Profile vocabulary.
 
-    [He2025]: Uses lookup table for determinism.
+    Uses lookup table for determinism.
     """
     return WORK_STYLE_MAP.get(value, "flow")
 
@@ -86,7 +86,7 @@ def map_stress_response(value: str) -> str:
     """
     Map intake stress_response to Profile vocabulary.
 
-    [He2025]: Uses lookup table for determinism.
+    Uses lookup table for determinism.
     """
     return STRESS_RESPONSE_MAP.get(value, "pause")
 
@@ -95,16 +95,16 @@ def map_intervention_style(value: str) -> str:
     """
     Map intake intervention_style or otto_role to Profile vocabulary.
 
-    [He2025]: Uses lookup table for determinism.
+    Uses lookup table for determinism.
     """
     return INTERVENTION_STYLE_MAP.get(value, "gentle")
 
 
 def normalize_float(value: float) -> float:
     """
-    Normalize float to 0.0-1.0 range with [He2025] precision.
+    Normalize float to 0.0-1.0 range with precision.
 
-    [He2025] Compliance: Uses round(value, 6) for float comparison.
+    Determinism: Uses round(value, 6) for float comparison.
     """
     clamped = max(0.0, min(1.0, value))
     return round(clamped, 6)
@@ -116,7 +116,7 @@ def derive_focus_level(traits: Dict[str, Any]) -> str:
 
     Uses focus_duration_minutes and context_switch_cost to determine focus level.
 
-    [He2025] Compliance: Fixed thresholds, deterministic branching.
+    Determinism: Fixed thresholds, deterministic branching.
     """
     duration = traits.get("focus_duration_minutes", 45)
     switch_cost = traits.get("context_switch_cost", 0.5)
@@ -136,7 +136,7 @@ def derive_tangent_tendency(traits: Dict[str, Any]) -> float:
 
     Based on work_style and context_switch_cost.
 
-    [He2025] Compliance: Fixed formula, round(6).
+    Determinism: Fixed formula, round(6).
     """
     work_style = traits.get("work_style", "flow")
     switch_cost = traits.get("context_switch_cost", 0.5)
@@ -160,7 +160,7 @@ def derive_perfectionism_tendency(traits: Dict[str, Any]) -> float:
 
     Based on decision_fatigue_sensitivity and overwhelm_threshold.
 
-    [He2025] Compliance: Fixed formula, round(6).
+    Determinism: Fixed formula, round(6).
     """
     fatigue = traits.get("decision_fatigue_sensitivity", 0.5)
     overwhelm = traits.get("overwhelm_threshold", 0.5)
@@ -176,7 +176,7 @@ def derive_interruption_tolerance(traits: Dict[str, Any]) -> float:
 
     Based on notification_sensitivity and interruption_recovery_minutes.
 
-    [He2025] Compliance: Fixed formula, round(6).
+    Determinism: Fixed formula, round(6).
     """
     sensitivity = traits.get("notification_sensitivity", 0.5)
     recovery_mins = traits.get("interruption_recovery_minutes", 5)
@@ -200,7 +200,7 @@ def convert_intake_to_profile(intake_traits: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary compatible with Profile.from_dict() and ProfileManager.load_intake_profile()
 
-    [He2025] Compliance:
+    Determinism:
     - Sorted key iteration for determinism
     - All floats use round(6)
     - Fixed mapping tables
@@ -247,7 +247,7 @@ def convert_intake_to_profile(intake_traits: Dict[str, Any]) -> Dict[str, Any]:
     profile_data["body_check_enabled"] = True
     profile_data["crash_prediction_enabled"] = True
 
-    # Ensure sorted keys for [He2025] determinism
+    # Ensure sorted keys for determinism
     return {k: profile_data[k] for k in sorted(profile_data.keys())}
 
 
@@ -267,7 +267,7 @@ def load_intake_to_profile_manager(
     Returns:
         Resolved Profile with intake data loaded
 
-    [He2025] Compliance:
+    Determinism:
     - Deterministic trait conversion
     - LIVRPS layer priority preserved
     """

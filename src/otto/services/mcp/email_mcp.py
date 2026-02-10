@@ -5,7 +5,7 @@ Email MCP Server
 MCP server for email operations.
 Integrates with Gmail, Outlook, and IMAP providers.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Deterministic email ordering (by date)
 - Fixed threading model
 - Sorted iteration

@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback } from 'react'
  * - Convergence (RC^+xi) tracking
  * - Cognitive state (LIVRPS composition)
  *
- * ThinkingMachines [He2025] batch-invariance compliant
+ * Batch-invariance
  */
 
 // ============================================================================
@@ -343,7 +343,7 @@ function SimplifiedDashboard() {
       {/* Header */}
       <header className="maeda-header">
         <h1 className="maeda-title">Orchestra</h1>
-        <span className="maeda-subtitle">7-Agent Cognitive System | ThinkingMachines [He2025]</span>
+        <span className="maeda-subtitle">7-Agent Cognitive System | ThinkingMachines</span>
       </header>
 
       <main className="maeda-main">
@@ -617,7 +617,7 @@ function SimplifiedDashboard() {
       <footer className="maeda-footer">
         <span>Seed: {seed}</span>
         <span>Uptime: {formatUptime(uptime)}</span>
-        <span>ThinkingMachines [He2025]</span>
+        <span>ThinkingMachines</span>
       </footer>
     </div>
   )

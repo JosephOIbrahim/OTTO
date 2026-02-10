@@ -1,11 +1,11 @@
 """
-[He2025]-Compliant Synthetic Data Generator
+Deterministic Synthetic Data Generator
 ============================================
 
 Generates labeled test messages for state detection benchmarking.
 All operations use fixed seeds and sorted iterations for determinism.
 
-[He2025] Compliance:
+Determinism:
 - Fixed seed (0xCAFEBABE) for all random operations
 - Sorted key iteration for dict/set operations
 - round(x, 6) for all float values
@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Final
 from dataclasses import dataclass, asdict
 
-# [He2025] Fixed seed for reproducibility
+# Fixed seed for reproducibility
 _DETERMINISM_SEED: Final[int] = 0xCAFEBABE
 
 # Signal patterns from PRISM detector - maps state to example messages
@@ -139,7 +139,7 @@ def generate_message(state: str, rng: random.Random, add_context: bool = False) 
     """
     Generate a message for a given state.
 
-    [He2025] Compliance:
+    Determinism:
     - Uses provided RNG (caller controls seed)
     - Deterministic selection from sorted pattern list
     """
@@ -163,7 +163,7 @@ def generate_dataset(n_per_state: int = 35, include_context: bool = True) -> lis
     """
     Generate balanced dataset across all states.
 
-    [He2025] Compliance:
+    Determinism:
     - Sorted iteration over states
     - Fixed seed RNG for all random operations
     - Deterministic sample ordering
@@ -178,7 +178,7 @@ def generate_dataset(n_per_state: int = 35, include_context: bool = True) -> lis
     rng = create_deterministic_rng()
     samples: list[Sample] = []
 
-    # [He2025] Sorted iteration over states
+    # Sorted iteration over states
     for state in sorted(PATTERNS.keys()):
         for i in range(n_per_state):
             # Create sample with deterministic ID
@@ -187,12 +187,12 @@ def generate_dataset(n_per_state: int = 35, include_context: bool = True) -> lis
                 message=generate_message(state, rng, add_context=include_context),
                 annotated_state=state,
                 annotated_expert=STATE_TO_EXPERT[state],
-                confidence=round(0.85, 6),  # [He2025] fixed precision
+                confidence=round(0.85, 6),  # fixed precision
                 source="synthetic"
             )
             samples.append(sample)
 
-    # [He2025] Deterministic shuffle with same RNG
+    # Deterministic shuffle with same RNG
     rng.shuffle(samples)
 
     return samples
@@ -274,7 +274,7 @@ def verify_determinism(n_trials: int = 10) -> bool:
     """
     Verify that dataset generation is deterministic.
 
-    [He2025] Compliance test: Same seed produces same output.
+    Determinism test: Same seed produces same output.
     """
     import hashlib
 
@@ -288,10 +288,10 @@ def verify_determinism(n_trials: int = 10) -> bool:
 
     unique = set(hashes)
     if len(unique) == 1:
-        print(f"[He2025] DETERMINISM VERIFIED: {n_trials} trials, hash={hashes[0][:16]}...")
+        print(f"DETERMINISM VERIFIED: {n_trials} trials, hash={hashes[0][:16]}...")
         return True
     else:
-        print(f"[He2025] DETERMINISM FAILED: {len(unique)} unique hashes in {n_trials} trials")
+        print(f"DETERMINISM FAILED: {len(unique)} unique hashes in {n_trials} trials")
         return False
 
 
@@ -330,7 +330,7 @@ def main():
     print(f"  Edge cases: {len(edge_cases)}")
     print(f"  Total: {len(combined)}")
     print(f"  Determinism seed: {hex(_DETERMINISM_SEED)}")
-    print(f"  [He2025] Compliant: Yes")
+    print(f"  Determinism: Yes")
 
 
 if __name__ == "__main__":

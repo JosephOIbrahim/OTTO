@@ -18,7 +18,7 @@ N-of-M threshold cryptography for distributed trust:
    - Generate keys with no single party having full key
    - Secure key ceremony protocol
 
-[He2025] Compliance:
+Determinism:
 - FIXED finite field parameters (prime modulus)
 - DETERMINISTIC polynomial evaluation
 - Pre-computed Lagrange coefficients
@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 # Constants and Field Arithmetic
 # =============================================================================
 
-# [He2025] FIXED: Prime modulus for finite field GF(p)
+# FIXED: Prime modulus for finite field GF(p)
 # Using a 256-bit prime for security equivalent to AES-256
 # This is the secp256k1 curve order (also used in Bitcoin)
 PRIME = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
@@ -67,7 +67,7 @@ def mod_inverse(a: int, p: int = PRIME) -> int:
     """
     Compute modular inverse using extended Euclidean algorithm.
 
-    [He2025] DETERMINISTIC: Fixed algorithm, same input → same output.
+    DETERMINISTIC: Fixed algorithm, same input → same output.
 
     Args:
         a: Number to invert
@@ -115,7 +115,7 @@ class Share:
     """
     A single share of a secret.
 
-    [He2025] FROZEN: Immutable share.
+    Immutable: Immutable share.
     """
     index: int          # Share index (1-based, never 0)
     value: int          # Share value in GF(p)
@@ -169,7 +169,7 @@ class PartialSignature:
     """
     A partial signature from one share holder.
 
-    [He2025] FROZEN: Immutable once created.
+    Immutable: Immutable once created.
     """
     share_index: int
     signature: bytes
@@ -199,7 +199,7 @@ class ShamirSecretSharing:
     - Any t shares can reconstruct the secret
     - Fewer than t shares reveal nothing about the secret
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED prime field (256-bit)
     - DETERMINISTIC polynomial evaluation
     - FIXED Lagrange interpolation
@@ -301,7 +301,7 @@ class ShamirSecretSharing:
         """
         Reconstruct secret from shares using Lagrange interpolation.
 
-        [He2025] DETERMINISTIC: Same shares → same secret.
+        DETERMINISTIC: Same shares → same secret.
 
         Args:
             shares: List of at least threshold shares
@@ -336,7 +336,7 @@ class ShamirSecretSharing:
         """
         Evaluate polynomial at point x using Horner's method.
 
-        [He2025] DETERMINISTIC: Fixed evaluation order.
+        DETERMINISTIC: Fixed evaluation order.
         """
         result = 0
         for coef in reversed(coefficients):
@@ -347,7 +347,7 @@ class ShamirSecretSharing:
         """
         Lagrange interpolation at point x.
 
-        [He2025] DETERMINISTIC: Fixed interpolation algorithm.
+        DETERMINISTIC: Fixed interpolation algorithm.
 
         Formula: L(x) = sum_i y_i * prod_{j!=i} (x - x_j) / (x_i - x_j)
         """
@@ -390,7 +390,7 @@ class ThresholdSignatureScheme:
     - Any N parties can collaborate to sign
     - No single party knows the full private key
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED signature algorithm (Ed25519)
     - DETERMINISTIC signature combination
     - Pre-computed Lagrange coefficients
@@ -631,7 +631,7 @@ class ThresholdSignatureScheme:
         """
         Compute Lagrange coefficients for signature combination.
 
-        [He2025] DETERMINISTIC: Fixed computation.
+        DETERMINISTIC: Fixed computation.
 
         Returns coefficients lambda_i such that:
         secret = sum(lambda_i * share_i)
@@ -666,7 +666,7 @@ class ThresholdAPIKeyManager:
     - Key operations require M-of-N parties
     - Compromise of < M shares reveals nothing
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED threshold scheme parameters
     - DETERMINISTIC key derivation
     - Auditable key operations
@@ -888,7 +888,7 @@ class KeyCeremonyManager:
 
     Ensures proper distribution and verification of threshold key shares.
 
-    [He2025] Compliance:
+    Determinism:
     - FIXED ceremony protocol
     - DETERMINISTIC state transitions
     - Auditable ceremony steps

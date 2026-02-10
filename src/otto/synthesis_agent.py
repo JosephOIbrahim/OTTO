@@ -16,7 +16,7 @@ Synthesis Modes:
 - RESOLVE: Resolve conflicts between outputs
 - SUMMARIZE: Condense multiple outputs into summary
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed combination order (LIVRPS)
 - Deterministic conflict resolution
 - Reproducible synthesis

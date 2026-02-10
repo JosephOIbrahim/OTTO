@@ -14,7 +14,7 @@ Features:
 - Remediation recommendations
 - Historical trend tracking
 
-[He2025] Compliance:
+Determinism:
 - FIXED scoring algorithms (no runtime variation)
 - Deterministic assessments (same state → same score)
 - Bounded operations (max checks per assessment)
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Constants (FIXED - [He2025] Compliant)
+# Constants (FIXED - Determinism)
 # =============================================================================
 
 # Score thresholds for grades
@@ -387,7 +387,7 @@ class SecurityAssessor:
         components: Dict[str, ComponentScore] = {}
         all_issues: List[SecurityIssue] = []
 
-        # [He2025] Use sorted() for deterministic iteration order
+        # Use sorted() for deterministic iteration order
         for component_name in sorted(COMPONENT_WEIGHTS.keys()):
             results = component_results.get(component_name, [])
 

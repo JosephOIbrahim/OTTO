@@ -326,7 +326,7 @@ class DetectionPattern:
     signal_type: CognitiveSignal
     base_confidence: float
 
-# MUST be sorted by signal_type for [He2025] compliance
+# MUST be sorted by signal_type for determinism (inspired by [He2025])
 PATTERNS: list[DetectionPattern] = sorted([
     DetectionPattern(r"(?i)(too much|overwhelm|can't handle)", CognitiveSignal.OVERWHELMED, 0.8),
     DetectionPattern(r"(?i)(stuck|blocked|don't know)", CognitiveSignal.STUCK, 0.7),
@@ -584,11 +584,14 @@ EFFORT_MAP = {
 
 ---
 
-## 11. Determinism: [He2025] Compliance
+## 11. Determinism (Inspired by [He2025])
+
+OTTO applies [He2025] principles at the application layer (deterministic routing,
+sorted iteration, Kahan summation), not at GPU kernel level.
 
 From "Defeating Non-determinism in LLM Inference" (He, 2025):
 
-| Requirement | Implementation |
+| Principle | Implementation |
 |-------------|---------------|
 | Fixed evaluation order | NEXUS phases 1→2→3→4→5, never reorder |
 | Sorted iteration | `sorted(dict.items())` everywhere, never bare `dict.items()` |

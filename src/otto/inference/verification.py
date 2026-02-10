@@ -10,7 +10,7 @@ This module provides probabilistic detection of non-determinism by:
 3. Using consensus mechanisms when divergence occurs
 4. Tracking divergence patterns for analysis
 
-[He2025] Context:
+Context:
 Tier 2 cannot GUARANTEE determinism (that requires kernel-level control),
 but it can DETECT when non-determinism occurs, enabling:
 - Flagging unreliable results

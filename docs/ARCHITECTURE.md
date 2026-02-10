@@ -2,7 +2,7 @@
 
 **Technical deep-dive into Otto's cognitive ottotion system.**
 
-Based on ThinkingMachines [He2025] batch-invariance and USD composition semantics.
+Based on ThinkingMachines batch-invariance and USD composition semantics.
 
 > **Reference:** He, Horace and Thinking Machines Lab, "Defeating Nondeterminism in LLM Inference",
 > Thinking Machines Lab: Connectionism, Sep 2025.
@@ -121,7 +121,7 @@ Same input → Same routing → Same output.
 5. UPDATE    → RC^+xi convergence tracking (xi_n = ||A_{n+1} - A_n||_2)
 ```
 
-### ThinkingMachines [He2025] Compliance
+### ThinkingMachines Determinism
 
 | Guarantee | Implementation |
 |-----------|----------------|

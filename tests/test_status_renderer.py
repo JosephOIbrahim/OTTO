@@ -392,7 +392,7 @@ class TestConvenienceFunctions:
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_render_deterministic(self, renderer):
         """Same state produces same output."""

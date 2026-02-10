@@ -1,4 +1,4 @@
-# OTTO OS Public REST API - [He2025] Consistency Report
+# OTTO OS Public REST API - Consistency Report
 
 **Generated**: 2026-01-29
 **Reference**: He, Horace and Thinking Machines Lab, "Defeating Nondeterminism in LLM Inference", Sep 2025
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The OTTO OS Public REST API has been verified for [He2025] consistency. Two issues were found and fixed during this audit:
+The OTTO OS Public REST API has been verified for consistency. Two issues were found and fixed during this audit:
 
 | Issue | Location | Status |
 |-------|----------|--------|
@@ -19,7 +19,7 @@ The OTTO OS Public REST API has been verified for [He2025] consistency. Two issu
 
 ---
 
-## [He2025] Principles Verified
+## Principles Verified
 
 ### 1. Fixed Evaluation Order
 
@@ -77,7 +77,7 @@ The OTTO OS Public REST API has been verified for [He2025] consistency. Two issu
 
 ## Expected Variance (Per Design)
 
-These fields are documented to vary per-request. This is NOT a violation of [He2025]:
+These fields are documented to vary per-request. This is NOT a violation of:
 
 | Field | Location | Reason |
 |-------|----------|--------|
@@ -120,7 +120,7 @@ def to_json(self, indent: Optional[int] = None) -> str:
     """
     Convert to JSON string.
 
-    [He2025] Compliance: sort_keys=True ensures deterministic serialization.
+    Deterministic: sort_keys=True ensures deterministic serialization.
     """
     return json.dumps(self.to_dict(), sort_keys=True, indent=indent)
 ```
@@ -134,7 +134,7 @@ body=json.dumps(spec, indent=2),
 
 **After**:
 ```python
-# [He2025] Compliance: sort_keys=True for deterministic serialization
+# Deterministic: sort_keys=True for deterministic serialization
 body=json.dumps(spec, sort_keys=True, indent=2),
 ```
 
@@ -160,7 +160,7 @@ pytest tests/ -v
 
 ## Conclusion
 
-The OTTO OS Public REST API is now fully [He2025] compliant:
+The OTTO OS Public REST API is now fully Determinism:
 
 1. **Fixed evaluation order** for routes and middleware
 2. **Deterministic serialization** with `sort_keys=True` everywhere

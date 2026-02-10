@@ -16,8 +16,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from otto.core.determinism.kahan import KahanAccumulator, kahan_sum
-from otto.core.determinism.seeds import (
+from otto_v3.core.determinism.kahan import KahanAccumulator, kahan_sum
+from otto_v3.core.determinism.seeds import (
     ALL_SEEDS,
     BATCH_SEED,
     DECAY_SEED,
@@ -26,8 +26,8 @@ from otto.core.determinism.seeds import (
     TEST_SEED,
     TRAIL_SEED,
 )
-from otto.core.pheromones.decay import DecayEngine
-from otto.core.pheromones.trails import Trail, TrailManager
+from otto_v3.core.pheromones.decay import DecayEngine
+from otto_v3.core.pheromones.trails import Trail, TrailManager
 
 
 # ============================================================
@@ -154,7 +154,7 @@ class TestKahanAccumulator:
 # ============================================================
 
 class TestNamedSeeds:
-    """[He2025] named seed constants."""
+    """named seed constants."""
 
     def test_seeds_are_ints(self) -> None:
         for name, value in ALL_SEEDS:
@@ -169,7 +169,7 @@ class TestNamedSeeds:
         assert len(values) == len(set(values)), "Seed values must be unique"
 
     def test_all_seeds_tuple_sorted(self) -> None:
-        """ALL_SEEDS is sorted by name [He2025]."""
+        """ALL_SEEDS is sorted by name."""
         names = [name for name, _ in ALL_SEEDS]
         assert names == sorted(names)
 
@@ -302,7 +302,7 @@ class TestTrailManagerFollow:
         assert strengths == sorted(strengths, reverse=True)
 
     def test_follow_tiebreaker_by_action(self) -> None:
-        """Equal strength → sorted by action name [He2025]."""
+        """Equal strength → sorted by action name."""
         tm = TrailManager()
         tm.deposit("beta", 0.5, "ctx")
         tm.deposit("alpha", 0.5, "ctx")
@@ -650,11 +650,11 @@ class TestContextIsolation:
 
 
 # ============================================================
-# Determinism [He2025]
+# Determinism
 # ============================================================
 
 class TestDeterminism:
-    """[He2025] determinism for the pheromone trail system."""
+    """determinism for the pheromone trail system."""
 
     def test_follow_deterministic_100x(self) -> None:
         """follow() is deterministic over 100 repetitions."""
@@ -714,7 +714,7 @@ class TestPackageImports:
     """Verify public API is importable from package."""
 
     def test_import_pheromones(self) -> None:
-        from otto.core.pheromones import (
+        from otto_v3.core.pheromones import (
             DecayEngine,
             Trail,
             TrailKey,
@@ -725,7 +725,7 @@ class TestPackageImports:
         assert DecayEngine is not None
 
     def test_import_determinism(self) -> None:
-        from otto.core.determinism import (
+        from otto_v3.core.determinism import (
             DETERMINISM_SEED,
             KahanAccumulator,
             TRAIL_SEED,

@@ -8,7 +8,7 @@ Key insight:
 - Hyperfocus → Stay out of the way
 - Match first, then gentle lift
 
-[He2025] ThinkingMachines Compliance:
+Determinism:
 - Fixed energy profiles
 - Deterministic response modifications
 - Same inputs always produce same outputs
@@ -42,7 +42,7 @@ class EnergyProfile:
     celebration_style: str  # subtle, moderate, enthusiastic, minimal
 
 
-# [He2025] Fixed energy profiles
+# Fixed energy profiles
 ENERGY_PROFILES: Final[dict[EnergyLevel, EnergyProfile]] = {
     EnergyLevel.DEPLETED: EnergyProfile(
         level=EnergyLevel.DEPLETED,
@@ -209,7 +209,7 @@ def match_energy(
     """
     Match response to user's energy level.
 
-    [He2025] Fixed transformation order:
+    Fixed transformation order:
     1. Get energy profile
     2. Add breathing room if needed
     3. Truncate to appropriate length

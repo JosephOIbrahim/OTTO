@@ -62,7 +62,7 @@ class SecurityHeadersMiddleware(Middleware):
     """
     Add security headers to all responses.
 
-    [He2025] Compliance: FIXED headers, no runtime variation.
+    Determinism: FIXED headers, no runtime variation.
     """
     HEADERS = {
         "X-Content-Type-Options": "nosniff",
@@ -128,7 +128,7 @@ AGENT_SPAWN_SCHEMA = {
 """
 Prometheus metrics for OTTO API.
 
-[He2025] Compliance: FIXED metric names, DETERMINISTIC labels.
+Determinism: FIXED metric names, DETERMINISTIC labels.
 """
 
 from prometheus_client import Counter, Histogram, Gauge, generate_latest
@@ -247,7 +247,7 @@ class IdempotencyMiddleware(Middleware):
     """
     Handle idempotency keys for safe retries.
 
-    [He2025] Compliance: DETERMINISTIC key matching, FIXED TTL.
+    Determinism: DETERMINISTIC key matching, FIXED TTL.
 
     Usage:
         Client sends: X-Idempotency-Key: <uuid>
@@ -296,7 +296,7 @@ class IdempotencyMiddleware(Middleware):
 
 def create_api_middleware(...) -> MiddlewareChain:
     """
-    Order is FIXED (per ThinkingMachines [He2025]):
+    Order is FIXED (per ThinkingMachines):
     1. Metrics - Record timing (must be first)
     2. Security Headers - Add security headers
     3. Idempotency - Check/cache responses
@@ -367,7 +367,7 @@ pytest tests/ -v
 ### Verification
 - [ ] All new tests pass
 - [ ] All existing 2350 tests still pass
-- [ ] [He2025] compliance maintained
+- [ ] Determinism maintained
 - [ ] Documentation updated
 
 ---

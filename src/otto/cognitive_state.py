@@ -14,7 +14,7 @@ Tracks:
 Philosophy: Cognitive support is FOUNDATIONAL, not optional.
 There is no toggle. The system always respects human cognitive limits.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - Fixed evaluation order for state updates
 - State snapshot before processing, batch update after
 - Seeded RNG for any stochastic decisions
@@ -126,7 +126,7 @@ class CognitiveState:
     """
     Tracks cognitive state for the hybrid Orchestra model.
 
-    ThinkingMachines [He2025] compliance:
+    Determinism:
     - All state changes go through batch_update() after processing
     - Snapshot before processing with snapshot()
     - Seeded RNG instance for reproducibility
@@ -554,7 +554,7 @@ class CognitiveStateManager:
         This method provides the API contract expected by AgentCoordinator
         for extracting state values with graceful degradation.
 
-        ThinkingMachines [He2025] Compliance:
+        Determinism:
         - Deterministic: Same key + same state → same value
         - Batch-invariant: No side effects on read
 

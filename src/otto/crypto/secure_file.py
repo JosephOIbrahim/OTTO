@@ -4,7 +4,7 @@ Secure File Operations
 
 Encrypted file I/O with memory-only decryption.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED file format (header + encrypted blob)
 - DETERMINISTIC operations
 - BOUNDED memory usage

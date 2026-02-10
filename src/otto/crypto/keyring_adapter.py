@@ -9,7 +9,7 @@ Backends:
 - macOS: Keychain
 - Linux: libsecret/GNOME Keyring
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED service name: "otto-os"
 - FIXED key format: base64-encoded bytes
 - DETERMINISTIC: same identifier → same key retrieval

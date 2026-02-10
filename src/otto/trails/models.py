@@ -8,13 +8,13 @@ distributed trail signals that allow agents to leave traces and follow paths.
 Core Thesis: Trails enable learning without centralized memory.
 Good paths get reinforced. Bad paths decay. The system learns by doing.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - All comparisons use deterministic ordering
 - Strength calculations use Kahan summation where applicable
 - No unseeded random operations
 
 References:
-    [He2025] He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
+    He, Horace and Thinking Machines Lab, "Defeating Nondeterminism
     in LLM Inference", Sep 2025.
 """
 
@@ -29,7 +29,7 @@ class TrailType(Enum):
     Classification of trail signals.
 
     Each type serves a distinct purpose in the cognitive ecosystem:
-    - QUALITY: Code health signals ([He2025] compliance, imports, tests)
+    - QUALITY: Code health signals (Determinism, imports, tests)
     - CONTEXT: Relationship signals (dependencies, used_by)
     - DECISION: Historical choices (why X over Y)
     - PATTERN: Learned successful approaches
@@ -182,7 +182,7 @@ class TrailQuery:
     Flexible query parameters for trail searches.
 
     All fields are optional - only non-None fields are used as filters.
-    Results are always returned in deterministic order per [He2025].
+    Results are always returned in deterministic order.
 
     Attributes:
         trail_type: Filter by trail type

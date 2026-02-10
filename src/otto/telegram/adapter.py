@@ -4,7 +4,7 @@ Telegram Adapter
 
 Adapter layer connecting Telegram messages to OTTO's cognitive orchestrator.
 
-[He2025] Compliance:
+Determinism:
 - Fixed seed for any randomized operations
 - Sorted key iteration in session management
 - Deterministic state transitions
@@ -47,7 +47,7 @@ from ..substrate.protection import get_protection, SubstrateProtectionError
 logger = logging.getLogger(__name__)
 
 
-# [He2025] Fixed constants
+# Fixed constants
 _DETERMINISM_SEED: Final[int] = 0xCAFEBABE
 _SESSION_TIMEOUT_SECONDS: Final[int] = 7200  # 2 hours
 _MAX_MESSAGE_LENGTH: Final[int] = 4096  # Telegram limit
@@ -58,7 +58,7 @@ class TelegramSession:
     """
     Session state for a Telegram user.
 
-    [He2025] Compliance:
+    Determinism:
     - All fields have fixed defaults
     - State transitions are deterministic
     - Session timeout is fixed (2 hours)
@@ -85,7 +85,7 @@ class TelegramSession:
         """
         Deterministic session ID from user_id and created_at.
 
-        [He2025] Uses fixed hash algorithm.
+        Uses fixed hash algorithm.
         """
         data = f"{self.user_id}:{self.created_at}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
@@ -115,7 +115,7 @@ class TelegramSession:
         """
         Update session with cognitive state.
 
-        [He2025] Only updates non-None values.
+        Only updates non-None values.
         """
         if burnout is not None:
             self.burnout_level = burnout.value
@@ -201,7 +201,7 @@ class TelegramAdapter:
     """
     Adapter connecting Telegram to OTTO's cognitive orchestrator.
 
-    [He2025] Compliance:
+    Determinism:
     - Sessions stored in sorted dict by user_id
     - Fixed evaluation order in process_message
     - Deterministic state transitions
@@ -232,7 +232,7 @@ class TelegramAdapter:
         # Memory backbone integration (Stream A - Concurrent Rollout)
         self._memory = memory or get_memory()
 
-        # [He2025] Session dict - iterate in sorted order
+        # Session dict - iterate in sorted order
         self._sessions: Dict[int, TelegramSession] = {}
 
         # Load persisted sessions if path provided
@@ -243,7 +243,7 @@ class TelegramAdapter:
         """
         Process a Telegram message through the cognitive pipeline.
 
-        [He2025] Fixed evaluation order:
+        Fixed evaluation order:
         1. Get/create session
         2. Check for commands
         3. Route through orchestrator
@@ -315,7 +315,7 @@ class TelegramAdapter:
         """
         Record interaction to memory backbone.
 
-        [He2025] Compliance:
+        Determinism:
         - Episode recording is deterministic
         - Trail deposits use sorted keys
         - Outcomes are binary (SUCCESS/FAILURE)
@@ -358,7 +358,7 @@ class TelegramAdapter:
         """
         Get existing session or create new one.
 
-        [He2025] Deterministic session creation.
+        Deterministic session creation.
         """
         user_id = message.user_id
 
@@ -596,7 +596,7 @@ Example: `medium locked_in`"""
         """
         Build Telegram response from NEXUS result.
 
-        [He2025] Response format is deterministic based on result type.
+        Response format is deterministic based on result type.
         """
         if isinstance(result, KnowledgeResult):
             return self._build_knowledge_response(result, message)
@@ -773,7 +773,7 @@ Example: `medium locked_in`"""
         Uses encrypted storage if protection is set up, otherwise falls
         back to plaintext with a warning.
 
-        [He2025] Compliance: Fixed evaluation order, sorted iteration.
+        Determinism: Fixed evaluation order, sorted iteration.
         """
         # Try encrypted storage first (preferred)
         try:
@@ -802,7 +802,7 @@ Example: `medium locked_in`"""
             with open(self.session_store_path) as f:
                 data = json.load(f)
 
-            # [He2025] Load in sorted order by user_id
+            # Load in sorted order by user_id
             for user_id in sorted(data.keys()):
                 session_data = data[user_id]
                 session = TelegramSession.from_dict(session_data)
@@ -826,9 +826,9 @@ Example: `medium locked_in`"""
         Uses encrypted storage if protection is set up, otherwise falls
         back to plaintext with a warning.
 
-        [He2025] Compliance: Sorted keys for deterministic output.
+        Determinism: Sorted keys for deterministic output.
         """
-        # [He2025] Save in sorted order by user_id
+        # Save in sorted order by user_id
         data = {}
         for user_id in sorted(self._sessions.keys()):
             session = self._sessions[user_id]
@@ -873,7 +873,7 @@ Example: `medium locked_in`"""
         """
         Remove expired sessions.
 
-        [He2025] Iterate in sorted order.
+        Iterate in sorted order.
 
         Returns:
             Number of sessions removed

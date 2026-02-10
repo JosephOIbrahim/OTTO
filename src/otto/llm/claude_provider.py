@@ -4,7 +4,7 @@ Claude (Anthropic) LLM Provider
 
 Primary provider for OTTO cognitive support.
 
-[He2025] Compliance:
+Determinism:
 - Fixed model defaults
 - Deterministic system prompts
 - Structured error handling
@@ -18,10 +18,9 @@ Environment:
 
 import logging
 import os
-from typing import Final, Optional
+from typing import AsyncIterator, Final, List, Optional
 
 from .provider import BaseLLMProvider, LLMConfig, LLMResponse, Message
-from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ except ImportError:
     )
 
 
-# [He2025] Fixed constants
+# Fixed constants
 DEFAULT_MODEL: Final[str] = "claude-sonnet-4-20250514"
 FALLBACK_MODEL: Final[str] = "claude-3-haiku-20240307"
 
@@ -47,7 +46,7 @@ class ClaudeProvider(BaseLLMProvider):
     """
     Claude (Anthropic) LLM provider.
 
-    [He2025] Compliance:
+    Determinism:
     - Fixed model selection
     - Deterministic configuration
     - Graceful degradation
@@ -115,7 +114,7 @@ class ClaudeProvider(BaseLLMProvider):
             ImportError: If anthropic not installed
             ValueError: If no API key configured
 
-        [He2025] Compliance:
+        Determinism:
         - Fixed message ordering (history + current prompt)
         - Deterministic conversation construction
         """
@@ -136,7 +135,7 @@ class ClaudeProvider(BaseLLMProvider):
 
         try:
             # Build messages array
-            # [He2025] Fixed order: conversation history + current prompt
+            # Fixed order: conversation history + current prompt
             api_messages = []
 
             # Add conversation history if provided
@@ -149,16 +148,32 @@ class ClaudeProvider(BaseLLMProvider):
 
             logger.debug(f"Sending {len(api_messages)} messages to Claude")
 
-            # Call Claude API with voice-aware parameters
-            response = await self._client.messages.create(
+            # Build API kwargs
+            api_kwargs = dict(
                 model=model,
                 max_tokens=cfg.max_tokens,
                 temperature=cfg.temperature,
                 top_p=cfg.top_p,  # Nucleus sampling
                 system=system or "",
                 messages=api_messages,
-                stop_sequences=cfg.stop_sequences if cfg.stop_sequences else anthropic.NOT_GIVEN,
             )
+            if cfg.stop_sequences:
+                api_kwargs["stop_sequences"] = cfg.stop_sequences
+            # Effort controls (Opus 4.6 GA)
+            if cfg.effort:
+                api_kwargs["effort"] = cfg.effort
+
+            # Call Claude API with voice-aware parameters
+            try:
+                response = await self._client.messages.create(**api_kwargs)
+            except TypeError as e:
+                # SDK version may not support effort param — retry without it
+                if "effort" in str(e) and "effort" in api_kwargs:
+                    logger.debug("SDK doesn't support effort param, retrying without")
+                    api_kwargs.pop("effort")
+                    response = await self._client.messages.create(**api_kwargs)
+                else:
+                    raise
 
             # Extract text from response
             text = ""
@@ -185,6 +200,51 @@ class ClaudeProvider(BaseLLMProvider):
         except anthropic.APIStatusError as e:
             logger.error(f"Claude API error: {e}")
             raise
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        config: Optional[LLMConfig] = None,
+        messages: Optional[List[Message]] = None,
+    ) -> AsyncIterator[str]:
+        """
+        Stream response tokens from Claude.
+
+        Same interface as generate() but yields text chunks
+        as they arrive. Used for real-time terminal output.
+        """
+        if not ANTHROPIC_AVAILABLE:
+            raise ImportError("anthropic is required.")
+        if not self._client:
+            raise ValueError("No Anthropic API key configured.")
+
+        cfg = self._get_config(config)
+        model = cfg.model or self._model
+
+        # Build messages array (same as generate)
+        api_messages = []
+        if messages:
+            for msg in messages:
+                api_messages.append(msg.to_dict())
+        api_messages.append({"role": "user", "content": prompt})
+
+        api_kwargs = dict(
+            model=model,
+            max_tokens=cfg.max_tokens,
+            temperature=cfg.temperature,
+            top_p=cfg.top_p,
+            system=system or "",
+            messages=api_messages,
+        )
+        if cfg.stop_sequences:
+            api_kwargs["stop_sequences"] = cfg.stop_sequences
+        if cfg.effort:
+            api_kwargs["effort"] = cfg.effort
+
+        async with self._client.messages.stream(**api_kwargs) as stream:
+            async for text in stream.text_stream:
+                yield text
 
 
 def create_claude_provider(

@@ -387,7 +387,7 @@ class TestConvenienceFunctions:
 # =============================================================================
 
 class TestDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     def test_render_full_deterministic(self, renderer, state_data):
         """Same state produces same dashboard."""

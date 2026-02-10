@@ -10,7 +10,7 @@ Features:
 - Deterministic checksum computation
 - Parameter freezing for batch-invariance
 
-ThinkingMachines [He2025] Compliance:
+Determinism (inspired by [He2025]):
 - Parameters LOCKED before generation
 - Same inputs = same locked params = same checksum
 - No mid-generation parameter changes

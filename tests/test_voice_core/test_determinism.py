@@ -1,5 +1,5 @@
 """
-Tests for [He2025] determinism compliance in voice_core.
+Tests for [He2025]-inspired determinism in voice_core.
 
 Verifies:
 - Fixed seeds produce reproducible results

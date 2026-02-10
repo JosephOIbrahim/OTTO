@@ -14,7 +14,7 @@ Philosophy:
     doesn't prevent agent spawning - it adjusts cognitive budget.
     The user remains in control.
 
-ThinkingMachines [He2025] Compliance:
+Determinism:
 - FIXED adjustment factors (no runtime modification)
 - DETERMINISTIC: Same context → Same budget adjustment
 - State snapshot before any decision

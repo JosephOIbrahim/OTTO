@@ -4,7 +4,7 @@ Cognitive State Manager Tests
 
 Tests for state management with LIVRPS composition.
 
-[He2025] Compliance Tests:
+Determinism Tests:
 - Deterministic state transitions
 - Schema validation
 - Float precision
@@ -49,7 +49,7 @@ class TestCognitiveState:
         assert state.energy_level == "medium"
         assert state.tangent_budget == 5
         assert state.exchange_count == 0
-        assert state.cognitive_tile_size == 32  # [He2025] fixed tile size
+        assert state.cognitive_tile_size == 32  # fixed tile size
 
     def test_to_dict_sorted(self):
         """to_dict returns sorted keys for determinism."""
@@ -359,11 +359,11 @@ class TestSingleton:
 
 
 # =============================================================================
-# [He2025] Determinism Tests
+# Determinism Tests
 # =============================================================================
 
 class TestStateDeterminism:
-    """Tests for [He2025] determinism compliance."""
+    """Tests for Determinism."""
 
     @pytest.fixture
     def mock_storage(self):
