@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import click
 
 from .models import Commitment
+from .state import StateStore, _VALID_ENERGY, _VALID_BURNOUT, _VALID_MOMENTUM
 from .store import CommitmentStore
 
 
@@ -49,6 +50,14 @@ def _build_id_map(commitments: list[Commitment]) -> dict[int, str]:
 def _get_store() -> CommitmentStore:
     """Create the default store. Separated for testability."""
     return CommitmentStore()
+
+
+def _get_state_store() -> StateStore:
+    """Create the default state store (same DB). Separated for testability."""
+    import os
+    from pathlib import Path
+    db_path = str(Path(os.path.expanduser("~/.otto/commitments.db")))
+    return StateStore(db_path=db_path)
 
 
 @click.group()
@@ -239,6 +248,48 @@ def stats() -> None:
     click.echo(f"  Avg follow-ups before done: {avg_follow}")
     click.echo()
 
+
+
+@main.command()
+@click.argument("level", required=False, default=None)
+def energy(level: str | None) -> None:
+    """Show or set your energy level.
+
+    Without arguments, shows the current cognitive state.
+    With an argument (high, medium, low, depleted), sets energy.
+    """
+    state_store = _get_state_store()
+
+    if level is None:
+        # Show current state
+        state = state_store.load()
+        click.echo()
+        click.echo(click.style("OTTO Cognitive State", bold=True))
+        click.echo(f"  Energy:   {state.energy}")
+        click.echo(f"  Burnout:  {state.burnout}")
+        click.echo(f"  Momentum: {state.momentum}")
+        if state.nudges_sent_today > 0:
+            click.echo(
+                f"  Nudges today: {state.nudges_sent_today} sent, "
+                f"{state.nudges_completed_today} completed"
+            )
+        if state.suppressed_count > 0:
+            click.echo(f"  Suppressed: {state.suppressed_count}")
+        click.echo()
+        return
+
+    try:
+        state = state_store.set_energy(level)
+    except ValueError:
+        valid = ", ".join(sorted(_VALID_ENERGY))
+        click.echo(f"Invalid level. Choose from: {valid}")
+        return
+
+    click.echo(click.style(f"Energy set to {level}.", fg="green"))
+    if level == "depleted":
+        click.echo("OTTO will give you space. Your commitments are safe.")
+    elif level == "low":
+        click.echo("OTTO will go easy. Only urgent things.")
 
 
 @main.command()

@@ -9,8 +9,9 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from otto.cli import main, _get_store
+from otto.cli import main, _get_store, _get_state_store
 from otto.models import Commitment
+from otto.state import StateStore
 from otto.store import CommitmentStore
 
 
@@ -357,3 +358,56 @@ class TestNudge:
                 sys.modules["otto.nudge"] = saved
             else:
                 sys.modules.pop("otto.nudge", None)
+
+
+# ------------------------------------------------------------------
+# otto energy
+# ------------------------------------------------------------------
+
+
+@pytest.fixture()
+def tmp_state(tmp_path):
+    """Provide a patched _get_state_store for energy tests."""
+    db_path = str(tmp_path / "test_energy.db")
+
+    def _make_state_store():
+        return StateStore(db_path=db_path)
+
+    with patch("otto.cli._get_state_store", side_effect=_make_state_store):
+        yield _make_state_store
+
+
+class TestEnergy:
+    def test_energy_shows_defaults(self, runner, tmp_state):
+        result = runner.invoke(main, ["energy"])
+        assert result.exit_code == 0
+        assert "Energy:   medium" in result.output
+        assert "Burnout:  GREEN" in result.output
+        assert "Momentum: cold_start" in result.output
+
+    def test_energy_set_low(self, runner, tmp_state):
+        result = runner.invoke(main, ["energy", "low"])
+        assert result.exit_code == 0
+        assert "Energy set to low" in result.output
+        assert "go easy" in result.output
+
+    def test_energy_set_depleted(self, runner, tmp_state):
+        result = runner.invoke(main, ["energy", "depleted"])
+        assert result.exit_code == 0
+        assert "Energy set to depleted" in result.output
+        assert "give you space" in result.output
+
+    def test_energy_set_high(self, runner, tmp_state):
+        result = runner.invoke(main, ["energy", "high"])
+        assert result.exit_code == 0
+        assert "Energy set to high" in result.output
+
+    def test_energy_invalid_level(self, runner, tmp_state):
+        result = runner.invoke(main, ["energy", "exhausted"])
+        assert result.exit_code == 0
+        assert "Invalid level" in result.output
+
+    def test_energy_persists(self, runner, tmp_state):
+        runner.invoke(main, ["energy", "low"])
+        result = runner.invoke(main, ["energy"])
+        assert "Energy:   low" in result.output
