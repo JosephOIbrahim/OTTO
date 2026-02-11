@@ -9,6 +9,7 @@ Usage:
 
 from __future__ import annotations
 
+import hashlib
 import math
 from datetime import datetime, timedelta, timezone
 
@@ -96,7 +97,9 @@ def format_nudge(commitment: Commitment, reason: str) -> str:
     else:
         templates = _STALE_TEMPLATES
 
-    idx = hash(commitment.id + str(commitment.follow_up_count)) % len(templates)
+    # Stable hash: hashlib is PYTHONHASHSEED-independent (He2025 compliance)
+    key = (commitment.id + str(commitment.follow_up_count)).encode()
+    idx = int(hashlib.sha256(key).hexdigest()[:8], 16) % len(templates)
     template = templates[idx]
 
     return template.format(

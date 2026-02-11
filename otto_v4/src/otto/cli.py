@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import re
+from datetime import datetime, timedelta, timezone
 
 import click
 
@@ -316,6 +317,76 @@ def energy(level: str | None) -> None:
         click.echo("OTTO will give you space. Your commitments are safe.")
     elif level == "low":
         click.echo("OTTO will go easy. Only urgent things.")
+
+
+def _parse_duration(duration: str) -> timedelta | None:
+    """Parse a duration string like '4h', '30m', '2d' into a timedelta."""
+    match = re.fullmatch(r"(\d+)(m|h|d)", duration.strip().lower())
+    if not match:
+        return None
+    value = int(match.group(1))
+    unit = match.group(2)
+    if unit == "m":
+        return timedelta(minutes=value)
+    elif unit == "h":
+        return timedelta(hours=value)
+    elif unit == "d":
+        return timedelta(days=value)
+    return None
+
+
+@main.command()
+@click.argument("commitment_id", type=int)
+@click.argument("duration", type=str)
+def snooze(commitment_id: int, duration: str) -> None:
+    """Snooze a commitment for a duration (e.g. 4h, 2d, 30m)."""
+    delta = _parse_duration(duration)
+    if delta is None:
+        click.echo("Invalid duration. Use e.g. 30m, 4h, 2d.")
+        return
+
+    store = _get_store()
+    active = store.get_active()
+
+    if not active:
+        click.echo("No commitment to snooze.")
+        return
+
+    id_map = _build_id_map(active)
+    uuid = id_map.get(commitment_id)
+
+    if uuid is None:
+        click.echo(f"No commitment #{commitment_id}. Use 'otto list' to see active ones.")
+        return
+
+    until = datetime.now(timezone.utc) + delta
+    store.snooze(uuid, until)
+    c = store.get(uuid)
+    click.echo(click.style(f"Snoozed: {c.commitment_text} (until {until.strftime('%b %d %H:%M')} UTC)", fg="cyan"))
+
+
+@main.command()
+@click.argument("commitment_id", type=int)
+@click.argument("note", type=str)
+def wip(commitment_id: int, note: str) -> None:
+    """Add a work-in-progress note to a commitment."""
+    store = _get_store()
+    active = store.get_active()
+
+    if not active:
+        click.echo("No commitment to add note to.")
+        return
+
+    id_map = _build_id_map(active)
+    uuid = id_map.get(commitment_id)
+
+    if uuid is None:
+        click.echo(f"No commitment #{commitment_id}. Use 'otto list' to see active ones.")
+        return
+
+    store.add_note(uuid, note)
+    c = store.get(uuid)
+    click.echo(click.style(f"Noted on: {c.commitment_text}", fg="green"))
 
 
 @main.command()

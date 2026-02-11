@@ -31,6 +31,8 @@ class Commitment:
     follow_up_count: int = 0
     source_chat: str = "unknown"
     direction: str = "outbound"
+    snoozed_until: datetime | None = None
+    notes: str = ""
     id: str = field(default_factory=_new_id)
     created_at: datetime = field(default_factory=_utcnow)
     updated_at: datetime = field(default_factory=_utcnow)
@@ -51,6 +53,8 @@ class Commitment:
             "follow_up_count": self.follow_up_count,
             "source_chat": self.source_chat,
             "direction": self.direction,
+            "snoozed_until": self.snoozed_until.isoformat() if self.snoozed_until else None,
+            "notes": self.notes,
         }
 
     @classmethod
@@ -59,6 +63,10 @@ class Commitment:
         deadline_raw = data.get("deadline")
         deadline = (
             datetime.fromisoformat(deadline_raw) if deadline_raw else None
+        )
+        snoozed_raw = data.get("snoozed_until")
+        snoozed_until = (
+            datetime.fromisoformat(snoozed_raw) if snoozed_raw else None
         )
         return cls(
             id=data["id"],
@@ -74,4 +82,6 @@ class Commitment:
             follow_up_count=data.get("follow_up_count", 0),
             source_chat=data.get("source_chat", "unknown"),
             direction=data.get("direction", "outbound"),
+            snoozed_until=snoozed_until,
+            notes=data.get("notes", ""),
         )

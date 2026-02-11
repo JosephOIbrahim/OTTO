@@ -7,6 +7,12 @@ The agent calls these via the Anthropic tool-use protocol.
 import json
 import logging
 import sys
+from typing import Any as _Any
+
+
+def _json(obj: _Any) -> str:
+    """Serialize to JSON with sort_keys=True (He2025 compliance)."""
+    return json.dumps(obj, sort_keys=True)
 from pathlib import Path
 from typing import Any
 
@@ -189,6 +195,49 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
             "required": ["level"],
         },
     },
+    {
+        "name": "otto_snooze_commitment",
+        "description": (
+            "Snooze a commitment for a duration. The commitment won't "
+            "appear in nudges until the snooze expires. Duration format: "
+            "30m (minutes), 4h (hours), 2d (days)."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "short_id": {
+                    "type": "integer",
+                    "description": "Short numeric ID from the commitment list.",
+                },
+                "duration": {
+                    "type": "string",
+                    "description": "Snooze duration (e.g. 30m, 4h, 2d).",
+                },
+            },
+            "required": ["short_id", "duration"],
+        },
+    },
+    {
+        "name": "otto_add_wip_note",
+        "description": (
+            "Add a work-in-progress note to a commitment. Notes are "
+            "appended and help track progress over time."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "short_id": {
+                    "type": "integer",
+                    "description": "Short numeric ID from the commitment list.",
+                },
+                "note": {
+                    "type": "string",
+                    "description": "The progress note to add.",
+                },
+            },
+            "required": ["short_id", "note"],
+        },
+    },
 ]
 
 
@@ -221,11 +270,15 @@ def execute_tool(tool_name: str, tool_input: dict) -> str:
             return _handle_get_energy(tool_input)
         elif tool_name == "otto_set_energy":
             return _handle_set_energy(tool_input)
+        elif tool_name == "otto_snooze_commitment":
+            return _handle_snooze(tool_input)
+        elif tool_name == "otto_add_wip_note":
+            return _handle_wip_note(tool_input)
         else:
-            return json.dumps({"error": f"Unknown tool: {tool_name}"})
+            return _json({"error": f"Unknown tool: {tool_name}"})
     except Exception as e:
         logger.exception("Tool %s failed", tool_name)
-        return json.dumps({"error": str(e)})
+        return _json({"error": str(e)})
 
 
 # ---------------------------------------------------------------------------
@@ -248,7 +301,7 @@ def _handle_list(tool_input: dict) -> str:
         label = "active"
 
     if not commitments:
-        return json.dumps({"commitments": [], "label": label, "count": 0})
+        return _json({"commitments": [], "label": label, "count": 0})
 
     id_map = _build_id_map(commitments)
     items = []
@@ -269,7 +322,7 @@ def _handle_list(tool_input: dict) -> str:
         "commitments": items,
         "label": label,
         "count": len(items),
-    }, indent=2)
+    }, indent=2, sort_keys=True)
 
 
 def _handle_add(tool_input: dict) -> str:
@@ -287,7 +340,7 @@ def _handle_add(tool_input: dict) -> str:
                 tzinfo=timezone.utc
             )
         except ValueError:
-            return json.dumps({"error": "Bad date format. Use YYYY-MM-DD."})
+            return _json({"error": "Bad date format. Use YYYY-MM-DD."})
 
     commitment = Commitment(
         raw_message=text,
@@ -299,7 +352,7 @@ def _handle_add(tool_input: dict) -> str:
     )
 
     cid = store.add(commitment)
-    return json.dumps({"added": True, "id": cid, "text": text})
+    return _json({"added": True, "id": cid, "text": text})
 
 
 def _handle_done(tool_input: dict) -> str:
@@ -308,13 +361,13 @@ def _handle_done(tool_input: dict) -> str:
     active = store.get_active()
 
     if not active:
-        return json.dumps({"error": "No active commitments."})
+        return _json({"error": "No active commitments."})
 
     id_map = _build_id_map(active)
     uuid = id_map.get(short_id)
 
     if uuid is None:
-        return json.dumps({
+        return _json({
             "error": f"No commitment #{short_id}.",
             "hint": "Use otto_list_commitments to see current IDs.",
         })
@@ -326,7 +379,7 @@ def _handle_done(tool_input: dict) -> str:
     state_store = get_state_store()
     state_store.increment_nudges_completed()
 
-    return json.dumps({
+    return _json({
         "done": True,
         "text": c.commitment_text,
     })
@@ -338,20 +391,20 @@ def _handle_park(tool_input: dict) -> str:
     active = store.get_active()
 
     if not active:
-        return json.dumps({"error": "No active commitments."})
+        return _json({"error": "No active commitments."})
 
     id_map = _build_id_map(active)
     uuid = id_map.get(short_id)
 
     if uuid is None:
-        return json.dumps({
+        return _json({
             "error": f"No commitment #{short_id}.",
             "hint": "Use otto_list_commitments to see current IDs.",
         })
 
     c = store.get(uuid)
     store.mark_parked(uuid)
-    return json.dumps({
+    return _json({
         "parked": True,
         "text": c.commitment_text,
     })
@@ -368,9 +421,9 @@ def _handle_nudge(tool_input: dict) -> str:
             state_store.increment_nudges_sent()
 
     if not messages:
-        return json.dumps({"nudges": [], "message": "Nothing to nudge about."})
+        return _json({"nudges": [], "message": "Nothing to nudge about."})
 
-    return json.dumps({"nudges": messages, "count": len(messages)})
+    return _json({"nudges": messages, "count": len(messages)})
 
 
 def _handle_stats(tool_input: dict) -> str:
@@ -378,7 +431,7 @@ def _handle_stats(tool_input: dict) -> str:
     counts = store.count()
     avg_raw = store.avg_follow_ups_done()
 
-    return json.dumps({
+    return _json({
         "active": counts.get("active", 0),
         "done": counts.get("done", 0),
         "parked": counts.get("parked", 0),
@@ -390,7 +443,7 @@ def _handle_get_energy(tool_input: dict) -> str:
     state_store = get_state_store()
     state = state_store.load()
 
-    return json.dumps({
+    return _json({
         "energy": state.energy,
         "burnout": state.burnout,
         "momentum": state.momentum,
@@ -409,7 +462,7 @@ def _handle_set_energy(tool_input: dict) -> str:
     try:
         state = state_store.set_energy(level)
     except ValueError as e:
-        return json.dumps({"error": str(e)})
+        return _json({"error": str(e)})
 
     result = {"energy": level, "set": True}
     if level == "depleted":
@@ -417,4 +470,73 @@ def _handle_set_energy(tool_input: dict) -> str:
     elif level == "low":
         result["message"] = "OTTO will go easy. Only urgent things."
 
-    return json.dumps(result)
+    return _json(result)
+
+
+def _handle_snooze(tool_input: dict) -> str:
+    import re
+    from datetime import datetime, timedelta, timezone
+
+    store = get_store()
+    short_id = tool_input["short_id"]
+    duration = tool_input["duration"]
+
+    active = store.get_active()
+    if not active:
+        return _json({"error": "No active commitments."})
+
+    id_map = _build_id_map(active)
+    uuid = id_map.get(short_id)
+    if uuid is None:
+        return _json({
+            "error": f"No commitment #{short_id}.",
+            "hint": "Use otto_list_commitments to see current IDs.",
+        })
+
+    match = re.fullmatch(r"(\d+)(m|h|d)", duration.strip().lower())
+    if not match:
+        return _json({"error": "Invalid duration. Use e.g. 30m, 4h, 2d."})
+
+    value = int(match.group(1))
+    unit = match.group(2)
+    if unit == "m":
+        delta = timedelta(minutes=value)
+    elif unit == "h":
+        delta = timedelta(hours=value)
+    else:
+        delta = timedelta(days=value)
+
+    until = datetime.now(timezone.utc) + delta
+    store.snooze(uuid, until)
+    c = store.get(uuid)
+    return _json({
+        "snoozed": True,
+        "text": c.commitment_text,
+        "until": until.isoformat(),
+    })
+
+
+def _handle_wip_note(tool_input: dict) -> str:
+    store = get_store()
+    short_id = tool_input["short_id"]
+    note = tool_input["note"]
+
+    active = store.get_active()
+    if not active:
+        return _json({"error": "No active commitments."})
+
+    id_map = _build_id_map(active)
+    uuid = id_map.get(short_id)
+    if uuid is None:
+        return _json({
+            "error": f"No commitment #{short_id}.",
+            "hint": "Use otto_list_commitments to see current IDs.",
+        })
+
+    store.add_note(uuid, note)
+    c = store.get(uuid)
+    return _json({
+        "noted": True,
+        "text": c.commitment_text,
+        "note": note,
+    })

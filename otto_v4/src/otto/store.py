@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS commitments (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     follow_up_count INTEGER NOT NULL DEFAULT 0,
-    source_chat TEXT NOT NULL DEFAULT 'unknown'
+    source_chat TEXT NOT NULL DEFAULT 'unknown',
+    snoozed_until TEXT,
+    notes TEXT NOT NULL DEFAULT ''
 );
 """
 
@@ -53,6 +55,17 @@ class CommitmentStore:
         conn = self._connect()
         try:
             conn.execute(_SCHEMA)
+            # Migrate existing DBs: add new columns if missing
+            cursor = conn.execute("PRAGMA table_info(commitments)")
+            columns = {row[1] for row in cursor.fetchall()}
+            if "snoozed_until" not in columns:
+                conn.execute(
+                    "ALTER TABLE commitments ADD COLUMN snoozed_until TEXT"
+                )
+            if "notes" not in columns:
+                conn.execute(
+                    "ALTER TABLE commitments ADD COLUMN notes TEXT NOT NULL DEFAULT ''"
+                )
             conn.commit()
         finally:
             conn.close()
@@ -64,7 +77,8 @@ class CommitmentStore:
         Column order matches _SCHEMA:
             id, raw_message, commitment_text, who_to, who_from,
             direction, deadline, deadline_source, status,
-            created_at, updated_at, follow_up_count, source_chat
+            created_at, updated_at, follow_up_count, source_chat,
+            snoozed_until, notes
         """
         (
             id_,
@@ -80,10 +94,17 @@ class CommitmentStore:
             updated_at_str,
             follow_up_count,
             source_chat,
+            snoozed_until_str,
+            notes,
         ) = row
 
         deadline = (
             datetime.fromisoformat(deadline_str) if deadline_str else None
+        )
+        snoozed_until = (
+            datetime.fromisoformat(snoozed_until_str)
+            if snoozed_until_str
+            else None
         )
 
         return Commitment(
@@ -100,6 +121,8 @@ class CommitmentStore:
             updated_at=datetime.fromisoformat(updated_at_str),
             follow_up_count=follow_up_count,
             source_chat=source_chat,
+            snoozed_until=snoozed_until,
+            notes=notes or "",
         )
 
     @staticmethod
@@ -119,8 +142,9 @@ class CommitmentStore:
                 INSERT INTO commitments (
                     id, raw_message, commitment_text, who_to, who_from,
                     direction, deadline, deadline_source, status,
-                    created_at, updated_at, follow_up_count, source_chat
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    created_at, updated_at, follow_up_count, source_chat,
+                    snoozed_until, notes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     commitment.id,
@@ -136,6 +160,8 @@ class CommitmentStore:
                     commitment.updated_at.isoformat(),
                     commitment.follow_up_count,
                     commitment.source_chat,
+                    commitment.snoozed_until.isoformat() if commitment.snoozed_until else None,
+                    commitment.notes,
                 ),
             )
             conn.commit()
@@ -168,7 +194,8 @@ class CommitmentStore:
                 WHERE status = 'active'
                 ORDER BY
                     CASE WHEN deadline IS NULL THEN 1 ELSE 0 END,
-                    deadline ASC
+                    deadline ASC,
+                    id ASC
                 """
             )
             rows = cur.fetchall()
@@ -181,6 +208,7 @@ class CommitmentStore:
         if as_of is None:
             as_of = datetime.now(timezone.utc)
         cutoff = as_of.isoformat()
+        now_iso = datetime.now(timezone.utc).isoformat()
         conn = self._connect()
         try:
             cur = conn.execute(
@@ -189,9 +217,10 @@ class CommitmentStore:
                 WHERE status = 'active'
                   AND deadline IS NOT NULL
                   AND deadline <= ?
-                ORDER BY deadline ASC
+                  AND (snoozed_until IS NULL OR snoozed_until <= ?)
+                ORDER BY deadline ASC, id ASC
                 """,
-                (cutoff,),
+                (cutoff, now_iso),
             )
             rows = cur.fetchall()
         finally:
@@ -203,6 +232,7 @@ class CommitmentStore:
         from datetime import timedelta
 
         cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        now_iso = datetime.now(timezone.utc).isoformat()
         conn = self._connect()
         try:
             cur = conn.execute(
@@ -211,9 +241,10 @@ class CommitmentStore:
                 WHERE status = 'active'
                   AND deadline IS NULL
                   AND created_at <= ?
-                ORDER BY created_at ASC
+                  AND (snoozed_until IS NULL OR snoozed_until <= ?)
+                ORDER BY created_at ASC, id ASC
                 """,
-                (cutoff,),
+                (cutoff, now_iso),
             )
             rows = cur.fetchall()
         finally:
@@ -269,6 +300,63 @@ class CommitmentStore:
         finally:
             conn.close()
 
+    def snooze(self, commitment_id: str, until: datetime) -> None:
+        """Snooze a commitment until a given time."""
+        conn = self._connect()
+        try:
+            conn.execute(
+                """
+                UPDATE commitments
+                SET snoozed_until = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (until.isoformat(), self._utcnow_iso(), commitment_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def unsnooze(self, commitment_id: str) -> None:
+        """Clear the snooze on a commitment."""
+        conn = self._connect()
+        try:
+            conn.execute(
+                """
+                UPDATE commitments
+                SET snoozed_until = NULL, updated_at = ?
+                WHERE id = ?
+                """,
+                (self._utcnow_iso(), commitment_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def add_note(self, commitment_id: str, text: str) -> None:
+        """Append a note to a commitment. Notes are newline-separated."""
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT notes FROM commitments WHERE id = ?",
+                (commitment_id,),
+            )
+            row = cur.fetchone()
+            if row is None:
+                return
+            existing = row[0] or ""
+            new_notes = f"{existing}\n{text}".strip() if existing else text
+            conn.execute(
+                """
+                UPDATE commitments
+                SET notes = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (new_notes, self._utcnow_iso(), commitment_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
     def delete(self, commitment_id: str) -> None:
         """Hard-delete a commitment."""
         conn = self._connect()
@@ -298,7 +386,7 @@ class CommitmentStore:
         conn = self._connect()
         try:
             cur = conn.execute(
-                "SELECT * FROM commitments ORDER BY created_at DESC"
+                "SELECT * FROM commitments ORDER BY created_at DESC, id DESC"
             )
             rows = cur.fetchall()
         finally:

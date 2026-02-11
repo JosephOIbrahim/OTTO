@@ -436,6 +436,83 @@ def tmp_both(tmp_path):
         yield _make_store, _make_state_store
 
 
+@pytest.fixture()
+def seeded_both(tmp_both):
+    """Return a store pre-loaded with commitments, using the tmp_both fixture."""
+    make_store, make_state = tmp_both
+    store = make_store()
+    now = datetime.now(timezone.utc)
+
+    store.add(Commitment(
+        raw_message="Send deck to Sarah",
+        commitment_text="Send deck to Sarah",
+        who_to="Sarah Chen",
+        source_chat="WhatsApp/Sarah Chen",
+        deadline=now + timedelta(days=2),
+        deadline_source="explicit",
+        created_at=now - timedelta(days=3),
+        updated_at=now - timedelta(days=3),
+        follow_up_count=1,
+    ))
+    store.add(Commitment(
+        raw_message="Follow up with Frank about music collab",
+        commitment_text="Follow up with Frank about music collab",
+        who_to="Frank",
+        source_chat="WhatsApp/Frank",
+        created_at=now - timedelta(days=5),
+        updated_at=now - timedelta(days=5),
+    ))
+    return store
+
+
+# ------------------------------------------------------------------
+# otto snooze
+# ------------------------------------------------------------------
+
+class TestSnooze:
+    def test_snooze_commitment(self, runner, tmp_both, seeded_both):
+        result = runner.invoke(main, ["snooze", "1", "4h"])
+        assert result.exit_code == 0
+        assert "Snoozed" in result.output
+
+    def test_snooze_invalid_id(self, runner, tmp_both):
+        result = runner.invoke(main, ["snooze", "99", "4h"])
+        assert "No commitment" in result.output
+
+    def test_snooze_bad_duration(self, runner, tmp_both, seeded_both):
+        result = runner.invoke(main, ["snooze", "1", "xyz"])
+        assert "Invalid duration" in result.output
+
+    def test_snooze_minutes(self, runner, tmp_both, seeded_both):
+        result = runner.invoke(main, ["snooze", "1", "30m"])
+        assert result.exit_code == 0
+        assert "Snoozed" in result.output
+
+    def test_snooze_days(self, runner, tmp_both, seeded_both):
+        result = runner.invoke(main, ["snooze", "1", "2d"])
+        assert result.exit_code == 0
+        assert "Snoozed" in result.output
+
+
+# ------------------------------------------------------------------
+# otto wip
+# ------------------------------------------------------------------
+
+class TestWip:
+    def test_wip_adds_note(self, runner, tmp_both, seeded_both):
+        result = runner.invoke(main, ["wip", "1", "50% done"])
+        assert result.exit_code == 0
+        assert "Noted" in result.output
+
+    def test_wip_invalid_id(self, runner, tmp_both):
+        result = runner.invoke(main, ["wip", "99", "note"])
+        assert "No commitment" in result.output
+
+    def test_wip_empty_store(self, runner, tmp_both):
+        result = runner.invoke(main, ["wip", "1", "note"])
+        assert "No commitment" in result.output
+
+
 class TestNudgeConstitutional:
     """Constitutional layer gates the nudge command."""
 

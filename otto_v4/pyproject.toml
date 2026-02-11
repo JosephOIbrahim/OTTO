@@ -24,9 +24,11 @@ dev = [
 
 [project.scripts]
 otto = "otto.cli:main"
+otto-agent = "otto_agent.otto_agent:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "."]
+include = ["otto*", "otto_agent*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

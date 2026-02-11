@@ -11,6 +11,91 @@ from otto.models import Commitment
 from otto.store import CommitmentStore
 
 
+# ------------------------------------------------------------------
+# Snooze
+# ------------------------------------------------------------------
+
+class TestSnooze:
+    def test_snooze_commitment(self, store, sample):
+        store.add(sample)
+        snooze_until = datetime.now(timezone.utc) + timedelta(hours=4)
+        store.snooze(sample.id, snooze_until)
+        c = store.get(sample.id)
+        assert c.snoozed_until is not None
+        assert c.snoozed_until == snooze_until
+
+    def test_snoozed_excluded_from_due(self, store):
+        """Snoozed commitments don't appear in get_due()."""
+        past = datetime.now(timezone.utc) - timedelta(days=2)
+        future = datetime.now(timezone.utc) + timedelta(hours=4)
+        c = Commitment(
+            raw_message="test", commitment_text="test",
+            who_to="X", deadline=past, deadline_source="manual",
+            created_at=past, updated_at=past,
+        )
+        store.add(c)
+        store.snooze(c.id, future)
+        assert store.get_due() == []
+
+    def test_expired_snooze_appears_in_due(self, store):
+        """Snooze that has expired should appear in get_due()."""
+        past = datetime.now(timezone.utc) - timedelta(days=2)
+        expired = datetime.now(timezone.utc) - timedelta(hours=1)
+        c = Commitment(
+            raw_message="test", commitment_text="test",
+            who_to="X", deadline=past, deadline_source="manual",
+            created_at=past, updated_at=past,
+        )
+        store.add(c)
+        store.snooze(c.id, expired)
+        assert len(store.get_due()) == 1
+
+    def test_unsnooze(self, store, sample):
+        store.add(sample)
+        future = datetime.now(timezone.utc) + timedelta(hours=4)
+        store.snooze(sample.id, future)
+        store.unsnooze(sample.id)
+        c = store.get(sample.id)
+        assert c.snoozed_until is None
+
+    def test_snoozed_excluded_from_stale(self, store):
+        """Snoozed commitments don't appear in get_stale()."""
+        old = datetime.now(timezone.utc) - timedelta(days=5)
+        future = datetime.now(timezone.utc) + timedelta(hours=4)
+        c = Commitment(
+            raw_message="test", commitment_text="test",
+            who_to="X", created_at=old, updated_at=old,
+        )
+        store.add(c)
+        store.snooze(c.id, future)
+        assert store.get_stale(days=3) == []
+
+
+# ------------------------------------------------------------------
+# Notes
+# ------------------------------------------------------------------
+
+class TestNotes:
+    def test_add_note(self, store, sample):
+        store.add(sample)
+        store.add_note(sample.id, "Working on it, 50% done")
+        c = store.get(sample.id)
+        assert c.notes == "Working on it, 50% done"
+
+    def test_append_note(self, store, sample):
+        store.add(sample)
+        store.add_note(sample.id, "Started")
+        store.add_note(sample.id, "50% done")
+        c = store.get(sample.id)
+        assert "Started" in c.notes
+        assert "50% done" in c.notes
+
+    def test_default_notes_empty(self, store, sample):
+        store.add(sample)
+        c = store.get(sample.id)
+        assert c.notes == ""
+
+
 def _make_commitment(**overrides) -> Commitment:
     """Helper: create a Commitment with sensible defaults."""
     defaults = {

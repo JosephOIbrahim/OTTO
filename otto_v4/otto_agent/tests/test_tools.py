@@ -94,7 +94,7 @@ class TestToolDefinitions:
             assert tool["input_schema"]["type"] == "object"
 
     def test_tool_count(self):
-        assert len(TOOL_DEFINITIONS) == 8
+        assert len(TOOL_DEFINITIONS) == 10
 
     def test_tool_names(self):
         names = {t["name"] for t in TOOL_DEFINITIONS}
@@ -107,6 +107,8 @@ class TestToolDefinitions:
             "otto_get_stats",
             "otto_get_energy",
             "otto_set_energy",
+            "otto_snooze_commitment",
+            "otto_add_wip_note",
         }
         assert names == expected
 
@@ -302,6 +304,69 @@ class TestSetEnergy:
         )
         assert result["set"] is True
         assert result["energy"] == "high"
+
+
+# ---------------------------------------------------------------------------
+# Snooze commitment
+# ---------------------------------------------------------------------------
+
+
+class TestSnoozeCommitment:
+    def test_snooze(self, store, sample_commitment):
+        store.add(sample_commitment)
+        result = json.loads(
+            execute_tool("otto_snooze_commitment", {"short_id": 1, "duration": "4h"})
+        )
+        assert result["snoozed"] is True
+        assert result["text"] == "send the report to Sarah"
+
+    def test_snooze_no_commitments(self):
+        result = json.loads(
+            execute_tool("otto_snooze_commitment", {"short_id": 1, "duration": "4h"})
+        )
+        assert "error" in result
+
+    def test_snooze_bad_id(self, store, sample_commitment):
+        store.add(sample_commitment)
+        result = json.loads(
+            execute_tool("otto_snooze_commitment", {"short_id": 99, "duration": "4h"})
+        )
+        assert "error" in result
+
+    def test_snooze_bad_duration(self, store, sample_commitment):
+        store.add(sample_commitment)
+        result = json.loads(
+            execute_tool("otto_snooze_commitment", {"short_id": 1, "duration": "xyz"})
+        )
+        assert "error" in result
+
+
+# ---------------------------------------------------------------------------
+# WIP note
+# ---------------------------------------------------------------------------
+
+
+class TestWipNote:
+    def test_wip(self, store, sample_commitment):
+        store.add(sample_commitment)
+        result = json.loads(
+            execute_tool("otto_add_wip_note", {"short_id": 1, "note": "50% done"})
+        )
+        assert result["noted"] is True
+        assert result["note"] == "50% done"
+
+    def test_wip_no_commitments(self):
+        result = json.loads(
+            execute_tool("otto_add_wip_note", {"short_id": 1, "note": "test"})
+        )
+        assert "error" in result
+
+    def test_wip_bad_id(self, store, sample_commitment):
+        store.add(sample_commitment)
+        result = json.loads(
+            execute_tool("otto_add_wip_note", {"short_id": 99, "note": "test"})
+        )
+        assert "error" in result
 
 
 # ---------------------------------------------------------------------------
