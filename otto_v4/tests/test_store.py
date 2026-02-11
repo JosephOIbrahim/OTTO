@@ -96,11 +96,18 @@ class TestNotes:
         assert c.notes == ""
 
 
+_COMMITMENT_COUNTER = 0
+
 def _make_commitment(**overrides) -> Commitment:
-    """Helper: create a Commitment with sensible defaults."""
+    """Helper: create a Commitment with sensible defaults.
+
+    Each call produces a unique commitment_text to avoid deduplication.
+    """
+    global _COMMITMENT_COUNTER
+    _COMMITMENT_COUNTER += 1
     defaults = {
-        "raw_message": "I'll send the report to Sarah by Friday",
-        "commitment_text": "send the report to Sarah",
+        "raw_message": f"I'll send the report to Sarah by Friday (#{_COMMITMENT_COUNTER})",
+        "commitment_text": f"send the report to Sarah (#{_COMMITMENT_COUNTER})",
         "who_to": "Sarah",
         "who_from": "me",
         "direction": "outbound",

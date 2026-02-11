@@ -66,6 +66,19 @@ class CommitmentStore:
                 conn.execute(
                     "ALTER TABLE commitments ADD COLUMN notes TEXT NOT NULL DEFAULT ''"
                 )
+            # Performance indices for common query patterns
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_commitments_status "
+                "ON commitments(status)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_commitments_deadline "
+                "ON commitments(deadline)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_commitments_created_at "
+                "ON commitments(created_at)"
+            )
             conn.commit()
         finally:
             conn.close()
@@ -133,8 +146,35 @@ class CommitmentStore:
     # Public API
     # ------------------------------------------------------------------
 
-    def add(self, commitment: Commitment) -> str:
-        """Insert a commitment. Returns its ID."""
+    def is_duplicate(self, commitment: Commitment) -> bool:
+        """Check if a near-identical commitment already exists (active)."""
+        conn = self._connect()
+        try:
+            # Check by normalized commitment text + who_to + source_chat
+            cur = conn.execute(
+                """
+                SELECT COUNT(*) FROM commitments
+                WHERE status = 'active'
+                  AND LOWER(TRIM(commitment_text)) = LOWER(TRIM(?))
+                  AND LOWER(TRIM(who_to)) = LOWER(TRIM(?))
+                  AND LOWER(TRIM(source_chat)) = LOWER(TRIM(?))
+                """,
+                (commitment.commitment_text, commitment.who_to, commitment.source_chat),
+            )
+            count = cur.fetchone()[0]
+        finally:
+            conn.close()
+        return count > 0
+
+    def add(self, commitment: Commitment, *, dedup: bool = True) -> str:
+        """Insert a commitment. Returns its ID.
+
+        If dedup=True (default), skips insertion if a near-identical
+        active commitment already exists. Returns empty string on skip.
+        """
+        if dedup and self.is_duplicate(commitment):
+            return ""
+
         conn = self._connect()
         try:
             conn.execute(

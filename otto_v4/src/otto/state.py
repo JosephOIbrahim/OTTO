@@ -100,12 +100,32 @@ class StateStore:
         finally:
             conn.close()
 
+    def _set_key(self, key: str, value: str) -> None:
+        """Set a single key-value pair in the cognitive_state table."""
+        now = datetime.now(timezone.utc).isoformat()
+        conn = self._connect()
+        try:
+            conn.execute(
+                """
+                INSERT INTO cognitive_state (key, value, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = ?
+                """,
+                (key, value, now, value, now),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
     def load(self) -> CognitiveState:
-        """Load the current cognitive state (or defaults)."""
+        """Load the current cognitive state (or defaults).
+
+        Automatically resets daily counters when the date changes.
+        """
         conn = self._connect()
         try:
             cur = conn.execute("SELECT key, value FROM cognitive_state")
@@ -113,7 +133,11 @@ class StateStore:
         finally:
             conn.close()
 
-        return CognitiveState(
+        # Check for daily rollover
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        last_reset = rows.get("last_reset_date", "")
+
+        state = CognitiveState(
             energy=rows.get("energy", "medium"),
             burnout=rows.get("burnout", "GREEN"),
             momentum=rows.get("momentum", "cold_start"),
@@ -121,6 +145,19 @@ class StateStore:
             nudges_completed_today=int(rows.get("nudges_completed_today", "0")),
             suppressed_count=int(rows.get("suppressed_count", "0")),
         )
+
+        if last_reset and last_reset != today:
+            state.nudges_sent_today = 0
+            state.nudges_completed_today = 0
+            state.suppressed_count = 0
+            self._set_key("last_reset_date", today)
+            self.save(state)
+            _log.info("Daily rollover: counters reset for %s", today)
+        elif not last_reset:
+            # First load ever: record today as last reset date
+            self._set_key("last_reset_date", today)
+
+        return state
 
     def save(self, state: CognitiveState) -> None:
         """Persist the full cognitive state."""

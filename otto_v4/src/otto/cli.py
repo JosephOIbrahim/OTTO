@@ -9,6 +9,7 @@ import click
 from .models import Commitment, build_id_map, parse_duration
 from .state import StateStore, _VALID_ENERGY, _VALID_BURNOUT, _VALID_MOMENTUM
 from .store import CommitmentStore
+from .trails import TrailStore
 
 
 def _relative_time(dt: datetime) -> str:
@@ -55,6 +56,14 @@ def _get_state_store() -> StateStore:
     from pathlib import Path
     db_path = str(Path(os.path.expanduser("~/.otto/commitments.db")))
     return StateStore(db_path=db_path)
+
+
+def _get_trail_store() -> TrailStore:
+    """Create the default trail store (same DB). Separated for testability."""
+    import os
+    from pathlib import Path
+    db_path = str(Path(os.path.expanduser("~/.otto/commitments.db")))
+    return TrailStore(db_path=db_path)
 
 
 @click.group()
@@ -136,6 +145,16 @@ def done(commitment_id: int) -> None:
 
     c = store.get(uuid)
     store.mark_done(uuid)
+
+    # Track completion for nudge effectiveness + deposit trail
+    state_store = _get_state_store()
+    state_store.increment_nudges_completed()
+
+    if c.follow_up_count > 0:
+        # Nudge led to completion -> strong positive trail
+        trail_store = _get_trail_store()
+        trail_store.deposit("executor:nudge", "commitment_detected", 1.0)
+
     click.echo(click.style(f"Done: {c.commitment_text}", fg="green"))
 
 
@@ -159,6 +178,12 @@ def park(commitment_id: int) -> None:
 
     c = store.get(uuid)
     store.mark_parked(uuid)
+
+    if c.follow_up_count > 0:
+        # Nudge led to park -> weak positive trail (user responded, just not with "done")
+        trail_store = _get_trail_store()
+        trail_store.deposit("executor:nudge", "commitment_detected", 0.3)
+
     click.echo(click.style(f"Parked: {c.commitment_text}", fg="yellow"))
 
 
@@ -225,13 +250,23 @@ def watch(port: int, schedule: bool, interval: int) -> None:
 def nudge() -> None:
     """Run follow-up check now."""
     try:
-        from .nudge import check_and_nudge  # type: ignore[import-not-found]
         from .constitutional import should_suppress
+        from .modes import (
+            AcknowledgerMode,
+            DecomposerMode,
+            ExecutorMode,
+            GuideMode,
+            ProtectorMode,
+            RedirectorMode,
+            RestorerMode,
+        )
+        from .router import route_and_execute
+        from .signals import Signal, SignalType, detect_signals
     except ImportError:
         click.echo("Nudge module not ready yet.")
         return
 
-    # Constitutional gate: check cognitive state before nudging
+    # Constitutional gate: fast-fail before entering the pipeline
     state_store = _get_state_store()
     state = state_store.load()
     suppression = should_suppress(state, "nudge")
@@ -241,13 +276,30 @@ def nudge() -> None:
         return
 
     store = _get_store()
-    messages = check_and_nudge(store)
-    if not messages:
+
+    # PRISM -> NEXUS -> Modes pipeline
+    # For scheduled nudge checks, inject a commitment signal
+    signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
+
+    modes = [
+        ExecutorMode(store=store),
+        ProtectorMode(),
+        RestorerMode(),
+        DecomposerMode(),
+        AcknowledgerMode(),
+        RedirectorMode(),
+        GuideMode(),
+    ]
+
+    response = route_and_execute(signals, state, modes)
+
+    if response is None or not response.text:
         click.echo("Nothing to nudge about right now.")
+    elif response.suppress_others:
+        # Safety mode activated (protector/restorer)
+        click.echo(click.style(response.text, fg="yellow"))
     else:
-        for msg in messages:
-            click.echo(msg)
-            click.echo()
+        click.echo(response.text)
 
 
 @main.command()

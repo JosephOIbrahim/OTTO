@@ -10,7 +10,7 @@ import pytest
 from click.testing import CliRunner
 
 from otto.cli import main, _get_store, _get_state_store
-from otto.models import Commitment
+from otto.models import Commitment, build_id_map
 from otto.state import StateStore
 from otto.store import CommitmentStore
 
@@ -75,12 +75,12 @@ class TestList:
         result = runner.invoke(main, ["list"])
         assert result.exit_code == 0
         assert "Active Commitments (2)" in result.output
-        assert "#1" in result.output
+        # Hash-based IDs: 4-digit numbers derived from UUIDs
+        assert "#" in result.output
         assert "Send deck to Sarah" in result.output
-        assert "#2" in result.output
         assert "Follow up with Frank" in result.output
-        assert "otto done 1" in result.output
-        assert "otto park 1" in result.output
+        assert "otto done" in result.output
+        assert "otto park" in result.output
         assert "Followed up: 1x" in result.output
         assert "WhatsApp/Sarah Chen" in result.output
 
@@ -207,15 +207,21 @@ class TestAdd:
 
 class TestDone:
     def test_done_marks_commitment(self, runner, seeded_store):
-        result = runner.invoke(main, ["done", "1"])
+        active = seeded_store.get_active()
+        id_map = build_id_map(active)
+        # Find the short ID for "Send deck to Sarah"
+        sarah = next(c for c in active if "Sarah" in c.commitment_text)
+        short_id = next(k for k, v in id_map.items() if v == sarah.id)
+
+        result = runner.invoke(main, ["done", str(short_id)])
         assert result.exit_code == 0
         assert "Done:" in result.output
         assert "Send deck to Sarah" in result.output
 
         # Verify it was actually marked done
-        active = seeded_store.get_active()
-        assert len(active) == 1
-        assert active[0].commitment_text == "Follow up with Frank about music collab"
+        remaining = seeded_store.get_active()
+        assert len(remaining) == 1
+        assert remaining[0].commitment_text == "Follow up with Frank about music collab"
 
     def test_done_invalid_id(self, runner, seeded_store):
         result = runner.invoke(main, ["done", "99"])
@@ -223,7 +229,7 @@ class TestDone:
         assert "No commitment #99" in result.output
 
     def test_done_empty_store(self, runner, tmp_db):
-        result = runner.invoke(main, ["done", "1"])
+        result = runner.invoke(main, ["done", "1000"])
         assert result.exit_code == 0
         assert "No active commitments" in result.output
 
@@ -234,14 +240,20 @@ class TestDone:
 
 class TestPark:
     def test_park_marks_commitment(self, runner, seeded_store):
-        result = runner.invoke(main, ["park", "2"])
+        active = seeded_store.get_active()
+        id_map = build_id_map(active)
+        # Find the short ID for "Follow up with Frank"
+        frank = next(c for c in active if "Frank" in c.commitment_text)
+        short_id = next(k for k, v in id_map.items() if v == frank.id)
+
+        result = runner.invoke(main, ["park", str(short_id)])
         assert result.exit_code == 0
         assert "Parked:" in result.output
         assert "Follow up with Frank" in result.output
 
-        active = seeded_store.get_active()
-        assert len(active) == 1
-        assert active[0].commitment_text == "Send deck to Sarah"
+        remaining = seeded_store.get_active()
+        assert len(remaining) == 1
+        assert remaining[0].commitment_text == "Send deck to Sarah"
 
     def test_park_invalid_id(self, runner, seeded_store):
         result = runner.invoke(main, ["park", "99"])
@@ -249,7 +261,7 @@ class TestPark:
         assert "No commitment #99" in result.output
 
     def test_park_empty_store(self, runner, tmp_db):
-        result = runner.invoke(main, ["park", "1"])
+        result = runner.invoke(main, ["park", "1000"])
         assert result.exit_code == 0
         assert "No active commitments" in result.output
 
@@ -331,33 +343,28 @@ class TestNuke:
 # ------------------------------------------------------------------
 
 class TestNudge:
-    def test_nudge_without_module_shows_message(self, runner, tmp_db):
-        """If nudge module is missing, show a friendly message."""
-        with patch("otto.cli.check_and_nudge", side_effect=ImportError, create=True):
-            # Simulate ImportError by patching the import inside nudge()
-            pass
-        # Since nudge.py exists in this project, test the actual path:
-        # with no nudgeable commitments, we get "Nothing to nudge about"
+    def test_nudge_no_commitments_shows_message(self, runner, tmp_db):
+        """With no nudgeable commitments, show a friendly message."""
+        # NEXUS routes through Executor, which returns "All commitments are on track."
         result = runner.invoke(main, ["nudge"])
         assert result.exit_code == 0
-        assert "Nothing to nudge" in result.output
+        assert "on track" in result.output or "Nothing to nudge" in result.output
 
     def test_nudge_import_error(self, runner, tmp_db):
-        """If nudge module cannot be imported, show friendly message."""
+        """If cognitive modules cannot be imported, show friendly message."""
         import sys
-        # Temporarily make the import fail
-        import otto.nudge as nudge_mod
-        saved = sys.modules.get("otto.nudge")
-        sys.modules["otto.nudge"] = None  # type: ignore[assignment]
+        # Temporarily make the constitutional import fail
+        saved = sys.modules.get("otto.constitutional")
+        sys.modules["otto.constitutional"] = None  # type: ignore[assignment]
         try:
             result = runner.invoke(main, ["nudge"])
             assert result.exit_code == 0
             assert "Nudge module not ready yet" in result.output
         finally:
             if saved is not None:
-                sys.modules["otto.nudge"] = saved
+                sys.modules["otto.constitutional"] = saved
             else:
-                sys.modules.pop("otto.nudge", None)
+                sys.modules.pop("otto.constitutional", None)
 
 
 # ------------------------------------------------------------------
@@ -470,8 +477,15 @@ def seeded_both(tmp_both):
 # ------------------------------------------------------------------
 
 class TestSnooze:
+    def _first_short_id(self, store):
+        """Get the first hash-based short ID from active commitments."""
+        active = store.get_active()
+        id_map = build_id_map(active)
+        return str(min(id_map.keys()))
+
     def test_snooze_commitment(self, runner, tmp_both, seeded_both):
-        result = runner.invoke(main, ["snooze", "1", "4h"])
+        short_id = self._first_short_id(seeded_both)
+        result = runner.invoke(main, ["snooze", short_id, "4h"])
         assert result.exit_code == 0
         assert "Snoozed" in result.output
 
@@ -480,16 +494,19 @@ class TestSnooze:
         assert "No commitment" in result.output
 
     def test_snooze_bad_duration(self, runner, tmp_both, seeded_both):
-        result = runner.invoke(main, ["snooze", "1", "xyz"])
+        short_id = self._first_short_id(seeded_both)
+        result = runner.invoke(main, ["snooze", short_id, "xyz"])
         assert "Invalid duration" in result.output
 
     def test_snooze_minutes(self, runner, tmp_both, seeded_both):
-        result = runner.invoke(main, ["snooze", "1", "30m"])
+        short_id = self._first_short_id(seeded_both)
+        result = runner.invoke(main, ["snooze", short_id, "30m"])
         assert result.exit_code == 0
         assert "Snoozed" in result.output
 
     def test_snooze_days(self, runner, tmp_both, seeded_both):
-        result = runner.invoke(main, ["snooze", "1", "2d"])
+        short_id = self._first_short_id(seeded_both)
+        result = runner.invoke(main, ["snooze", short_id, "2d"])
         assert result.exit_code == 0
         assert "Snoozed" in result.output
 
@@ -500,7 +517,10 @@ class TestSnooze:
 
 class TestWip:
     def test_wip_adds_note(self, runner, tmp_both, seeded_both):
-        result = runner.invoke(main, ["wip", "1", "50% done"])
+        active = seeded_both.get_active()
+        id_map = build_id_map(active)
+        short_id = str(min(id_map.keys()))
+        result = runner.invoke(main, ["wip", short_id, "50% done"])
         assert result.exit_code == 0
         assert "Noted" in result.output
 
@@ -509,7 +529,7 @@ class TestWip:
         assert "No commitment" in result.output
 
     def test_wip_empty_store(self, runner, tmp_both):
-        result = runner.invoke(main, ["wip", "1", "note"])
+        result = runner.invoke(main, ["wip", "1000", "note"])
         assert "No commitment" in result.output
 
 
@@ -540,7 +560,8 @@ class TestNudgeConstitutional:
         state_store.set_energy("high")
         result = runner.invoke(main, ["nudge"])
         assert result.exit_code == 0
-        assert "Nothing to nudge" in result.output
+        # NEXUS routes through Executor, which returns "on track" when no nudges
+        assert "on track" in result.output or "Nothing to nudge" in result.output
 
     def test_nudge_suppression_increments_counter(self, runner, tmp_both):
         _, make_state = tmp_both

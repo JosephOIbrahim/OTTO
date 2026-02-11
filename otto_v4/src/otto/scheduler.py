@@ -17,7 +17,17 @@ from datetime import datetime, timezone
 
 from .constitutional import should_suppress
 from .log import get_logger
-from .nudge import check_and_nudge
+from .modes import (
+    AcknowledgerMode,
+    DecomposerMode,
+    ExecutorMode,
+    GuideMode,
+    ProtectorMode,
+    RedirectorMode,
+    RestorerMode,
+)
+from .router import route_and_execute
+from .signals import Signal, SignalType
 from .state import StateStore
 from .store import CommitmentStore
 
@@ -77,9 +87,9 @@ class NudgeScheduler:
         self._timer.start()
 
     def _run_check(self) -> None:
-        """Run a single nudge check with constitutional gating."""
+        """Run a single nudge check via NEXUS pipeline with constitutional gating."""
         try:
-            # Constitutional gate
+            # Constitutional gate (fast-fail)
             state = self._state_store.load()
             suppression = should_suppress(state, "nudge")
 
@@ -89,13 +99,24 @@ class NudgeScheduler:
                 )
                 self._state_store.increment_suppressed()
             else:
-                nudges = check_and_nudge(self._store)
-                if nudges:
-                    _log.info(
-                        "Scheduled nudge produced %d message(s)", len(nudges)
-                    )
-                    for msg in nudges:
-                        _log.info("  Nudge: %s", msg[:80])
+                # PRISM -> NEXUS -> Modes pipeline
+                signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
+                modes = [
+                    ExecutorMode(store=self._store),
+                    ProtectorMode(),
+                    RestorerMode(),
+                    DecomposerMode(),
+                    AcknowledgerMode(),
+                    RedirectorMode(),
+                    GuideMode(),
+                ]
+                response = route_and_execute(signals, state, modes)
+
+                if response is not None and response.text:
+                    if response.suppress_others:
+                        _log.info("Scheduled nudge: safety mode activated: %s", response.text[:80])
+                    else:
+                        _log.info("Scheduled nudge via NEXUS: %s", response.text[:80])
                 else:
                     _log.debug("Scheduled nudge: nothing to nudge about")
 

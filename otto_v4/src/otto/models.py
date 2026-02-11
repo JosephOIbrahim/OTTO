@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import uuid
 from dataclasses import dataclass, field
@@ -93,9 +94,35 @@ class Commitment:
 # ---------------------------------------------------------------------------
 
 
+def _stable_short_id(uuid_str: str) -> int:
+    """Derive a stable 4-digit short ID from a UUID.
+
+    Uses SHA-256 to produce a deterministic integer in [1000, 9999].
+    This is PYTHONHASHSEED-independent (He2025 compliance).
+    """
+    digest = hashlib.sha256(uuid_str.encode()).hexdigest()  # noqa: S324
+    return 1000 + (int(digest[:8], 16) % 9000)
+
+
 def build_id_map(commitments: list[Commitment]) -> dict[int, str]:
-    """Map short sequential IDs (1-based) to UUIDs."""
-    return {i + 1: c.id for i, c in enumerate(commitments)}
+    """Map stable short IDs to UUIDs.
+
+    IDs are hash-derived from UUIDs so they don't shift when commitments
+    are added or removed. Collisions are resolved by incrementing.
+    """
+    id_map: dict[int, str] = {}
+    for c in commitments:
+        short_id = _stable_short_id(c.id)
+        attempts = 0
+        while short_id in id_map:
+            short_id += 1
+            if short_id > 9999:
+                short_id = 1000
+            attempts += 1
+            if attempts >= 9000:
+                raise RuntimeError("ID space exhausted (9000 commitments)")
+        id_map[short_id] = c.id
+    return id_map
 
 
 def parse_duration(duration: str) -> timedelta | None:

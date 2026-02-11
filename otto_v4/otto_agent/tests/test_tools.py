@@ -20,7 +20,7 @@ _agent_src = str(Path(__file__).resolve().parent.parent.parent)
 if _agent_src not in sys.path:
     sys.path.insert(0, _agent_src)
 
-from otto.models import Commitment
+from otto.models import Commitment, build_id_map
 from otto.state import CognitiveState, StateStore
 from otto.store import CommitmentStore
 from otto_agent.otto_tools import (
@@ -202,12 +202,14 @@ class TestAddCommitment:
 class TestMarkDone:
     def test_mark_done(self, store, sample_commitment):
         store.add(sample_commitment)
-        result = json.loads(execute_tool("otto_mark_done", {"short_id": 1}))
+        id_map = build_id_map(store.get_active())
+        short_id = next(k for k, v in id_map.items() if v == sample_commitment.id)
+        result = json.loads(execute_tool("otto_mark_done", {"short_id": short_id}))
         assert result["done"] is True
         assert store.get(sample_commitment.id).status == "done"
 
     def test_mark_done_no_commitments(self):
-        result = json.loads(execute_tool("otto_mark_done", {"short_id": 1}))
+        result = json.loads(execute_tool("otto_mark_done", {"short_id": 9999}))
         assert "error" in result
 
     def test_mark_done_bad_id(self, store, sample_commitment):
@@ -224,15 +226,17 @@ class TestMarkDone:
 class TestParkCommitment:
     def test_park(self, store, sample_commitment):
         store.add(sample_commitment)
+        id_map = build_id_map(store.get_active())
+        short_id = next(k for k, v in id_map.items() if v == sample_commitment.id)
         result = json.loads(
-            execute_tool("otto_park_commitment", {"short_id": 1})
+            execute_tool("otto_park_commitment", {"short_id": short_id})
         )
         assert result["parked"] is True
         assert store.get(sample_commitment.id).status == "parked"
 
     def test_park_no_commitments(self):
         result = json.loads(
-            execute_tool("otto_park_commitment", {"short_id": 1})
+            execute_tool("otto_park_commitment", {"short_id": 9999})
         )
         assert "error" in result
 
@@ -314,15 +318,17 @@ class TestSetEnergy:
 class TestSnoozeCommitment:
     def test_snooze(self, store, sample_commitment):
         store.add(sample_commitment)
+        id_map = build_id_map(store.get_active())
+        short_id = next(k for k, v in id_map.items() if v == sample_commitment.id)
         result = json.loads(
-            execute_tool("otto_snooze_commitment", {"short_id": 1, "duration": "4h"})
+            execute_tool("otto_snooze_commitment", {"short_id": short_id, "duration": "4h"})
         )
         assert result["snoozed"] is True
         assert result["text"] == "send the report to Sarah"
 
     def test_snooze_no_commitments(self):
         result = json.loads(
-            execute_tool("otto_snooze_commitment", {"short_id": 1, "duration": "4h"})
+            execute_tool("otto_snooze_commitment", {"short_id": 9999, "duration": "4h"})
         )
         assert "error" in result
 
@@ -335,8 +341,10 @@ class TestSnoozeCommitment:
 
     def test_snooze_bad_duration(self, store, sample_commitment):
         store.add(sample_commitment)
+        id_map = build_id_map(store.get_active())
+        short_id = next(k for k, v in id_map.items() if v == sample_commitment.id)
         result = json.loads(
-            execute_tool("otto_snooze_commitment", {"short_id": 1, "duration": "xyz"})
+            execute_tool("otto_snooze_commitment", {"short_id": short_id, "duration": "xyz"})
         )
         assert "error" in result
 
@@ -349,15 +357,17 @@ class TestSnoozeCommitment:
 class TestWipNote:
     def test_wip(self, store, sample_commitment):
         store.add(sample_commitment)
+        id_map = build_id_map(store.get_active())
+        short_id = next(k for k, v in id_map.items() if v == sample_commitment.id)
         result = json.loads(
-            execute_tool("otto_add_wip_note", {"short_id": 1, "note": "50% done"})
+            execute_tool("otto_add_wip_note", {"short_id": short_id, "note": "50% done"})
         )
         assert result["noted"] is True
         assert result["note"] == "50% done"
 
     def test_wip_no_commitments(self):
         result = json.loads(
-            execute_tool("otto_add_wip_note", {"short_id": 1, "note": "test"})
+            execute_tool("otto_add_wip_note", {"short_id": 9999, "note": "test"})
         )
         assert "error" in result
 
