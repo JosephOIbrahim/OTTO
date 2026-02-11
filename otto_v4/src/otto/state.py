@@ -33,6 +33,15 @@ CREATE TABLE IF NOT EXISTS cognitive_state (
 );
 """
 
+_INTERACTION_LOG_SCHEMA = """\
+CREATE TABLE IF NOT EXISTS interaction_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    message_length INTEGER NOT NULL,
+    source TEXT NOT NULL DEFAULT 'cli'
+);
+"""
+
 
 @dataclass
 class CognitiveState:
@@ -86,6 +95,7 @@ class StateStore:
         conn = self._connect()
         try:
             conn.execute(_STATE_SCHEMA)
+            conn.execute(_INTERACTION_LOG_SCHEMA)
             conn.commit()
         finally:
             conn.close()
@@ -211,3 +221,46 @@ class StateStore:
         state.nudges_sent_today = 0
         state.nudges_completed_today = 0
         self.save(state)
+
+    # ------------------------------------------------------------------
+    # Interaction log (Phase 2.2)
+    # ------------------------------------------------------------------
+
+    def log_interaction(
+        self,
+        message_length: int,
+        source: str = "cli",
+        timestamp: datetime | None = None,
+    ) -> None:
+        """Record an interaction for behavioral pattern analysis."""
+        ts = (timestamp or datetime.now(timezone.utc)).isoformat()
+        conn = self._connect()
+        try:
+            conn.execute(
+                "INSERT INTO interaction_log (timestamp, message_length, source) VALUES (?, ?, ?)",
+                (ts, message_length, source),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_recent_interactions(
+        self,
+        limit: int = 20,
+    ) -> list[tuple[str, int, str]]:
+        """Return recent interactions as (timestamp_iso, length, source) tuples.
+
+        Sorted by timestamp ascending (oldest first).
+        """
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT timestamp, message_length, source FROM interaction_log "
+                "ORDER BY id DESC LIMIT ?",
+                (limit,),
+            )
+            rows = cur.fetchall()
+        finally:
+            conn.close()
+        # Reverse so oldest is first (consistent with HistoryAnalyzer expectation)
+        return list(reversed(rows))
