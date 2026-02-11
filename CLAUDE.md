@@ -44,12 +44,24 @@ python -m pytest tests/ otto_agent/tests/ -v
 otto_v4/
 ├── src/otto/               # Core package
 │   ├── cli.py              # Click CLI: list, add, done, park, snooze, wip, nudge, stats, energy, watch, nuke
-│   ├── store.py            # SQLite persistence (commitments + cognitive_state tables)
+│   ├── store.py            # SQLite persistence (commitments table)
 │   ├── nudge.py            # Template-based follow-up (deterministic hash selection)
 │   ├── detector.py         # Claude Sonnet API call to extract commitments from messages
-│   ├── models.py           # Commitment dataclass
-│   ├── state.py            # CognitiveState: energy/burnout/momentum + StateStore
+│   ├── models.py           # Commitment dataclass + shared helpers (build_id_map, parse_duration)
+│   ├── state.py            # CognitiveState + StateStore + interaction_log table
 │   ├── constitutional.py   # Safety gating: should_suppress(state, action)
+│   ├── signals.py          # PRISM: 14 signal types, 9 pattern banks, HistoryAnalyzer
+│   ├── router.py           # NEXUS: 5-phase deterministic routing + trail adjustments
+│   ├── trails.py           # Pheromone trails: deposit/follow/decay with Kahan summation
+│   ├── sender.py           # NudgeSender: constitutional gate -> transport.send()
+│   ├── modes/              # Specialist modes (Mode protocol)
+│   │   ├── base.py         # Mode protocol: responds_to, weight, execute, augment
+│   │   ├── executor.py     # Wraps v4.0 nudge.py (commitment tracking)
+│   │   ├── protector.py    # 10% safety floor (crisis, frustration)
+│   │   └── restorer.py     # 5% safety floor (energy, rest permission)
+│   ├── transport/          # Pluggable transport layer
+│   │   ├── base.py         # Transport protocol, Message, DeliveryResult
+│   │   └── cli_transport.py # CLI transport (stdout + capture mode)
 │   ├── scheduler.py        # Background thread nudge scheduler
 │   ├── watcher.py          # FastAPI webhook for WhatsApp Cloud API
 │   └── log.py              # Structured logging (get_logger)
@@ -58,8 +70,13 @@ otto_v4/
 │   ├── otto_tools.py       # MCP tool definitions (8 tools mirror CLI)
 │   ├── otto_hooks.py       # Pre-tool-use constitutional hooks
 │   └── CLAUDE.md           # Agent personality prompt
-├── tests/                  # 182 tests
+├── tests/                  # 417 tests
 └── pyproject.toml
+OTTO_Agents/                # Claude Agent SDK agents (separate package)
+├── otto_agents/            # 3 agents: NEXUS orchestrator, consistency auditor, builder
+│   ├── tools/              # 10 MCP tools wrapping OTTO modules
+│   └── hooks/              # Constitutional PreToolUse hooks
+└── tests/                  # 30 tests
 ```
 
 ## Architecture
@@ -112,16 +129,18 @@ SQLite at `~/.otto/commitments.db`. Two tables: `commitments` and `cognitive_sta
 
 ## Implementation Status
 
-**Complete (Phases 0-1):**
-- Structured logging, cognitive state tracking, constitutional layer (passive + wired)
-- Snooze/WIP commands, background scheduler, agent SDK integration
+**Complete (Phases 0-6):**
+- Phase 0-1: Structured logging, cognitive state, constitutional layer, snooze/WIP, scheduler, agent SDK
+- Phase 2: PRISM signal detection (14 signal types, 9 pattern banks) + HistoryAnalyzer (behavioral patterns)
+- Phase 3: Mode architecture — base protocol + Executor (wraps v4.0), Protector (10% floor), Restorer (5% floor)
+- Phase 4: NEXUS deterministic router — 5-phase pipeline (ACTIVATE->WEIGHT->BOUND->SELECT->EXECUTE)
+- Phase 5: Pheromone trails — SQLite deposit/follow/decay with Kahan summation, wired into router
+- Phase 6: Transport abstraction (pluggable protocol) + NudgeSender with constitutional gate before send
 
-**Not yet implemented (Phases 2-9):**
-- PRISM signal detection (only `commitment_detected` exists; `frustrated`, `overwhelmed`, etc. planned)
-- NEXUS deterministic router (no `router.py` yet)
-- Specialist modes framework (Protector, Decomposer, Restorer, Redirector, Acknowledger, Guide)
-- Pheromone trails (deposit/follow/decay learning system)
-- Transport abstraction (WhatsApp is hardcoded, not pluggable)
+**Not yet implemented (Phases 7-9):**
+- Remaining modes: Decomposer, Redirector, Acknowledger, Guide
+- Message deduplication + stable short IDs
+- WhatsApp transport (refactor from watcher.py)
 
 Full phase roadmap is in the git history and `docs/plans/`.
 
