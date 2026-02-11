@@ -4,8 +4,8 @@ Safety floors and energy gates that can suppress output from any mode.
 This layer sits ABOVE the specialist modes — it can veto anything
 except the Protector (which always runs).
 
-Not yet wired into the nudge pipeline (Phase 0.3 = passive).
-Phase 1.1 wires it live.
+Wired live in Phase 1.1: CLI nudge, scheduler, and agent tools all
+check should_suppress() before generating output.
 """
 
 from __future__ import annotations

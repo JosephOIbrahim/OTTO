@@ -7,12 +7,6 @@ The agent calls these via the Anthropic tool-use protocol.
 import json
 import logging
 import sys
-from typing import Any as _Any
-
-
-def _json(obj: _Any) -> str:
-    """Serialize to JSON with sort_keys=True (He2025 compliance)."""
-    return json.dumps(obj, sort_keys=True)
 from pathlib import Path
 from typing import Any
 
@@ -22,12 +16,18 @@ if _otto_src not in sys.path:
     sys.path.insert(0, _otto_src)
 
 from otto.constitutional import should_suppress
-from otto.models import Commitment
+from otto.models import Commitment, build_id_map, parse_duration
 from otto.nudge import check_and_nudge
 from otto.state import CognitiveState, StateStore
 from otto.store import CommitmentStore
 
 logger = logging.getLogger("otto.agent.tools")
+
+
+def _json(obj: Any) -> str:
+    """Serialize to JSON with sort_keys=True (He2025 compliance)."""
+    return json.dumps(obj, sort_keys=True)
+
 
 # Shared store instances -- set during agent init
 _store: CommitmentStore | None = None
@@ -246,9 +246,6 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
 # ---------------------------------------------------------------------------
 
 
-def _build_id_map(commitments: list[Commitment]) -> dict[int, str]:
-    """Map short sequential IDs (1-based) to UUIDs."""
-    return {i + 1: c.id for i, c in enumerate(commitments)}
 
 
 def execute_tool(tool_name: str, tool_input: dict) -> str:
@@ -303,10 +300,11 @@ def _handle_list(tool_input: dict) -> str:
     if not commitments:
         return _json({"commitments": [], "label": label, "count": 0})
 
-    id_map = _build_id_map(commitments)
+    id_map = build_id_map(commitments)
+    by_id = {c.id: c for c in commitments}
     items = []
     for short_id, uuid in sorted(id_map.items()):
-        c = next(cm for cm in commitments if cm.id == uuid)
+        c = by_id[uuid]
         items.append({
             "short_id": short_id,
             "text": c.commitment_text,
@@ -363,7 +361,7 @@ def _handle_done(tool_input: dict) -> str:
     if not active:
         return _json({"error": "No active commitments."})
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(short_id)
 
     if uuid is None:
@@ -393,7 +391,7 @@ def _handle_park(tool_input: dict) -> str:
     if not active:
         return _json({"error": "No active commitments."})
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(short_id)
 
     if uuid is None:
@@ -411,12 +409,23 @@ def _handle_park(tool_input: dict) -> str:
 
 
 def _handle_nudge(tool_input: dict) -> str:
+    # Defense-in-depth: constitutional gate even if hooks aren't wired
+    state_store = get_state_store()
+    state = state_store.load()
+    suppression = should_suppress(state, "nudge")
+    if suppression is not None:
+        state_store.increment_suppressed()
+        return _json({
+            "nudges": [],
+            "suppressed": True,
+            "reason": suppression.reason,
+        })
+
     store = get_store()
     messages = check_and_nudge(store)
 
     # Track nudges sent
     if messages:
-        state_store = get_state_store()
         for _ in messages:
             state_store.increment_nudges_sent()
 
@@ -474,8 +483,7 @@ def _handle_set_energy(tool_input: dict) -> str:
 
 
 def _handle_snooze(tool_input: dict) -> str:
-    import re
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timezone
 
     store = get_store()
     short_id = tool_input["short_id"]
@@ -485,7 +493,7 @@ def _handle_snooze(tool_input: dict) -> str:
     if not active:
         return _json({"error": "No active commitments."})
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(short_id)
     if uuid is None:
         return _json({
@@ -493,18 +501,9 @@ def _handle_snooze(tool_input: dict) -> str:
             "hint": "Use otto_list_commitments to see current IDs.",
         })
 
-    match = re.fullmatch(r"(\d+)(m|h|d)", duration.strip().lower())
-    if not match:
+    delta = parse_duration(duration)
+    if delta is None:
         return _json({"error": "Invalid duration. Use e.g. 30m, 4h, 2d."})
-
-    value = int(match.group(1))
-    unit = match.group(2)
-    if unit == "m":
-        delta = timedelta(minutes=value)
-    elif unit == "h":
-        delta = timedelta(hours=value)
-    else:
-        delta = timedelta(days=value)
 
     until = datetime.now(timezone.utc) + delta
     store.snooze(uuid, until)
@@ -525,7 +524,7 @@ def _handle_wip_note(tool_input: dict) -> str:
     if not active:
         return _json({"error": "No active commitments."})
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(short_id)
     if uuid is None:
         return _json({

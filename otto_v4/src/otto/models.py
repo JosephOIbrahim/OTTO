@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import re
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 
 def _utcnow() -> datetime:
@@ -85,3 +86,32 @@ class Commitment:
             snoozed_until=snoozed_until,
             notes=data.get("notes", ""),
         )
+
+
+# ---------------------------------------------------------------------------
+# Shared helpers (used by both cli.py and otto_tools.py)
+# ---------------------------------------------------------------------------
+
+
+def build_id_map(commitments: list[Commitment]) -> dict[int, str]:
+    """Map short sequential IDs (1-based) to UUIDs."""
+    return {i + 1: c.id for i, c in enumerate(commitments)}
+
+
+def parse_duration(duration: str) -> timedelta | None:
+    """Parse a duration string like '4h', '30m', '2d' into a timedelta.
+
+    Returns None if the format is invalid.
+    """
+    match = re.fullmatch(r"(\d+)(m|h|d)", duration.strip().lower())
+    if not match:
+        return None
+    value = int(match.group(1))
+    unit = match.group(2)
+    if unit == "m":
+        return timedelta(minutes=value)
+    elif unit == "h":
+        return timedelta(hours=value)
+    elif unit == "d":
+        return timedelta(days=value)
+    return None

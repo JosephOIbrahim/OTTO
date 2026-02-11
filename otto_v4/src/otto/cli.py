@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import click
 
-from .models import Commitment
+from .models import Commitment, build_id_map, parse_duration
 from .state import StateStore, _VALID_ENERGY, _VALID_BURNOUT, _VALID_MOMENTUM
 from .store import CommitmentStore
 
@@ -43,9 +42,6 @@ def _format_deadline(dt: datetime | None) -> str:
     return dt.strftime("%b %d").replace(" 0", " ")
 
 
-def _build_id_map(commitments: list[Commitment]) -> dict[int, str]:
-    """Build a mapping from short sequential IDs (1-based) to UUIDs."""
-    return {i + 1: c.id for i, c in enumerate(commitments)}
 
 
 def _get_store() -> CommitmentStore:
@@ -98,7 +94,7 @@ def list_commitments(show_all: bool, due: bool) -> None:
     click.echo(click.style(f"{label} ({len(commitments)})", bold=True))
     click.echo()
 
-    id_map = _build_id_map(commitments)
+    id_map = build_id_map(commitments)
     for short_id, uuid in sorted(id_map.items()):
         c = next(cm for cm in commitments if cm.id == uuid)
         age = _relative_time(c.created_at)
@@ -131,7 +127,7 @@ def done(commitment_id: int) -> None:
         click.echo("No active commitments.")
         return
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(commitment_id)
 
     if uuid is None:
@@ -154,7 +150,7 @@ def park(commitment_id: int) -> None:
         click.echo("No active commitments.")
         return
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(commitment_id)
 
     if uuid is None:
@@ -319,20 +315,6 @@ def energy(level: str | None) -> None:
         click.echo("OTTO will go easy. Only urgent things.")
 
 
-def _parse_duration(duration: str) -> timedelta | None:
-    """Parse a duration string like '4h', '30m', '2d' into a timedelta."""
-    match = re.fullmatch(r"(\d+)(m|h|d)", duration.strip().lower())
-    if not match:
-        return None
-    value = int(match.group(1))
-    unit = match.group(2)
-    if unit == "m":
-        return timedelta(minutes=value)
-    elif unit == "h":
-        return timedelta(hours=value)
-    elif unit == "d":
-        return timedelta(days=value)
-    return None
 
 
 @main.command()
@@ -340,7 +322,7 @@ def _parse_duration(duration: str) -> timedelta | None:
 @click.argument("duration", type=str)
 def snooze(commitment_id: int, duration: str) -> None:
     """Snooze a commitment for a duration (e.g. 4h, 2d, 30m)."""
-    delta = _parse_duration(duration)
+    delta = parse_duration(duration)
     if delta is None:
         click.echo("Invalid duration. Use e.g. 30m, 4h, 2d.")
         return
@@ -352,7 +334,7 @@ def snooze(commitment_id: int, duration: str) -> None:
         click.echo("No commitment to snooze.")
         return
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(commitment_id)
 
     if uuid is None:
@@ -377,7 +359,7 @@ def wip(commitment_id: int, note: str) -> None:
         click.echo("No commitment to add note to.")
         return
 
-    id_map = _build_id_map(active)
+    id_map = build_id_map(active)
     uuid = id_map.get(commitment_id)
 
     if uuid is None:
