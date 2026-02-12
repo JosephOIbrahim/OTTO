@@ -26,7 +26,8 @@ from .modes import (
     RedirectorMode,
     RestorerMode,
 )
-from .router import compute_trail_adjustments, route_and_execute
+from .learner import compute_ucb_adjustments
+from .router import route_and_execute
 from .signals import Signal, SignalType
 from .state import StateStore
 from .store import CommitmentStore
@@ -103,9 +104,9 @@ class NudgeScheduler:
                 # PRISM -> NEXUS -> Modes pipeline
                 signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
 
-                # Compute trail adjustments from outcome history
+                # UCB1-based learning adjustments from outcome history
                 trail_store = TrailStore(self._state_store._db_path)
-                adjustments = compute_trail_adjustments(signals, trail_store)
+                adjustments = compute_ucb_adjustments(signals, trail_store)
 
                 modes = [
                     ExecutorMode(store=self._store),

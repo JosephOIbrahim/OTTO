@@ -270,7 +270,8 @@ def nudge() -> None:
             RedirectorMode,
             RestorerMode,
         )
-        from .router import compute_trail_adjustments, route_and_execute
+        from .learner import compute_ucb_adjustments
+        from .router import route_and_execute
         from .signals import Signal, SignalType, detect_signals
     except ImportError:
         click.echo("Nudge module not ready yet.")
@@ -292,8 +293,8 @@ def nudge() -> None:
     # For scheduled nudge checks, inject a commitment signal
     signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
 
-    # Compute trail adjustments from outcome history
-    adjustments = compute_trail_adjustments(signals, trail_store)
+    # UCB1-based learning adjustments from outcome history
+    adjustments = compute_ucb_adjustments(signals, trail_store)
 
     modes = [
         ExecutorMode(store=store),
