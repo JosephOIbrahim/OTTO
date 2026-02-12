@@ -26,10 +26,11 @@ from .modes import (
     RedirectorMode,
     RestorerMode,
 )
-from .router import route_and_execute
+from .router import compute_trail_adjustments, route_and_execute
 from .signals import Signal, SignalType
 from .state import StateStore
 from .store import CommitmentStore
+from .trails import TrailStore
 
 _log = get_logger(__name__)
 
@@ -101,6 +102,11 @@ class NudgeScheduler:
             else:
                 # PRISM -> NEXUS -> Modes pipeline
                 signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
+
+                # Compute trail adjustments from outcome history
+                trail_store = TrailStore(self._state_store._db_path)
+                adjustments = compute_trail_adjustments(signals, trail_store)
+
                 modes = [
                     ExecutorMode(store=self._store),
                     ProtectorMode(),
@@ -110,7 +116,7 @@ class NudgeScheduler:
                     RedirectorMode(),
                     GuideMode(),
                 ]
-                response = route_and_execute(signals, state, modes)
+                response = route_and_execute(signals, state, modes, trail_adjustments=adjustments)
 
                 if response is not None and response.text:
                     if response.suppress_others:

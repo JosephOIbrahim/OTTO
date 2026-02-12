@@ -19,7 +19,7 @@ from otto.trails import TrailStore
 
 class TestStableShortIds:
     def test_deterministic(self):
-        """Same UUID -> same short ID (He2025 compliance)."""
+        """Same UUID -> same short ID (deterministic by design)."""
         uuid = "550e8400-e29b-41d4-a716-446655440000"
         results = {_stable_short_id(uuid) for _ in range(100)}
         assert len(results) == 1
@@ -281,3 +281,90 @@ class TestDatabaseIndices:
         assert "idx_commitments_status" in index_names
         assert "idx_commitments_deadline" in index_names
         assert "idx_commitments_created_at" in index_names
+
+
+# ------------------------------------------------------------------
+# Trail feedback loop wiring (Phase A)
+# ------------------------------------------------------------------
+
+class TestTrailFeedbackLoop:
+    def test_cli_nudge_passes_trail_adjustments(self, tmp_path):
+        """Trail adjustments must flow into route_and_execute."""
+        from unittest.mock import patch, MagicMock
+        from click.testing import CliRunner
+        from otto.cli import main
+
+        runner = CliRunner()
+        # Patch at the source module since nudge() does local imports
+        with patch("otto.router.route_and_execute") as mock_route, \
+             patch("otto.cli._get_state_store") as mock_ss, \
+             patch("otto.cli._get_store") as mock_cs, \
+             patch("otto.cli._get_trail_store") as mock_ts:
+            mock_state = CognitiveState(burnout="GREEN", energy="high")
+            mock_ss.return_value.load.return_value = mock_state
+            mock_ts.return_value = TrailStore(str(tmp_path / "t.db"))
+            mock_route.return_value = MagicMock(text="ok", suppress_others=False, metadata={})
+
+            result = runner.invoke(main, ["nudge"], catch_exceptions=False)
+
+        assert mock_route.called
+        call_kwargs = mock_route.call_args.kwargs
+        assert "trail_adjustments" in call_kwargs
+
+    def test_scheduler_passes_trail_adjustments(self, tmp_path):
+        """Scheduler must pass trail adjustments into route_and_execute."""
+        from unittest.mock import patch, MagicMock
+        from otto.scheduler import NudgeScheduler
+
+        db = str(tmp_path / "sched.db")
+        cs = CommitmentStore(db_path=db)
+        ss = StateStore(db_path=db)
+
+        scheduler = NudgeScheduler(store=cs, state_store=ss)
+
+        with patch("otto.scheduler.route_and_execute") as mock_route:
+            mock_route.return_value = MagicMock(text="ok", suppress_others=False, metadata={})
+            scheduler._run_check()
+
+        assert mock_route.called
+        call_kwargs = mock_route.call_args.kwargs
+        assert "trail_adjustments" in call_kwargs
+
+
+# ------------------------------------------------------------------
+# Plasticity wiring (Phase A)
+# ------------------------------------------------------------------
+
+class TestPlasticityWiring:
+    def test_plasticity_amplifies_in_crisis(self, tmp_path):
+        """During RED burnout, trail deposits are amplified by plasticity."""
+        from otto.plasticity import PlasticityWindow
+
+        db = str(tmp_path / "test.db")
+        trail_store = TrailStore(db)
+        state_store = StateStore(db)
+        state_store.set_burnout("RED")
+
+        state = state_store.load()
+        window = PlasticityWindow()
+        window.update(state)
+        strength = window.adjust_strength(1.0)
+        trail_store.deposit("executor:nudge", "commitment_detected", strength)
+
+        assert trail_store.get_strength("executor:nudge", "commitment_detected") == 2.0
+
+    def test_plasticity_normal_in_green(self, tmp_path):
+        """During GREEN burnout, trail deposits are NOT amplified."""
+        from otto.plasticity import PlasticityWindow
+
+        db = str(tmp_path / "test.db")
+        trail_store = TrailStore(db)
+        state_store = StateStore(db)
+
+        state = state_store.load()  # defaults to GREEN
+        window = PlasticityWindow()
+        window.update(state)
+        strength = window.adjust_strength(1.0)
+        trail_store.deposit("executor:nudge", "commitment_detected", strength)
+
+        assert trail_store.get_strength("executor:nudge", "commitment_detected") == 1.0

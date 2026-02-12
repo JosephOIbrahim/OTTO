@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import click
 
 from .models import Commitment, build_id_map, parse_duration
+from .plasticity import PlasticityWindow
 from .state import StateStore, _VALID_ENERGY, _VALID_BURNOUT, _VALID_MOMENTUM
 from .store import CommitmentStore
 from .trails import TrailStore
@@ -151,9 +152,12 @@ def done(commitment_id: int) -> None:
     state_store.increment_nudges_completed()
 
     if c.follow_up_count > 0:
-        # Nudge led to completion -> strong positive trail
+        # Nudge led to completion -> strong positive trail (amplified during crisis)
         trail_store = _get_trail_store()
-        trail_store.deposit("executor:nudge", "commitment_detected", 1.0)
+        state = state_store.load()
+        window = PlasticityWindow()
+        window.update(state)
+        trail_store.deposit("executor:nudge", "commitment_detected", window.adjust_strength(1.0))
 
     click.echo(click.style(f"Done: {c.commitment_text}", fg="green"))
 
@@ -180,9 +184,13 @@ def park(commitment_id: int) -> None:
     store.mark_parked(uuid)
 
     if c.follow_up_count > 0:
-        # Nudge led to park -> weak positive trail (user responded, just not with "done")
+        # Nudge led to park -> weak positive trail (amplified during crisis)
         trail_store = _get_trail_store()
-        trail_store.deposit("executor:nudge", "commitment_detected", 0.3)
+        state_store = _get_state_store()
+        state = state_store.load()
+        window = PlasticityWindow()
+        window.update(state)
+        trail_store.deposit("executor:nudge", "commitment_detected", window.adjust_strength(0.3))
 
     click.echo(click.style(f"Parked: {c.commitment_text}", fg="yellow"))
 
@@ -260,7 +268,7 @@ def nudge() -> None:
             RedirectorMode,
             RestorerMode,
         )
-        from .router import route_and_execute
+        from .router import compute_trail_adjustments, route_and_execute
         from .signals import Signal, SignalType, detect_signals
     except ImportError:
         click.echo("Nudge module not ready yet.")
@@ -276,10 +284,14 @@ def nudge() -> None:
         return
 
     store = _get_store()
+    trail_store = _get_trail_store()
 
     # PRISM -> NEXUS -> Modes pipeline
     # For scheduled nudge checks, inject a commitment signal
     signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
+
+    # Compute trail adjustments from outcome history
+    adjustments = compute_trail_adjustments(signals, trail_store)
 
     modes = [
         ExecutorMode(store=store),
@@ -291,7 +303,7 @@ def nudge() -> None:
         GuideMode(),
     ]
 
-    response = route_and_execute(signals, state, modes)
+    response = route_and_execute(signals, state, modes, trail_adjustments=adjustments)
 
     if response is None or not response.text:
         click.echo("Nothing to nudge about right now.")
