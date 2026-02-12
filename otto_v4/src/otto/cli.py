@@ -445,6 +445,73 @@ def wip(commitment_id: int, note: str) -> None:
 
 
 @main.command()
+def metrics() -> None:
+    """Show learning metrics and routing statistics."""
+    trail_store = _get_trail_store()
+
+    # Mode outcomes
+    total_outcomes = trail_store.get_total_outcomes()
+    click.echo()
+    click.echo(click.style("OTTO Learning Metrics", bold=True))
+    click.echo()
+
+    if total_outcomes == 0:
+        click.echo("  No outcome data yet. Use OTTO and data will accumulate.")
+        click.echo()
+        return
+
+    click.echo(click.style("Mode outcomes:", bold=True))
+    # Collect all modes that have outcomes
+    modes_seen: set[str] = set()
+    conn = trail_store._connect()
+    try:
+        cur = conn.execute(
+            "SELECT DISTINCT mode FROM mode_outcomes ORDER BY mode"
+        )
+        modes_seen = {row[0] for row in cur.fetchall()}
+    finally:
+        conn.close()
+
+    for mode_name in sorted(modes_seen):
+        stats = trail_store.get_mode_stats(mode_name)
+        rate = trail_store.get_success_rate(mode_name)
+        rate_str = f"{rate:.0%}" if rate is not None else "n/a"
+        outcomes = ", ".join(
+            f"{k}={v}" for k, v in sorted(stats.items()) if k != "total"
+        )
+        click.echo(f"  {mode_name}: {outcomes} (total={stats['total']}, success_rate={rate_str})")
+
+    # UCB adjustments
+    click.echo()
+    click.echo(click.style("UCB1 adjustments (current):", bold=True))
+    try:
+        from .learner import compute_ucb_adjustments
+        from .signals import Signal, SignalType
+
+        # Compute for all signal types that have mode mappings
+        all_signals = [
+            Signal(type=st, confidence=0.8)
+            for st in SignalType
+        ]
+        adjustments = compute_ucb_adjustments(all_signals, trail_store)
+        if adjustments:
+            for mode_name, adj in sorted(adjustments.items()):
+                direction = "+" if adj >= 0 else ""
+                click.echo(f"  {mode_name}: {direction}{adj:.4f}")
+        else:
+            click.echo("  No adjustments yet (need >= 3 samples per mode)")
+    except ImportError:
+        click.echo("  UCB module not available")
+
+    # Trail counts
+    click.echo()
+    trail_count = trail_store.count()
+    click.echo(f"  Trail deposits: {trail_count}")
+    click.echo(f"  Total outcomes: {total_outcomes}")
+    click.echo()
+
+
+@main.command()
 @click.confirmation_option(prompt="This will delete ALL your commitment data. Are you sure?")
 def nuke() -> None:
     """Delete ALL data. Fresh start."""
