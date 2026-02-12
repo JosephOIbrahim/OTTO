@@ -33,6 +33,14 @@ CREATE TABLE IF NOT EXISTS trail_deposits (
 );
 CREATE INDEX IF NOT EXISTS idx_trail_context ON trail_deposits(context);
 CREATE INDEX IF NOT EXISTS idx_trail_action ON trail_deposits(action);
+CREATE TABLE IF NOT EXISTS mode_outcomes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mode TEXT NOT NULL,
+    context TEXT NOT NULL,
+    outcome TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_outcomes_mode ON mode_outcomes(mode);
 """
 
 # Trails below this strength are pruned during decay
@@ -254,6 +262,72 @@ class TrailStore:
         conn = self._connect()
         try:
             cur = conn.execute("SELECT COUNT(*) FROM trail_deposits")
+            row = cur.fetchone()
+        finally:
+            conn.close()
+        return row[0] if row else 0
+
+    # ------------------------------------------------------------------
+    # Mode outcome tracking
+    # ------------------------------------------------------------------
+
+    def record_outcome(
+        self,
+        mode: str,
+        context: str,
+        outcome: str,
+        *,
+        now: datetime | None = None,
+    ) -> None:
+        """Record a mode outcome (success, ignored, mixed, activated)."""
+        if now is None:
+            now = datetime.now(timezone.utc)
+        conn = self._connect()
+        try:
+            conn.execute(
+                "INSERT INTO mode_outcomes (mode, context, outcome, created_at) "
+                "VALUES (?, ?, ?, ?)",
+                (mode, context, outcome, now.isoformat()),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        _log.debug("Outcome recorded: %s/%s -> %s", mode, context, outcome)
+
+    def get_mode_stats(self, mode: str) -> dict[str, int]:
+        """Return {outcome: count, ..., 'total': N} for a mode."""
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT outcome, COUNT(*) FROM mode_outcomes "
+                "WHERE mode = ? GROUP BY outcome ORDER BY outcome",
+                (mode,),
+            )
+            rows = cur.fetchall()
+        finally:
+            conn.close()
+
+        stats: dict[str, int] = {}
+        total = 0
+        for outcome, count in rows:
+            stats[outcome] = count
+            total += count
+        stats["total"] = total
+        return stats
+
+    def get_success_rate(self, mode: str) -> float | None:
+        """Return success / total for a mode. None if no data."""
+        stats = self.get_mode_stats(mode)
+        total = stats.get("total", 0)
+        if total == 0:
+            return None
+        return stats.get("success", 0) / total
+
+    def get_total_outcomes(self) -> int:
+        """Return total outcome count across all modes."""
+        conn = self._connect()
+        try:
+            cur = conn.execute("SELECT COUNT(*) FROM mode_outcomes")
             row = cur.fetchone()
         finally:
             conn.close()

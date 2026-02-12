@@ -174,3 +174,48 @@ class TestDeterminism:
             assert [(t.action, t.strength) for t in result] == [
                 (t.action, t.strength) for t in baseline
             ]
+
+
+class TestOutcomeTracking:
+    def test_record_and_retrieve(self, store):
+        store.record_outcome("executor", "commitment_detected", "success")
+        stats = store.get_mode_stats("executor")
+        assert stats["success"] == 1
+        assert stats["total"] == 1
+
+    def test_multiple_outcomes(self, store):
+        store.record_outcome("executor", "commitment_detected", "success")
+        store.record_outcome("executor", "commitment_detected", "success")
+        store.record_outcome("executor", "commitment_detected", "ignored")
+        stats = store.get_mode_stats("executor")
+        assert stats["success"] == 2
+        assert stats["ignored"] == 1
+        assert stats["total"] == 3
+
+    def test_success_rate(self, store):
+        store.record_outcome("protector", "frustrated", "success")
+        store.record_outcome("protector", "frustrated", "ignored")
+        rate = store.get_success_rate("protector")
+        assert rate == 0.5
+
+    def test_no_data_returns_none(self, store):
+        assert store.get_success_rate("nonexistent") is None
+
+    def test_get_total_outcomes(self, store):
+        store.record_outcome("executor", "ctx", "success")
+        store.record_outcome("protector", "ctx", "ignored")
+        store.record_outcome("restorer", "ctx", "activated")
+        assert store.get_total_outcomes() == 3
+
+    def test_get_total_outcomes_empty(self, store):
+        assert store.get_total_outcomes() == 0
+
+    def test_stats_sorted_by_outcome(self, store):
+        """Stats keys should be deterministically ordered."""
+        store.record_outcome("executor", "ctx", "success")
+        store.record_outcome("executor", "ctx", "ignored")
+        store.record_outcome("executor", "ctx", "mixed")
+        stats = store.get_mode_stats("executor")
+        # Remove 'total' for the check
+        outcome_keys = sorted(k for k in stats if k != "total")
+        assert outcome_keys == ["ignored", "mixed", "success"]

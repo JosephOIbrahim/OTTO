@@ -151,14 +151,15 @@ def done(commitment_id: int) -> None:
     state_store = _get_state_store()
     state_store.increment_nudges_completed()
 
+    trail_store = _get_trail_store()
     if c.follow_up_count > 0:
         # Nudge led to completion -> strong positive trail (amplified during crisis)
-        trail_store = _get_trail_store()
         state = state_store.load()
         window = PlasticityWindow()
         window.update(state)
         trail_store.deposit("executor:nudge", "commitment_detected", window.adjust_strength(1.0))
 
+    trail_store.record_outcome("executor", "commitment_detected", "success")
     click.echo(click.style(f"Done: {c.commitment_text}", fg="green"))
 
 
@@ -183,15 +184,16 @@ def park(commitment_id: int) -> None:
     c = store.get(uuid)
     store.mark_parked(uuid)
 
+    trail_store = _get_trail_store()
     if c.follow_up_count > 0:
         # Nudge led to park -> weak positive trail (amplified during crisis)
-        trail_store = _get_trail_store()
         state_store = _get_state_store()
         state = state_store.load()
         window = PlasticityWindow()
         window.update(state)
         trail_store.deposit("executor:nudge", "commitment_detected", window.adjust_strength(0.3))
 
+    trail_store.record_outcome("executor", "commitment_detected", "mixed")
     click.echo(click.style(f"Parked: {c.commitment_text}", fg="yellow"))
 
 
@@ -307,11 +309,17 @@ def nudge() -> None:
 
     if response is None or not response.text:
         click.echo("Nothing to nudge about right now.")
-    elif response.suppress_others:
-        # Safety mode activated (protector/restorer)
-        click.echo(click.style(response.text, fg="yellow"))
     else:
-        click.echo(response.text)
+        # Record which mode was selected
+        primary = response.metadata.get("primary", "unknown")
+        context = signals[0].type.value if signals else "unknown"
+        trail_store.record_outcome(primary, context, "activated")
+
+        if response.suppress_others:
+            # Safety mode activated (protector/restorer)
+            click.echo(click.style(response.text, fg="yellow"))
+        else:
+            click.echo(response.text)
 
 
 @main.command()
