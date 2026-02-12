@@ -97,7 +97,7 @@ def format_nudge(commitment: Commitment, reason: str) -> str:
     else:
         templates = _STALE_TEMPLATES
 
-    # Stable hash: hashlib is PYTHONHASHSEED-independent (He2025 compliance)
+    # Stable hash: hashlib is PYTHONHASHSEED-independent (deterministic by design)
     key = (commitment.id + str(commitment.follow_up_count)).encode()
     idx = int(hashlib.sha256(key).hexdigest()[:8], 16) % len(templates)
     template = templates[idx]

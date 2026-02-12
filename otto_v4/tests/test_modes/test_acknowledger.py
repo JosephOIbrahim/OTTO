@@ -77,7 +77,7 @@ class TestAcknowledgerExecute:
         assert response.metadata["action"] == "streak"
 
     def test_deterministic_template_selection(self):
-        """Same completed_count -> same template (He2025 compliance)."""
+        """Same completed_count -> same template (deterministic by design)."""
         results = set()
         for _ in range(10):
             mode = AcknowledgerMode(completed_count=7)

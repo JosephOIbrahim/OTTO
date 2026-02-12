@@ -1,0 +1,9 @@
+# OTTO v5.0 — Pinned dependency versions
+# Generated: 2026-02-11
+# Regenerate with: pip freeze | grep -i "anthropic\|click\|fastapi\|uvicorn\|pydantic\|pytest"
+anthropic==0.75.0
+click==8.3.1
+fastapi==0.128.0
+uvicorn==0.40.0
+pydantic==2.12.5
+pytest==9.0.2

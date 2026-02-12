@@ -15,10 +15,12 @@ Environment Variables:
 """
 
 import asyncio
+import collections
 import hashlib
 import hmac
 import json
 import os
+import time
 from datetime import datetime, timezone, timedelta
 
 from .log import get_logger
@@ -84,6 +86,35 @@ VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "otto_verify")
 APP_SECRET = os.environ.get("WHATSAPP_APP_SECRET", "")
 MAX_MESSAGE_AGE = timedelta(hours=1)  # Skip messages older than 1 hour
 
+# Rate limiting: max requests per IP within the sliding window
+_RATE_LIMIT = int(os.environ.get("OTTO_RATE_LIMIT", "100"))  # per window
+_RATE_WINDOW = int(os.environ.get("OTTO_RATE_WINDOW", "60"))  # seconds
+
+
+# --- Rate limiter (in-memory, no external dependency) ---
+
+_request_log: dict[str, collections.deque] = {}
+
+
+def _is_rate_limited(client_ip: str) -> bool:
+    """Check if a client IP has exceeded the rate limit (sliding window)."""
+    now = time.monotonic()
+    if client_ip not in _request_log:
+        _request_log[client_ip] = collections.deque()
+
+    window = _request_log[client_ip]
+
+    # Evict timestamps outside the window
+    cutoff = now - _RATE_WINDOW
+    while window and window[0] < cutoff:
+        window.popleft()
+
+    if len(window) >= _RATE_LIMIT:
+        return True
+
+    window.append(now)
+    return False
+
 
 # --- App ---
 
@@ -108,6 +139,12 @@ async def verify_webhook(
 @app.post("/webhook/whatsapp")
 async def receive_webhook(request: Request):
     """Receive and process incoming WhatsApp messages."""
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    if _is_rate_limited(client_ip):
+        _log.warning("Rate limited: %s", client_ip)
+        raise HTTPException(status_code=429, detail="Too many requests")
+
     body = await request.body()
 
     # Validate signature if app secret configured

@@ -71,7 +71,7 @@ class TestGuideExecute:
         assert response.metadata["action"] == "socratic_prompt"
 
     def test_deterministic_template(self):
-        """Same confidence -> same prompt (He2025 compliance)."""
+        """Same confidence -> same prompt (deterministic by design)."""
         results = set()
         for _ in range(10):
             mode = GuideMode()

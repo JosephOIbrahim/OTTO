@@ -54,6 +54,7 @@ class CommitmentStore:
     def _ensure_table(self) -> None:
         conn = self._connect()
         try:
+            conn.execute("PRAGMA journal_mode=WAL")
             conn.execute(_SCHEMA)
             # Migrate existing DBs: add new columns if missing
             cursor = conn.execute("PRAGMA table_info(commitments)")

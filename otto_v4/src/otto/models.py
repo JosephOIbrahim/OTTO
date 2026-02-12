@@ -98,7 +98,7 @@ def _stable_short_id(uuid_str: str) -> int:
     """Derive a stable 4-digit short ID from a UUID.
 
     Uses SHA-256 to produce a deterministic integer in [1000, 9999].
-    This is PYTHONHASHSEED-independent (He2025 compliance).
+    This is PYTHONHASHSEED-independent (deterministic by design).
     """
     digest = hashlib.sha256(uuid_str.encode()).hexdigest()  # noqa: S324
     return 1000 + (int(digest[:8], 16) % 9000)

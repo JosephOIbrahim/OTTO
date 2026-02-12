@@ -230,3 +230,40 @@ class TestSignatureValidation:
             )
 
         assert resp.status_code == 403
+
+
+# ------------------------------------------------------------------
+# Rate limiting
+# ------------------------------------------------------------------
+
+
+class TestRateLimiting:
+    def test_rate_limit_allows_normal_traffic(self, client):
+        """Normal traffic under the limit should be accepted."""
+        from otto.watcher import _request_log
+        _request_log.clear()
+
+        payload = _make_webhook_payload("hello")
+        with patch("otto.watcher.detect_commitment", new_callable=AsyncMock, return_value=None):
+            resp = client.post("/webhook/whatsapp", json=payload)
+        assert resp.status_code == 200
+
+    def test_rate_limit_blocks_excessive_traffic(self, client):
+        """Traffic exceeding the limit should return 429."""
+        from otto.watcher import _request_log
+        _request_log.clear()
+
+        payload = _make_webhook_payload("hello")
+
+        # Set a very low limit for testing
+        with (
+            patch("otto.watcher._RATE_LIMIT", 3),
+            patch("otto.watcher.detect_commitment", new_callable=AsyncMock, return_value=None),
+        ):
+            for _ in range(3):
+                resp = client.post("/webhook/whatsapp", json=payload)
+                assert resp.status_code == 200
+
+            # 4th request should be rate limited
+            resp = client.post("/webhook/whatsapp", json=payload)
+            assert resp.status_code == 429

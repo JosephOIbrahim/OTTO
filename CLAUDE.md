@@ -12,7 +12,7 @@ A cognitive commitment engine. Watches messages for commitments ("I'll send that
 cd otto_v4
 pip install -e ".[dev]"          # Install with dev deps (pytest, pytest-asyncio)
 
-# Run all core tests (182 tests)
+# Run all core tests (493 tests)
 python -m pytest tests/ -v -m "not integration"
 
 # Run agent tests (56 tests)
@@ -22,7 +22,7 @@ python -m pytest otto_agent/tests/ -v
 python -m pytest tests/test_store.py -v
 python -m pytest tests/test_cli.py::TestSnooze::test_snooze_valid -v
 
-# Run everything (238 tests, integration tests need ANTHROPIC_API_KEY)
+# Run everything (549 tests, integration tests need ANTHROPIC_API_KEY)
 python -m pytest tests/ otto_agent/tests/ -v
 ```
 
@@ -54,11 +54,15 @@ otto_v4/
 │   ├── router.py           # NEXUS: 5-phase deterministic routing + trail adjustments
 │   ├── trails.py           # Pheromone trails: deposit/follow/decay with Kahan summation
 │   ├── sender.py           # NudgeSender: constitutional gate -> transport.send()
-│   ├── modes/              # Specialist modes (Mode protocol)
+│   ├── modes/              # 7 specialist modes (Mode protocol)
 │   │   ├── base.py         # Mode protocol: responds_to, weight, execute, augment
 │   │   ├── executor.py     # Wraps v4.0 nudge.py (commitment tracking)
 │   │   ├── protector.py    # 10% safety floor (crisis, frustration)
-│   │   └── restorer.py     # 5% safety floor (energy, rest permission)
+│   │   ├── restorer.py     # 5% safety floor (energy, rest permission)
+│   │   ├── decomposer.py   # 5% safety floor (task breakdown)
+│   │   ├── acknowledger.py # Validation, celebration
+│   │   ├── redirector.py   # Gentle refocus from tangents
+│   │   └── guide.py        # Socratic exploration
 │   ├── transport/          # Pluggable transport layer
 │   │   ├── base.py         # Transport protocol, Message, DeliveryResult
 │   │   └── cli_transport.py # CLI transport (stdout + capture mode)
@@ -70,7 +74,7 @@ otto_v4/
 │   ├── otto_tools.py       # MCP tool definitions (8 tools mirror CLI)
 │   ├── otto_hooks.py       # Pre-tool-use constitutional hooks
 │   └── CLAUDE.md           # Agent personality prompt
-├── tests/                  # 417 tests
+├── tests/                  # 493+ tests
 └── pyproject.toml
 OTTO_Agents/                # Claude Agent SDK agents (separate package)
 ├── otto_agents/            # 3 agents: NEXUS orchestrator, consistency auditor, builder
@@ -103,11 +107,12 @@ MESSAGE IN → DETECT → STORE → SCHEDULE → NUDGE → CONSTITUTIONAL GATE �
 6. **Dignity Always** — No clinical labels. No "ADHD mode."
 7. **Privacy Is Sovereignty** — All data local. No cloud sync.
 
-### He2025 Determinism
+### Determinism (inspired by He2025)
+Application-level determinism in all Python control flow. He2025 (Horace He, ThinkingMachines, Sept 2025) addresses GPU kernel-level batch invariance — OTTO applies the same *principle* (same inputs = same outputs) at the application layer:
 - `sort_keys=True` in all JSON serialization
 - Nudge template selection via `hashlib.sha256()` — PYTHONHASHSEED-independent
 - Same signals + same state = same routing (no randomness in control flow)
-- Future trail decay uses Kahan summation for numerical stability
+- Trail decay uses Kahan summation for numerical stability (separate technique, not from He2025)
 
 ### Cognitive State Model
 ```
@@ -123,26 +128,30 @@ Momentum: cold_start | building | rolling | peak | crashed
 
 ## Database
 
-SQLite at `~/.otto/commitments.db`. Two tables: `commitments` and `cognitive_state`. No ORM, no migrations framework. Schema changes are manual + tested.
+SQLite at `~/.otto/commitments.db` with WAL mode enabled. Three tables: `commitments`, `cognitive_state`, `trail_deposits`. No ORM, no migrations framework. Schema changes are manual + tested.
 
 **Test fixtures** use `tmp_path` — every test gets an isolated SQLite database (see `conftest.py`).
 
 ## Implementation Status
 
-**Complete (Phases 0-6):**
+**v5.0 is CLI-first.** WhatsApp outbound transport is deferred to v5.1. The webhook (watcher.py) receives messages; outbound delivery is via CLI only.
+
+**Complete (Phases 0-8 + hardening):**
 - Phase 0-1: Structured logging, cognitive state, constitutional layer, snooze/WIP, scheduler, agent SDK
 - Phase 2: PRISM signal detection (14 signal types, 9 pattern banks) + HistoryAnalyzer (behavioral patterns)
 - Phase 3: Mode architecture — base protocol + Executor (wraps v4.0), Protector (10% floor), Restorer (5% floor)
 - Phase 4: NEXUS deterministic router — 5-phase pipeline (ACTIVATE->WEIGHT->BOUND->SELECT->EXECUTE)
 - Phase 5: Pheromone trails — SQLite deposit/follow/decay with Kahan summation, wired into router
 - Phase 6: Transport abstraction (pluggable protocol) + NudgeSender with constitutional gate before send
+- Phase 8: All 7 modes (Executor, Protector, Restorer, Decomposer, Acknowledger, Redirector, Guide)
+- Hardening: Message dedup, stable short IDs, DB indices, SQLite WAL mode, rate limiting, pinned deps, CI
 
-**Not yet implemented (Phases 7-9):**
-- Remaining modes: Decomposer, Redirector, Acknowledger, Guide
-- Message deduplication + stable short IDs
-- WhatsApp transport (refactor from watcher.py)
+**549 tests passing** (493 core + 56 agent).
 
-Full phase roadmap is in the git history and `docs/plans/`.
+**Not yet implemented:**
+- WhatsApp outbound transport (v5.1)
+- Optional LLM-powered response generation (gated by env var)
+- Plasticity layer (learning rate amplification during crisis)
 
 ## Conventions
 

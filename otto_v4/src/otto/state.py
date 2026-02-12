@@ -94,6 +94,7 @@ class StateStore:
     def _ensure_table(self) -> None:
         conn = self._connect()
         try:
+            conn.execute("PRAGMA journal_mode=WAL")
             conn.execute(_STATE_SCHEMA)
             conn.execute(_INTERACTION_LOG_SCHEMA)
             conn.commit()

@@ -25,7 +25,7 @@ logger = logging.getLogger("otto.agent.tools")
 
 
 def _json(obj: Any) -> str:
-    """Serialize to JSON with sort_keys=True (He2025 compliance)."""
+    """Serialize to JSON with sort_keys=True for deterministic output."""
     return json.dumps(obj, sort_keys=True)
 
 
