@@ -1,4 +1,4 @@
-"""Tests for pheromone trail system (Phase 5.1)."""
+"""Tests for outcome trail system (Phase 5.1)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from otto.trails import TrailStore, _kahan_decay
+from otto.trails import TrailStore, _exponential_decay
 
 
 def _ts(offset_hours: float = 0) -> datetime:
@@ -129,27 +129,27 @@ class TestDecay:
         assert store.get_strength("executor:nudge", "meeting") == 0.7
 
 
-class TestKahanDecay:
+class TestExponentialDecay:
     def test_half_life_at_half_life(self):
         """At exactly one half-life, factor should be 0.5."""
-        assert _kahan_decay(168, 168) == pytest.approx(0.5)
+        assert _exponential_decay(168, 168) == pytest.approx(0.5)
 
     def test_zero_elapsed(self):
         """Zero elapsed -> factor is 1.0."""
-        assert _kahan_decay(0, 168) == 1.0
+        assert _exponential_decay(0, 168) == 1.0
 
     def test_large_elapsed(self):
         """Very large elapsed -> factor approaches 0."""
-        factor = _kahan_decay(10000, 168)
+        factor = _exponential_decay(10000, 168)
         assert factor < 0.001
 
     def test_zero_half_life_returns_zero(self):
-        assert _kahan_decay(100, 0) == 0.0
+        assert _exponential_decay(100, 0) == 0.0
 
     def test_numerical_stability(self):
         """Kahan decay should produce consistent results across magnitudes."""
         # Compare result of 10 half-lives
-        result = _kahan_decay(1680, 168)
+        result = _exponential_decay(1680, 168)
         expected = 0.5 ** 10
         assert result == pytest.approx(expected, rel=1e-10)
 

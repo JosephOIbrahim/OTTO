@@ -1,10 +1,7 @@
-"""Pheromone trail system for OTTO v5.0.
+"""Trail-based preference learning for OTTO v5.0.
 
-Stigmergic learning: no central coordinator. Patterns emerge from
-usage. Successful actions strengthen trails; unused trails decay.
-
-Uses Kahan summation for numerical stability during decay operations
-(He2025 compliance — batch invariance).
+Successful actions strengthen trails; unused trails decay.
+Uses exponential decay for trail strength reduction over time.
 
 Usage:
     store = TrailStore(db_path)
@@ -44,7 +41,7 @@ _PRUNE_THRESHOLD = 0.001
 
 @dataclass
 class Trail:
-    """A single pheromone trail entry."""
+    """A single outcome trail entry."""
 
     action: str
     context: str
@@ -55,7 +52,7 @@ class Trail:
 
 
 class TrailStore:
-    """SQLite-backed pheromone trail persistence.
+    """SQLite-backed outcome trail persistence.
 
     Each trail tracks an (action, context) pair with cumulative
     strength and deposit count.
@@ -71,6 +68,7 @@ class TrailStore:
     def _ensure_table(self) -> None:
         conn = self._connect()
         try:
+            conn.execute("PRAGMA journal_mode=WAL")
             conn.executescript(_TRAIL_SCHEMA)
             conn.commit()
         finally:
@@ -84,7 +82,7 @@ class TrailStore:
         *,
         now: datetime | None = None,
     ) -> None:
-        """Deposit pheromone on a trail. Strengthens successful patterns.
+        """Record an outcome on a trail. Strengthens successful patterns.
 
         If a trail for (action, context) already exists, its strength
         is added to and deposit_count incremented.
@@ -178,7 +176,7 @@ class TrailStore:
         """Apply exponential decay to all trails.
 
         Formula: strength *= 0.5 ^ (elapsed_hours / half_life)
-        Uses Kahan summation for numerical stability.
+        Uses exponential half-life decay.
 
         Prunes trails below threshold (0.001).
 
@@ -202,8 +200,8 @@ class TrailStore:
                 if elapsed_hours <= 0:
                     continue
 
-                # Exponential decay with Kahan-stable computation
-                decay_factor = _kahan_decay(elapsed_hours, half_life_hours)
+                # Exponential half-life decay
+                decay_factor = _exponential_decay(elapsed_hours, half_life_hours)
                 new_strength = strength * decay_factor
 
                 if new_strength < _PRUNE_THRESHOLD:
@@ -262,8 +260,8 @@ class TrailStore:
         return row[0] if row else 0
 
 
-def _kahan_decay(elapsed_hours: float, half_life_hours: float) -> float:
-    """Compute decay factor using Kahan-stable exponentiation.
+def _exponential_decay(elapsed_hours: float, half_life_hours: float) -> float:
+    """Compute exponential decay factor for trail strength.
 
     Returns 0.5 ^ (elapsed / half_life), computed with care for
     numerical stability when elapsed is large relative to half_life.
@@ -271,6 +269,5 @@ def _kahan_decay(elapsed_hours: float, half_life_hours: float) -> float:
     if half_life_hours <= 0:
         return 0.0
     exponent = elapsed_hours / half_life_hours
-    # math.pow is fine for this range; the Kahan aspect is that we
-    # don't accumulate error across multiple multiplications
+    # Single exponential: no accumulation, so no compensation needed
     return math.pow(0.5, exponent)

@@ -66,7 +66,7 @@ def route(
     modes:
         Available specialist modes.
     trail_adjustments:
-        Optional weight adjustments from pheromone trails.
+        Optional weight adjustments from outcome trails.
         Keys are mode names, values are additive adjustments
         (clamped to +/- 0.2).
 
@@ -212,7 +212,7 @@ def compute_trail_adjustments(
     signals: list[Signal],
     trail_store: TrailStore,
 ) -> dict[str, float]:
-    """Compute per-mode weight adjustments from pheromone trails.
+    """Compute per-mode weight adjustments from outcome trails.
 
     For each signal, looks up trails for that signal's context.
     If a mode has strong trails (above baseline), it gets a positive
