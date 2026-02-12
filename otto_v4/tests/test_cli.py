@@ -337,6 +337,24 @@ class TestNuke:
         # Data should still be there
         assert len(seeded_store.get_active()) == 2
 
+    def test_nuke_clears_learning_data(self, runner, tmp_path):
+        """Nuke must also clear trail_deposits and mode_outcomes."""
+        from otto.trails import TrailStore
+
+        db = str(tmp_path / "nuke_learn.db")
+        cs = CommitmentStore(db_path=db)
+        ts = TrailStore(db_path=db)
+        ts.deposit("action", "ctx", 1.0)
+        ts.record_outcome("executor", "ctx", "success")
+
+        with patch("otto.cli._get_store", return_value=cs), \
+             patch("otto.cli._get_trail_store", return_value=ts):
+            result = runner.invoke(main, ["nuke", "--yes"])
+
+        assert result.exit_code == 0
+        assert ts.count() == 0
+        assert ts.get_total_outcomes() == 0
+
 
 # ------------------------------------------------------------------
 # otto nudge

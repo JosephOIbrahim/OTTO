@@ -7,18 +7,25 @@ exchanges.
 
 This layer affects LEARNING RATE only, never routing order.
 
+State is persisted in SQLite so the window survives CLI invocations.
+
 Usage:
-    window = PlasticityWindow()
+    window = PlasticityWindow.load(state_store)
     window.update(state)
+    window.save(state_store)
     deposit_strength = window.adjust_strength(1.0)  # -> 2.0 if open
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from .log import get_logger
 from .state import CognitiveState
+
+if TYPE_CHECKING:
+    from .state import StateStore
 
 _log = get_logger(__name__)
 
@@ -104,3 +111,35 @@ class PlasticityWindow:
             Amplified strength if window is open, base otherwise.
         """
         return base_strength * self.amplification
+
+    # ------------------------------------------------------------------
+    # Persistence (survives CLI invocations)
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def load(cls, state_store: StateStore) -> PlasticityWindow:
+        """Load plasticity state from the state store.
+
+        Falls back to defaults (closed, stable_count=0) if no
+        persisted state exists.
+        """
+        state_store._ensure_table()
+        conn = state_store._connect()
+        try:
+            cur = conn.execute(
+                "SELECT key, value FROM cognitive_state "
+                "WHERE key IN ('plasticity_open', 'plasticity_stable_count')"
+            )
+            rows = {k: v for k, v in cur.fetchall()}
+        finally:
+            conn.close()
+
+        return cls(
+            is_open=rows.get("plasticity_open", "0") == "1",
+            stable_count=int(rows.get("plasticity_stable_count", "0")),
+        )
+
+    def save(self, state_store: StateStore) -> None:
+        """Persist plasticity state to the state store."""
+        state_store._set_key("plasticity_open", "1" if self.is_open else "0")
+        state_store._set_key("plasticity_stable_count", str(self.stable_count))

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from otto.plasticity import PlasticityWindow, _AMPLIFICATION, _STABILITY_THRESHOLD
-from otto.state import CognitiveState
+from otto.state import CognitiveState, StateStore
 
 
 # ------------------------------------------------------------------
@@ -188,3 +188,76 @@ class TestLifecycle:
             results.append((window.is_open, window.stable_count))
 
         assert len(set(results)) == 1
+
+
+# ------------------------------------------------------------------
+# PlasticityWindow — persistence across CLI invocations
+# ------------------------------------------------------------------
+
+
+class TestPersistence:
+
+    def test_save_and_load_open_window(self, tmp_path):
+        """Persisted open window survives reload."""
+        db = str(tmp_path / "state.db")
+        store = StateStore(db_path=db)
+
+        window = PlasticityWindow(is_open=True, stable_count=2)
+        window.save(store)
+
+        loaded = PlasticityWindow.load(store)
+        assert loaded.is_open is True
+        assert loaded.stable_count == 2
+
+    def test_save_and_load_closed_window(self, tmp_path):
+        """Persisted closed window survives reload."""
+        db = str(tmp_path / "state.db")
+        store = StateStore(db_path=db)
+
+        window = PlasticityWindow(is_open=False, stable_count=0)
+        window.save(store)
+
+        loaded = PlasticityWindow.load(store)
+        assert loaded.is_open is False
+        assert loaded.stable_count == 0
+
+    def test_load_defaults_with_no_persisted_state(self, tmp_path):
+        """No persisted state -> defaults (closed, 0)."""
+        db = str(tmp_path / "state.db")
+        store = StateStore(db_path=db)
+
+        loaded = PlasticityWindow.load(store)
+        assert loaded.is_open is False
+        assert loaded.stable_count == 0
+
+    def test_full_persisted_lifecycle(self, tmp_path):
+        """Window opens, persists, recovers across reloads."""
+        db = str(tmp_path / "state.db")
+        store = StateStore(db_path=db)
+
+        # Invocation 1: crisis opens the window
+        w1 = PlasticityWindow.load(store)
+        w1.update(CognitiveState(burnout="RED"))
+        w1.save(store)
+        assert w1.is_open is True
+
+        # Invocation 2: stable exchange
+        w2 = PlasticityWindow.load(store)
+        assert w2.is_open is True  # Persisted!
+        w2.update(CognitiveState(burnout="GREEN"))
+        w2.save(store)
+        assert w2.stable_count == 1
+
+        # Invocation 3: another stable exchange
+        w3 = PlasticityWindow.load(store)
+        assert w3.stable_count == 1  # Persisted!
+        w3.update(CognitiveState(burnout="GREEN"))
+        w3.save(store)
+        assert w3.stable_count == 2
+
+        # Invocation 4: final stable exchange -> window closes
+        w4 = PlasticityWindow.load(store)
+        w4.update(CognitiveState(burnout="GREEN"))
+        w4.save(store)
+        assert w4.is_open is False
+        assert w4.stable_count == 0

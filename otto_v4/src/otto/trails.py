@@ -345,6 +345,47 @@ class TrailStore:
             conn.close()
         return result
 
+    def prune_outcomes(
+        self,
+        max_age_days: int = 30,
+        *,
+        now: datetime | None = None,
+    ) -> int:
+        """Delete outcomes older than max_age_days.
+
+        Returns the number of rows deleted.
+        """
+        if now is None:
+            now = datetime.now(timezone.utc)
+        from datetime import timedelta
+        cutoff = (now - timedelta(days=max_age_days)).isoformat()
+
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "DELETE FROM mode_outcomes WHERE created_at < ?",
+                (cutoff,),
+            )
+            deleted = cur.rowcount
+            conn.commit()
+        finally:
+            conn.close()
+
+        if deleted > 0:
+            _log.info("Outcome pruning: removed %d outcomes older than %d days", deleted, max_age_days)
+        return deleted
+
+    def nuke(self) -> None:
+        """Drop and recreate trail_deposits and mode_outcomes tables."""
+        conn = self._connect()
+        try:
+            conn.execute("DELETE FROM trail_deposits")
+            conn.execute("DELETE FROM mode_outcomes")
+            conn.commit()
+        finally:
+            conn.close()
+        _log.info("All trail and outcome data deleted")
+
 
 def _exponential_decay(elapsed_hours: float, half_life_hours: float) -> float:
     """Compute exponential decay factor for trail strength.

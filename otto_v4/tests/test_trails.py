@@ -219,3 +219,57 @@ class TestOutcomeTracking:
         # Remove 'total' for the check
         outcome_keys = sorted(k for k in stats if k != "total")
         assert outcome_keys == ["ignored", "mixed", "success"]
+
+
+class TestOutcomePruning:
+    def test_prune_removes_old_outcomes(self, store):
+        old = _ts(-24 * 31)  # 31 days ago
+        recent = _ts(0)
+        store.record_outcome("executor", "ctx", "success", now=old)
+        store.record_outcome("executor", "ctx", "ignored", now=recent)
+
+        deleted = store.prune_outcomes(max_age_days=30, now=recent)
+        assert deleted == 1
+        assert store.get_total_outcomes() == 1
+
+    def test_prune_keeps_recent_outcomes(self, store):
+        recent = _ts(0)
+        store.record_outcome("executor", "ctx", "success", now=recent)
+        store.record_outcome("executor", "ctx", "ignored", now=recent)
+
+        deleted = store.prune_outcomes(max_age_days=30, now=recent)
+        assert deleted == 0
+        assert store.get_total_outcomes() == 2
+
+    def test_prune_empty_table(self, store):
+        deleted = store.prune_outcomes(max_age_days=30)
+        assert deleted == 0
+
+    def test_prune_returns_count(self, store):
+        old = _ts(-24 * 60)  # 60 days ago
+        now = _ts(0)
+        for _ in range(5):
+            store.record_outcome("executor", "ctx", "success", now=old)
+        store.record_outcome("executor", "ctx", "success", now=now)
+
+        deleted = store.prune_outcomes(max_age_days=30, now=now)
+        assert deleted == 5
+
+
+class TestTrailStoreNuke:
+    def test_nuke_clears_trails(self, store):
+        store.deposit("action", "ctx", 1.0, now=_ts())
+        store.nuke()
+        assert store.count() == 0
+
+    def test_nuke_clears_outcomes(self, store):
+        store.record_outcome("executor", "ctx", "success")
+        store.nuke()
+        assert store.get_total_outcomes() == 0
+
+    def test_nuke_clears_both(self, store):
+        store.deposit("action", "ctx", 1.0, now=_ts())
+        store.record_outcome("executor", "ctx", "success")
+        store.nuke()
+        assert store.count() == 0
+        assert store.get_total_outcomes() == 0

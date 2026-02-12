@@ -155,8 +155,9 @@ def done(commitment_id: int) -> None:
     if c.follow_up_count > 0:
         # Nudge led to completion -> strong positive trail (amplified during crisis)
         state = state_store.load()
-        window = PlasticityWindow()
+        window = PlasticityWindow.load(state_store)
         window.update(state)
+        window.save(state_store)
         trail_store.deposit("executor:nudge", "commitment_detected", window.adjust_strength(1.0))
 
     trail_store.record_outcome("executor", "commitment_detected", "success")
@@ -189,8 +190,9 @@ def park(commitment_id: int) -> None:
         # Nudge led to park -> weak positive trail (amplified during crisis)
         state_store = _get_state_store()
         state = state_store.load()
-        window = PlasticityWindow()
+        window = PlasticityWindow.load(state_store)
         window.update(state)
+        window.save(state_store)
         trail_store.deposit("executor:nudge", "commitment_detected", window.adjust_strength(0.3))
 
     trail_store.record_outcome("executor", "commitment_detected", "mixed")
@@ -503,9 +505,11 @@ def metrics() -> None:
 
 
 @main.command()
-@click.confirmation_option(prompt="This will delete ALL your commitment data. Are you sure?")
+@click.confirmation_option(prompt="This will delete ALL your data (commitments + learning). Are you sure?")
 def nuke() -> None:
     """Delete ALL data. Fresh start."""
     store = _get_store()
     store.nuke()
+    trail_store = _get_trail_store()
+    trail_store.nuke()
     click.echo(click.style("All data deleted. Fresh start.", fg="red"))
