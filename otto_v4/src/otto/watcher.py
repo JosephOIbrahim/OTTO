@@ -15,7 +15,6 @@ Environment Variables:
 """
 
 import asyncio
-import collections
 import hashlib
 import hmac
 import json
@@ -26,6 +25,8 @@ from datetime import datetime, timezone, timedelta
 from .log import get_logger
 
 _log = get_logger(__name__)
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
@@ -91,35 +92,106 @@ _RATE_LIMIT = int(os.environ.get("OTTO_RATE_LIMIT", "100"))  # per window
 _RATE_WINDOW = int(os.environ.get("OTTO_RATE_WINDOW", "60"))  # seconds
 
 
-# --- Rate limiter (in-memory, no external dependency) ---
+# --- Rate limiter (SQLite-backed, survives restarts) ---
 
-_request_log: dict[str, collections.deque] = {}
+
+class RateLimiter:
+    """SQLite-backed sliding window rate limiter.
+
+    Persists request timestamps so rate limits survive process restarts.
+    Prunes expired entries on each call to keep the table small.
+    """
+
+    def __init__(
+        self,
+        db_path: str = "",
+        max_requests: int = 100,
+        window_seconds: int = 60,
+    ) -> None:
+        import sqlite3
+        self._max = max_requests
+        self._window = window_seconds
+        if db_path:
+            self._conn = sqlite3.connect(db_path, check_same_thread=False)
+        else:
+            self._conn = sqlite3.connect(":memory:", check_same_thread=False)
+        self._conn.execute(
+            "CREATE TABLE IF NOT EXISTS rate_limits ("
+            "ip TEXT NOT NULL, ts REAL NOT NULL)"
+        )
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_rate_ip ON rate_limits(ip)"
+        )
+        self._conn.commit()
+
+    def allow(self, client_ip: str) -> bool:
+        """Return True if the request is allowed, False if rate limited."""
+        now = time.time()
+        cutoff = now - self._window
+
+        # Prune expired entries for this IP
+        self._conn.execute(
+            "DELETE FROM rate_limits WHERE ip = ? AND ts < ?",
+            (client_ip, cutoff),
+        )
+
+        # Count recent requests
+        cur = self._conn.execute(
+            "SELECT COUNT(*) FROM rate_limits WHERE ip = ? AND ts >= ?",
+            (client_ip, cutoff),
+        )
+        count = cur.fetchone()[0]
+
+        if count >= self._max:
+            self._conn.commit()
+            return False
+
+        # Record this request
+        self._conn.execute(
+            "INSERT INTO rate_limits (ip, ts) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        self._conn.commit()
+        return True
+
+
+# Module-level instance (in-memory by default, overridable for testing)
+_rate_limiter = RateLimiter(max_requests=_RATE_LIMIT, window_seconds=_RATE_WINDOW)
 
 
 def _is_rate_limited(client_ip: str) -> bool:
-    """Check if a client IP has exceeded the rate limit (sliding window)."""
-    now = time.monotonic()
-    if client_ip not in _request_log:
-        _request_log[client_ip] = collections.deque()
-
-    window = _request_log[client_ip]
-
-    # Evict timestamps outside the window
-    cutoff = now - _RATE_WINDOW
-    while window and window[0] < cutoff:
-        window.popleft()
-
-    if len(window) >= _RATE_LIMIT:
-        return True
-
-    window.append(now)
-    return False
+    """Check if a client IP has exceeded the rate limit."""
+    return not _rate_limiter.allow(client_ip)
 
 
 # --- App ---
 
-app = FastAPI(title="OTTO Watcher")
+_START_TIME = time.monotonic()
+
+
+@asynccontextmanager
+async def _lifespan(application: FastAPI):
+    """Startup/shutdown lifecycle handler."""
+    if not APP_SECRET:
+        _log.warning(
+            "WHATSAPP_APP_SECRET is not set. Webhook requests will NOT be "
+            "validated. Set this env var in production."
+        )
+    yield
+
+
+app = FastAPI(title="OTTO Watcher", lifespan=_lifespan)
 store = CommitmentStore()
+
+
+@app.get("/health")
+async def health():
+    """Health check for load balancers and monitoring."""
+    return {
+        "status": "ok",
+        "version": "5.1.0",
+        "uptime_seconds": round(time.monotonic() - _START_TIME, 1),
+    }
 
 
 @app.get("/webhook/whatsapp")
@@ -203,6 +275,7 @@ async def _handle_message(contact: WhatsAppContact, message: IncomingMessage):
 
     if commitment:
         commitment.source_chat = f"WhatsApp/{chat_name}"
+        commitment.sender_phone = message.from_
         store.add(commitment)
         _log.info("Commitment detected: %s", commitment.commitment_text)
         _log.info("  To: %s | By: %s", commitment.who_to, commitment.deadline or "no deadline")

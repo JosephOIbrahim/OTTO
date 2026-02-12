@@ -17,7 +17,11 @@ from .router import _SIGNAL_TO_MODE
 from .signals import Signal
 from .trails import TrailStore
 
-_EXPLORATION_CONSTANT = 1.0
+# UCB1 standard: sqrt(2) ~ 1.414. We use 0.5 (conservative) because:
+# 1. Safety-sensitive: over-exploration could route to wrong mode during crisis
+# 2. Small sample sizes: OTTO may only accumulate 10-50 outcomes per mode
+# 3. Constitutional floors already ensure minimum activation for safety modes
+_EXPLORATION_CONSTANT = 0.5
 _MAX_ADJUSTMENT = 0.2
 _NEUTRAL_RATE = 0.5  # Baseline: adjustments relative to 50% success
 _MIN_SAMPLES = 3  # Don't adjust with fewer than 3 observations

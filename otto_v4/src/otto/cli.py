@@ -242,10 +242,27 @@ def watch(port: int, schedule: bool, interval: int) -> None:
 
         if schedule:
             from .scheduler import NudgeScheduler
+
+            # Auto-detect WhatsApp transport from env vars
+            transport = None
+            wa_phone_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+            wa_token = os.environ.get("WHATSAPP_ACCESS_TOKEN")
+            if wa_phone_id and wa_token:
+                from .transport import WhatsAppTransport
+                transport = WhatsAppTransport(
+                    phone_number_id=wa_phone_id,
+                    access_token=wa_token,
+                )
+                click.echo("WhatsApp outbound transport active")
+            else:
+                from .transport import CliTransport
+                transport = CliTransport()
+
             scheduler = NudgeScheduler(
                 store=_get_store(),
                 state_store=_get_state_store(),
                 interval_seconds=interval,
+                transport=transport,
             )
             scheduler.start()
             click.echo(
@@ -502,6 +519,36 @@ def metrics() -> None:
     click.echo(f"  Trail deposits: {trail_count}")
     click.echo(f"  Total outcomes: {total_outcomes}")
     click.echo()
+
+
+@main.command()
+@click.option("--cycles", default=100, help="Number of simulation cycles")
+@click.option("--seed", default=42, help="Deterministic seed")
+def simulate(cycles: int, seed: int) -> None:
+    """Run learning simulation to exercise UCB1 pipeline."""
+    import tempfile
+    from pathlib import Path
+
+    from .simulate import SimulationEngine
+
+    db_path = str(Path(tempfile.mkdtemp()) / "simulation.db")
+    engine = SimulationEngine(db_path=db_path)
+
+    click.echo(f"Running {cycles} cycles (seed={seed})...")
+    result = engine.run(n_cycles=cycles, seed=seed)
+    click.echo()
+    click.echo(result.summary())
+
+
+@main.command()
+def tui() -> None:
+    """Launch the TUI dashboard."""
+    try:
+        from .tui import OttoApp
+        app = OttoApp()
+        app.run()
+    except ImportError:
+        click.echo("TUI requires textual. Install with: pip install otto[tui]")
 
 
 @main.command()

@@ -24,6 +24,29 @@ def client():
 # ------------------------------------------------------------------
 
 
+class TestHealthEndpoint:
+
+    def test_health_returns_ok(self, client):
+        resp = client.get("/health")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "ok"
+        assert "version" in data
+        assert "uptime_seconds" in data
+        assert isinstance(data["uptime_seconds"], float)
+
+    def test_health_version_is_string(self, client):
+        resp = client.get("/health")
+        data = resp.json()
+        assert isinstance(data["version"], str)
+        assert "." in data["version"]
+
+
+# ------------------------------------------------------------------
+# GET /webhook/whatsapp -- verification
+# ------------------------------------------------------------------
+
+
 class TestWebhookVerification:
 
     def test_valid_verification(self, client):
@@ -240,24 +263,23 @@ class TestSignatureValidation:
 class TestRateLimiting:
     def test_rate_limit_allows_normal_traffic(self, client):
         """Normal traffic under the limit should be accepted."""
-        from otto.watcher import _request_log
-        _request_log.clear()
-
-        payload = _make_webhook_payload("hello")
-        with patch("otto.watcher.detect_commitment", new_callable=AsyncMock, return_value=None):
-            resp = client.post("/webhook/whatsapp", json=payload)
-        assert resp.status_code == 200
+        from otto.watcher import RateLimiter
+        fresh = RateLimiter(max_requests=100, window_seconds=60)
+        with patch("otto.watcher._rate_limiter", fresh):
+            payload = _make_webhook_payload("hello")
+            with patch("otto.watcher.detect_commitment", new_callable=AsyncMock, return_value=None):
+                resp = client.post("/webhook/whatsapp", json=payload)
+            assert resp.status_code == 200
 
     def test_rate_limit_blocks_excessive_traffic(self, client):
         """Traffic exceeding the limit should return 429."""
-        from otto.watcher import _request_log
-        _request_log.clear()
+        from otto.watcher import RateLimiter
+        tight = RateLimiter(max_requests=3, window_seconds=60)
 
         payload = _make_webhook_payload("hello")
 
-        # Set a very low limit for testing
         with (
-            patch("otto.watcher._RATE_LIMIT", 3),
+            patch("otto.watcher._rate_limiter", tight),
             patch("otto.watcher.detect_commitment", new_callable=AsyncMock, return_value=None),
         ):
             for _ in range(3):
@@ -267,3 +289,17 @@ class TestRateLimiting:
             # 4th request should be rate limited
             resp = client.post("/webhook/whatsapp", json=payload)
             assert resp.status_code == 429
+
+    def test_rate_limiter_persistence(self, tmp_path):
+        """Rate limit state persists across instances (same DB)."""
+        from otto.watcher import RateLimiter
+        db = str(tmp_path / "rate.db")
+        limiter1 = RateLimiter(db_path=db, max_requests=3, window_seconds=60)
+        assert limiter1.allow("1.2.3.4")
+        assert limiter1.allow("1.2.3.4")
+        assert limiter1.allow("1.2.3.4")
+        assert not limiter1.allow("1.2.3.4")  # 4th blocked
+
+        # New instance, same DB
+        limiter2 = RateLimiter(db_path=db, max_requests=3, window_seconds=60)
+        assert not limiter2.allow("1.2.3.4")  # Still blocked

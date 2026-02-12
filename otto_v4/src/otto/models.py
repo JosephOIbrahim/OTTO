@@ -32,6 +32,7 @@ class Commitment:
     status: str = "active"
     follow_up_count: int = 0
     source_chat: str = "unknown"
+    sender_phone: str | None = None
     direction: str = "outbound"
     snoozed_until: datetime | None = None
     notes: str = ""
@@ -54,6 +55,7 @@ class Commitment:
             "updated_at": self.updated_at.isoformat(),
             "follow_up_count": self.follow_up_count,
             "source_chat": self.source_chat,
+            "sender_phone": self.sender_phone,
             "direction": self.direction,
             "snoozed_until": self.snoozed_until.isoformat() if self.snoozed_until else None,
             "notes": self.notes,
@@ -83,6 +85,7 @@ class Commitment:
             updated_at=datetime.fromisoformat(data["updated_at"]),
             follow_up_count=data.get("follow_up_count", 0),
             source_chat=data.get("source_chat", "unknown"),
+            sender_phone=data.get("sender_phone"),
             direction=data.get("direction", "outbound"),
             snoozed_until=snoozed_until,
             notes=data.get("notes", ""),

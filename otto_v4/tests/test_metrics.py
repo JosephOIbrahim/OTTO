@@ -1,4 +1,4 @@
-"""Tests for otto metrics command."""
+"""Tests for otto metrics and simulate commands."""
 
 from __future__ import annotations
 
@@ -61,3 +61,23 @@ def test_metrics_shows_trail_counts(mock_ts, tmp_path):
     assert result.exit_code == 0
     assert "Trail deposits: 1" in result.output
     assert "Total outcomes: 1" in result.output
+
+
+# ------------------------------------------------------------------
+# otto simulate
+# ------------------------------------------------------------------
+
+
+def test_simulate_command():
+    runner = CliRunner()
+    result = runner.invoke(main, ["simulate", "--cycles", "20", "--seed", "42"])
+    assert result.exit_code == 0
+    assert "cycles" in result.output.lower()
+    assert "outcomes" in result.output.lower()
+
+
+def test_simulate_deterministic():
+    runner = CliRunner()
+    r1 = runner.invoke(main, ["simulate", "--cycles", "10", "--seed", "99"])
+    r2 = runner.invoke(main, ["simulate", "--cycles", "10", "--seed", "99"])
+    assert r1.output == r2.output

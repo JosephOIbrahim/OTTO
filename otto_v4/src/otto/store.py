@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS commitments (
     follow_up_count INTEGER NOT NULL DEFAULT 0,
     source_chat TEXT NOT NULL DEFAULT 'unknown',
     snoozed_until TEXT,
-    notes TEXT NOT NULL DEFAULT ''
+    notes TEXT NOT NULL DEFAULT '',
+    sender_phone TEXT
 );
 """
 
@@ -67,6 +68,11 @@ class CommitmentStore:
                 conn.execute(
                     "ALTER TABLE commitments ADD COLUMN notes TEXT NOT NULL DEFAULT ''"
                 )
+            # Migration: add sender_phone column
+            if "sender_phone" not in columns:
+                conn.execute(
+                    "ALTER TABLE commitments ADD COLUMN sender_phone TEXT"
+                )
             # Performance indices for common query patterns
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_commitments_status "
@@ -92,7 +98,7 @@ class CommitmentStore:
             id, raw_message, commitment_text, who_to, who_from,
             direction, deadline, deadline_source, status,
             created_at, updated_at, follow_up_count, source_chat,
-            snoozed_until, notes
+            snoozed_until, notes, sender_phone
         """
         (
             id_,
@@ -110,6 +116,7 @@ class CommitmentStore:
             source_chat,
             snoozed_until_str,
             notes,
+            sender_phone,
         ) = row
 
         deadline = (
@@ -135,6 +142,7 @@ class CommitmentStore:
             updated_at=datetime.fromisoformat(updated_at_str),
             follow_up_count=follow_up_count,
             source_chat=source_chat,
+            sender_phone=sender_phone,
             snoozed_until=snoozed_until,
             notes=notes or "",
         )
@@ -184,8 +192,8 @@ class CommitmentStore:
                     id, raw_message, commitment_text, who_to, who_from,
                     direction, deadline, deadline_source, status,
                     created_at, updated_at, follow_up_count, source_chat,
-                    snoozed_until, notes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    snoozed_until, notes, sender_phone
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     commitment.id,
@@ -203,6 +211,7 @@ class CommitmentStore:
                     commitment.source_chat,
                     commitment.snoozed_until.isoformat() if commitment.snoozed_until else None,
                     commitment.notes,
+                    commitment.sender_phone,
                 ),
             )
             conn.commit()

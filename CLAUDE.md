@@ -52,7 +52,7 @@ otto_v4/
 │   ├── constitutional.py   # Safety gating: should_suppress(state, action)
 │   ├── signals.py          # PRISM: 14 signal types, 9 pattern banks, HistoryAnalyzer
 │   ├── router.py           # NEXUS: 5-phase deterministic routing + trail adjustments
-│   ├── trails.py           # Pheromone trails: deposit/follow/decay with Kahan summation
+│   ├── trails.py           # Outcome trails: deposit/follow/decay with exponential half-life (168h)
 │   ├── sender.py           # NudgeSender: constitutional gate -> transport.send()
 │   ├── modes/              # 7 specialist modes (Mode protocol)
 │   │   ├── base.py         # Mode protocol: responds_to, weight, execute, augment
@@ -112,7 +112,7 @@ Application-level determinism in all Python control flow. He2025 (Horace He, Thi
 - `sort_keys=True` in all JSON serialization
 - Nudge template selection via `hashlib.sha256()` — PYTHONHASHSEED-independent
 - Same signals + same state = same routing (no randomness in control flow)
-- Trail decay uses Kahan summation for numerical stability (separate technique, not from He2025)
+- Trail decay uses exponential half-life (168 hours / 7 days default)
 
 ### Cognitive State Model
 ```
@@ -128,7 +128,7 @@ Momentum: cold_start | building | rolling | peak | crashed
 
 ## Database
 
-SQLite at `~/.otto/commitments.db` with WAL mode enabled. Three tables: `commitments`, `cognitive_state`, `trail_deposits`. No ORM, no migrations framework. Schema changes are manual + tested.
+SQLite at `~/.otto/commitments.db` with WAL mode enabled. Five tables: `commitments`, `cognitive_state`, `interaction_log`, `trail_deposits`, `mode_outcomes`. No ORM, no migrations framework. Schema changes are manual + tested.
 
 **Test fixtures** use `tmp_path` — every test gets an isolated SQLite database (see `conftest.py`).
 
@@ -141,17 +141,23 @@ SQLite at `~/.otto/commitments.db` with WAL mode enabled. Three tables: `commitm
 - Phase 2: PRISM signal detection (14 signal types, 9 pattern banks) + HistoryAnalyzer (behavioral patterns)
 - Phase 3: Mode architecture — base protocol + Executor (wraps v4.0), Protector (10% floor), Restorer (5% floor)
 - Phase 4: NEXUS deterministic router — 5-phase pipeline (ACTIVATE->WEIGHT->BOUND->SELECT->EXECUTE)
-- Phase 5: Pheromone trails — SQLite deposit/follow/decay with Kahan summation, wired into router
+- Phase 5: Outcome trails — SQLite deposit/follow/decay with exponential half-life, UCB1 learning, wired into router
 - Phase 6: Transport abstraction (pluggable protocol) + NudgeSender with constitutional gate before send
 - Phase 8: All 7 modes (Executor, Protector, Restorer, Decomposer, Acknowledger, Redirector, Guide)
 - Hardening: Message dedup, stable short IDs, DB indices, SQLite WAL mode, rate limiting, pinned deps, CI
 
-**549 tests passing** (493 core + 56 agent).
+**618+ tests passing** (562+ core + 56 agent).
+
+**v5.0-beta complete (Phases 9-10):**
+- Phase 9: UCB1 mode weight learning (learner.py) — replaces heuristic trail adjustments
+- Phase 10: Plasticity layer — learning rate amplification during crisis, persisted in SQLite
+- Honest naming: renamed _kahan_decay -> _exponential_decay, pheromone -> outcome trail
+- mode_outcomes table with 30-day rolling window pruning
+- `otto metrics` command for learning visibility
 
 **Not yet implemented:**
 - WhatsApp outbound transport (v5.1)
 - Optional LLM-powered response generation (gated by env var)
-- Plasticity layer (learning rate amplification during crisis)
 
 ## Conventions
 

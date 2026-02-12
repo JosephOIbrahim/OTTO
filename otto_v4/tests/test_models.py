@@ -78,6 +78,25 @@ def test_to_dict_from_dict_roundtrip():
     assert restored.direction == original.direction
 
 
+def test_commitment_has_sender_phone():
+    c = Commitment(
+        raw_message="I'll send the deck",
+        commitment_text="send the deck",
+        who_to="Alice",
+        sender_phone="+15551234567",
+    )
+    assert c.sender_phone == "+15551234567"
+
+
+def test_commitment_sender_phone_default_none():
+    c = Commitment(
+        raw_message="I'll send the deck",
+        commitment_text="send the deck",
+        who_to="Alice",
+    )
+    assert c.sender_phone is None
+
+
 def test_roundtrip_no_deadline():
     c = Commitment(
         raw_message="I'll handle it",

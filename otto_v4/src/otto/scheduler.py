@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 
 from .constitutional import should_suppress
 from .log import get_logger
+from .transport.base import Transport
 from .modes import (
     AcknowledgerMode,
     DecomposerMode,
@@ -48,10 +49,12 @@ class NudgeScheduler:
         store: CommitmentStore,
         state_store: StateStore,
         interval_seconds: int = 60,
+        transport: Transport | None = None,
     ) -> None:
         self._store = store
         self._state_store = state_store
         self._interval = interval_seconds
+        self._transport = transport
         self._timer: threading.Timer | None = None
         self._running = False
         self._lock = threading.Lock()
@@ -124,6 +127,22 @@ class NudgeScheduler:
                         _log.info("Scheduled nudge: safety mode activated: %s", response.text[:80])
                     else:
                         _log.info("Scheduled nudge via NEXUS: %s", response.text[:80])
+
+                    # Send via transport if configured
+                    if self._transport is not None:
+                        import asyncio
+                        try:
+                            loop = asyncio.get_event_loop()
+                        except RuntimeError:
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                        result = loop.run_until_complete(
+                            self._transport.send("user", response.text)
+                        )
+                        if result.success:
+                            _log.info("Nudge delivered via %s", result.transport)
+                        else:
+                            _log.warning("Nudge delivery failed: %s", result.error)
                 else:
                     _log.debug("Scheduled nudge: nothing to nudge about")
 

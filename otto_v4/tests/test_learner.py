@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from otto.learner import compute_ucb_adjustments
+from otto.learner import compute_ucb_adjustments, _MAX_ADJUSTMENT
 from otto.signals import Signal, SignalType
 from otto.trails import TrailStore
 
@@ -119,3 +119,18 @@ class TestUCBFormula:
         # Protector has fewer samples -> higher exploration bonus -> higher UCB
         # Both have ~50% success rate, but protector's exploration term is larger
         assert adj_prot.get("protector", 0) > adj_exec.get("executor", 0)
+
+    def test_exploration_bounded_at_small_n(self, store):
+        """With c=0.5, exploration bonus should not overwhelm at small N."""
+        # 1 success out of 5 (20% rate)
+        store.record_outcome("executor", "commitment_detected", "success")
+        for _ in range(4):
+            store.record_outcome("executor", "commitment_detected", "ignored")
+        # Pad total so all_total > 5
+        for _ in range(5):
+            store.record_outcome("protector", "frustrated", "success")
+        signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
+        result = compute_ucb_adjustments(signals, store)
+        adj = result.get("executor", 0)
+        # With conservative c=0.5, adjustment should not hit the max clamp
+        assert abs(adj) < _MAX_ADJUSTMENT

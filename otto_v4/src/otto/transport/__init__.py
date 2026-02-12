@@ -6,5 +6,6 @@ Telegram, etc. The core engine handles the "what."
 
 from .base import Transport
 from .cli_transport import CliTransport
+from .whatsapp_transport import WhatsAppTransport
 
-__all__ = ["Transport", "CliTransport"]
+__all__ = ["CliTransport", "Transport", "WhatsAppTransport"]
