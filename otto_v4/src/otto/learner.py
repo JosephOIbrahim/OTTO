@@ -13,28 +13,14 @@ from __future__ import annotations
 
 import math
 
-from .signals import Signal, SignalType
+from .router import _SIGNAL_TO_MODE
+from .signals import Signal
 from .trails import TrailStore
 
 _EXPLORATION_CONSTANT = 1.0
 _MAX_ADJUSTMENT = 0.2
 _NEUTRAL_RATE = 0.5  # Baseline: adjustments relative to 50% success
 _MIN_SAMPLES = 3  # Don't adjust with fewer than 3 observations
-
-# Signal type -> typical mode mapping (mirrors router._SIGNAL_TO_MODE)
-_SIGNAL_TO_MODE: dict[SignalType, str] = {
-    SignalType.COMMITMENT_DETECTED: "executor",
-    SignalType.ACTION_REQUIRED: "executor",
-    SignalType.DEADLINE_MENTIONED: "executor",
-    SignalType.FRUSTRATED: "protector",
-    SignalType.OVERWHELMED: "protector",
-    SignalType.CRASH_ZONE: "protector",
-    SignalType.SPIRAL: "protector",
-    SignalType.DEPLETED: "restorer",
-    SignalType.STUCK: "decomposer",
-    SignalType.EXPLORING: "guide",
-    SignalType.FOCUSED: "acknowledger",
-}
 
 
 def compute_ucb_adjustments(

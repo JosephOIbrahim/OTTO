@@ -333,6 +333,18 @@ class TrailStore:
             conn.close()
         return row[0] if row else 0
 
+    def get_all_modes(self) -> list[str]:
+        """Return all mode names that have recorded outcomes, sorted."""
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT DISTINCT mode FROM mode_outcomes ORDER BY mode"
+            )
+            result = [row[0] for row in cur.fetchall()]
+        finally:
+            conn.close()
+        return result
+
 
 def _exponential_decay(elapsed_hours: float, half_life_hours: float) -> float:
     """Compute exponential decay factor for trail strength.

@@ -461,18 +461,9 @@ def metrics() -> None:
         return
 
     click.echo(click.style("Mode outcomes:", bold=True))
-    # Collect all modes that have outcomes
-    modes_seen: set[str] = set()
-    conn = trail_store._connect()
-    try:
-        cur = conn.execute(
-            "SELECT DISTINCT mode FROM mode_outcomes ORDER BY mode"
-        )
-        modes_seen = {row[0] for row in cur.fetchall()}
-    finally:
-        conn.close()
+    all_modes = trail_store.get_all_modes()
 
-    for mode_name in sorted(modes_seen):
+    for mode_name in all_modes:
         stats = trail_store.get_mode_stats(mode_name)
         rate = trail_store.get_success_rate(mode_name)
         rate_str = f"{rate:.0%}" if rate is not None else "n/a"
