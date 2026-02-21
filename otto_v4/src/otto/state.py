@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS interaction_log (
 class CognitiveState:
     """Snapshot of the user's cognitive state.
 
-    Defaults match a healthy baseline — the user shouldn't need to
+    Defaults match a healthy baseline -- the user shouldn't need to
     configure anything on first run.
     """
 
@@ -84,28 +84,23 @@ class StateStore:
     separate ``cognitive_state`` table.
     """
 
-    def __init__(self, db_path: str) -> None:
-        self._db_path = db_path
+    def __init__(self, db_path: str = "", *, db: "Database | None" = None) -> None:
+        if db is not None:
+            self._db = db
+        else:
+            from .db import Database
+            self._db = Database(db_path)
         self._ensure_table()
 
-    def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self._db_path)
-
     def _ensure_table(self) -> None:
-        conn = self._connect()
-        try:
-            conn.execute("PRAGMA journal_mode=WAL")
+        with self._db.connect() as conn:
             conn.execute(_STATE_SCHEMA)
             conn.execute(_INTERACTION_LOG_SCHEMA)
-            conn.commit()
-        finally:
-            conn.close()
 
     def _set_key(self, key: str, value: str) -> None:
         """Set a single key-value pair in the cognitive_state table."""
-        now = datetime.now(timezone.utc).isoformat()
-        conn = self._connect()
-        try:
+        now = datetime.now(timezone.utc).isoformat()  # boundary: write timestamp
+        with self._db.connect() as conn:
             conn.execute(
                 """
                 INSERT INTO cognitive_state (key, value, updated_at)
@@ -114,9 +109,6 @@ class StateStore:
                 """,
                 (key, value, now, value, now),
             )
-            conn.commit()
-        finally:
-            conn.close()
 
     # ------------------------------------------------------------------
     # Public API
@@ -127,14 +119,11 @@ class StateStore:
 
         Automatically resets daily counters when the date changes.
         """
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute("SELECT key, value FROM cognitive_state")
             rows = {k: v for k, v in cur.fetchall()}
-        finally:
-            conn.close()
 
-        # Check for daily rollover
+        # boundary: daily rollover check (wall clock)
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         last_reset = rows.get("last_reset_date", "")
 
@@ -162,7 +151,7 @@ class StateStore:
 
     def save(self, state: CognitiveState) -> None:
         """Persist the full cognitive state."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(timezone.utc).isoformat()  # boundary: write timestamp
         pairs = [
             ("energy", state.energy),
             ("burnout", state.burnout),
@@ -171,8 +160,7 @@ class StateStore:
             ("nudges_completed_today", str(state.nudges_completed_today)),
             ("suppressed_count", str(state.suppressed_count)),
         ]
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             for key, value in pairs:
                 conn.execute(
                     """
@@ -182,9 +170,6 @@ class StateStore:
                     """,
                     (key, value, now, value, now),
                 )
-            conn.commit()
-        finally:
-            conn.close()
         _log.debug("Cognitive state saved: energy=%s burnout=%s", state.energy, state.burnout)
 
     def set_energy(self, level: str) -> CognitiveState:
@@ -272,15 +257,11 @@ class StateStore:
     ) -> None:
         """Record an interaction for behavioral pattern analysis."""
         ts = (timestamp or datetime.now(timezone.utc)).isoformat()
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             conn.execute(
                 "INSERT INTO interaction_log (timestamp, message_length, source) VALUES (?, ?, ?)",
                 (ts, message_length, source),
             )
-            conn.commit()
-        finally:
-            conn.close()
 
     def get_recent_interactions(
         self,
@@ -290,15 +271,12 @@ class StateStore:
 
         Sorted by timestamp ascending (oldest first).
         """
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT timestamp, message_length, source FROM interaction_log "
                 "ORDER BY id DESC LIMIT ?",
                 (limit,),
             )
             rows = cur.fetchall()
-        finally:
-            conn.close()
         # Reverse so oldest is first (consistent with HistoryAnalyzer expectation)
         return list(reversed(rows))

@@ -9,9 +9,10 @@ Usage:
     python -m otto.watcher [--port 8000]
 
 Environment Variables:
-    WHATSAPP_VERIFY_TOKEN   - Webhook verification token (default: "otto_verify")
-    WHATSAPP_APP_SECRET     - App secret for signature validation (optional)
+    WHATSAPP_VERIFY_TOKEN   - Webhook verification token (required for webhook verify)
+    WHATSAPP_APP_SECRET     - App secret for signature validation (required in production)
     ANTHROPIC_API_KEY       - For commitment detection via Claude
+    OTTO_ENV                - "development" (default) or "production"
 """
 
 import asyncio
@@ -32,6 +33,7 @@ from fastapi import FastAPI, Request, Response, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
+from .db import Database
 from .detector import detect_commitment
 from .store import CommitmentStore
 
@@ -83,8 +85,9 @@ class WebhookPayload(BaseModel):
 
 # --- Config ---
 
-VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "otto_verify")
+VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "")
 APP_SECRET = os.environ.get("WHATSAPP_APP_SECRET", "")
+OTTO_ENV = os.environ.get("OTTO_ENV", "development")
 MAX_MESSAGE_AGE = timedelta(hours=1)  # Skip messages older than 1 hour
 
 # Rate limiting: max requests per IP within the sliding window
@@ -172,6 +175,10 @@ _START_TIME = time.monotonic()
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
     """Startup/shutdown lifecycle handler."""
+    if not VERIFY_TOKEN:
+        _log.warning(
+            "WHATSAPP_VERIFY_TOKEN is not set. Webhook verification disabled."
+        )
     if not APP_SECRET:
         _log.warning(
             "WHATSAPP_APP_SECRET is not set. Webhook requests will NOT be "
@@ -181,7 +188,8 @@ async def _lifespan(application: FastAPI):
 
 
 app = FastAPI(title="OTTO Watcher", lifespan=_lifespan)
-store = CommitmentStore()
+_watcher_db = Database("~/.otto/commitments.db")
+store = CommitmentStore(db=_watcher_db)
 
 
 @app.get("/health")
@@ -201,6 +209,8 @@ async def verify_webhook(
     hub_challenge: str = Query(..., alias="hub.challenge"),
 ):
     """WhatsApp webhook verification."""
+    if not VERIFY_TOKEN:
+        raise HTTPException(status_code=503, detail="WHATSAPP_VERIFY_TOKEN not configured")
     if hub_mode != "subscribe":
         raise HTTPException(status_code=400, detail="Invalid mode")
     if hub_verify_token != VERIFY_TOKEN:
@@ -290,8 +300,11 @@ def main():
     port = int(os.environ.get("OTTO_WATCHER_PORT", "8000"))
     _log.info("OTTO Watcher starting on port %d", port)
     _log.info("Webhook URL: http://localhost:%d/webhook/whatsapp", port)
-    _log.info("Verify token: %s", VERIFY_TOKEN)
+    _log.info("Verify token: %s", "****" + VERIFY_TOKEN[-4:] if len(VERIFY_TOKEN) > 4 else "[not set]")
     _log.info("Signature validation: %s", "enabled" if APP_SECRET else "disabled")
+    if OTTO_ENV == "production" and not APP_SECRET:
+        _log.error("WHATSAPP_APP_SECRET is required in production. Set OTTO_ENV=development to bypass.")
+        raise SystemExit(1)
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")
 
 

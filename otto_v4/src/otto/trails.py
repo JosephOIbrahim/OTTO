@@ -66,21 +66,17 @@ class TrailStore:
     strength and deposit count.
     """
 
-    def __init__(self, db_path: str) -> None:
-        self._db_path = db_path
+    def __init__(self, db_path: str = "", *, db: "Database | None" = None) -> None:
+        if db is not None:
+            self._db = db
+        else:
+            from .db import Database
+            self._db = Database(db_path)
         self._ensure_table()
 
-    def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self._db_path)
-
     def _ensure_table(self) -> None:
-        conn = self._connect()
-        try:
-            conn.execute("PRAGMA journal_mode=WAL")
+        with self._db.connect() as conn:
             conn.executescript(_TRAIL_SCHEMA)
-            conn.commit()
-        finally:
-            conn.close()
 
     def deposit(
         self,
@@ -99,8 +95,7 @@ class TrailStore:
             now = datetime.now(timezone.utc)
         now_iso = now.isoformat()
 
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT id, strength, deposit_count FROM trail_deposits "
                 "WHERE action = ? AND context = ?",
@@ -123,9 +118,6 @@ class TrailStore:
                     "VALUES (?, ?, ?, 1, ?, ?)",
                     (action, context, strength, now_iso, now_iso),
                 )
-            conn.commit()
-        finally:
-            conn.close()
 
         _log.debug("Trail deposit: %s/%s strength=%.3f", action, context, strength)
 
@@ -135,8 +127,7 @@ class TrailStore:
         Returns trails sorted by strength descending, then action
         ascending for deterministic ordering.
         """
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT action, context, strength, deposit_count, "
                 "last_deposited, created_at "
@@ -145,8 +136,6 @@ class TrailStore:
                 (context,),
             )
             rows = cur.fetchall()
-        finally:
-            conn.close()
 
         return [
             Trail(
@@ -162,16 +151,13 @@ class TrailStore:
 
     def get_strength(self, action: str, context: str) -> float:
         """Get current trail strength for an (action, context) pair."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT strength FROM trail_deposits "
                 "WHERE action = ? AND context = ?",
                 (action, context),
             )
             row = cur.fetchone()
-        finally:
-            conn.close()
 
         return row[0] if row else 0.0
 
@@ -193,8 +179,7 @@ class TrailStore:
         if now is None:
             now = datetime.now(timezone.utc)
 
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT id, strength, last_deposited FROM trail_deposits"
             )
@@ -224,26 +209,19 @@ class TrailStore:
                         (new_strength, trail_id),
                     )
 
-            conn.commit()
-        finally:
-            conn.close()
-
         if pruned > 0:
             _log.info("Trail decay: pruned %d trails below threshold", pruned)
         return pruned
 
     def all_trails(self) -> list[Trail]:
         """Return all trails sorted by (context, action) for determinism."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT action, context, strength, deposit_count, "
                 "last_deposited, created_at "
                 "FROM trail_deposits ORDER BY context ASC, action ASC"
             )
             rows = cur.fetchall()
-        finally:
-            conn.close()
 
         return [
             Trail(
@@ -259,12 +237,9 @@ class TrailStore:
 
     def count(self) -> int:
         """Return total number of trails."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute("SELECT COUNT(*) FROM trail_deposits")
             row = cur.fetchone()
-        finally:
-            conn.close()
         return row[0] if row else 0
 
     # ------------------------------------------------------------------
@@ -282,30 +257,23 @@ class TrailStore:
         """Record a mode outcome (success, ignored, mixed, activated)."""
         if now is None:
             now = datetime.now(timezone.utc)
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             conn.execute(
                 "INSERT INTO mode_outcomes (mode, context, outcome, created_at) "
                 "VALUES (?, ?, ?, ?)",
                 (mode, context, outcome, now.isoformat()),
             )
-            conn.commit()
-        finally:
-            conn.close()
         _log.debug("Outcome recorded: %s/%s -> %s", mode, context, outcome)
 
     def get_mode_stats(self, mode: str) -> dict[str, int]:
         """Return {outcome: count, ..., 'total': N} for a mode."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT outcome, COUNT(*) FROM mode_outcomes "
                 "WHERE mode = ? GROUP BY outcome ORDER BY outcome",
                 (mode,),
             )
             rows = cur.fetchall()
-        finally:
-            conn.close()
 
         stats: dict[str, int] = {}
         total = 0
@@ -325,24 +293,18 @@ class TrailStore:
 
     def get_total_outcomes(self) -> int:
         """Return total outcome count across all modes."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute("SELECT COUNT(*) FROM mode_outcomes")
             row = cur.fetchone()
-        finally:
-            conn.close()
         return row[0] if row else 0
 
     def get_all_modes(self) -> list[str]:
         """Return all mode names that have recorded outcomes, sorted."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "SELECT DISTINCT mode FROM mode_outcomes ORDER BY mode"
             )
             result = [row[0] for row in cur.fetchall()]
-        finally:
-            conn.close()
         return result
 
     def prune_outcomes(
@@ -360,16 +322,12 @@ class TrailStore:
         from datetime import timedelta
         cutoff = (now - timedelta(days=max_age_days)).isoformat()
 
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             cur = conn.execute(
                 "DELETE FROM mode_outcomes WHERE created_at < ?",
                 (cutoff,),
             )
             deleted = cur.rowcount
-            conn.commit()
-        finally:
-            conn.close()
 
         if deleted > 0:
             _log.info("Outcome pruning: removed %d outcomes older than %d days", deleted, max_age_days)
@@ -377,13 +335,9 @@ class TrailStore:
 
     def nuke(self) -> None:
         """Drop and recreate trail_deposits and mode_outcomes tables."""
-        conn = self._connect()
-        try:
+        with self._db.connect() as conn:
             conn.execute("DELETE FROM trail_deposits")
             conn.execute("DELETE FROM mode_outcomes")
-            conn.commit()
-        finally:
-            conn.close()
         _log.info("All trail and outcome data deleted")
 
 

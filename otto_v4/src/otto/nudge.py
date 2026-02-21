@@ -66,7 +66,7 @@ COOLDOWN_HOURS = 24
 # ---------------------------------------------------------------------------
 
 
-def format_nudge(commitment: Commitment, reason: str) -> str:
+def format_nudge(commitment: Commitment, reason: str, *, now: datetime | None = None) -> str:
     """Build a human-friendly nudge message for *commitment*.
 
     Parameters
@@ -81,7 +81,7 @@ def format_nudge(commitment: Commitment, reason: str) -> str:
     str
         A warm, non-judgmental nudge message.
     """
-    days = _days_since(commitment, reason)
+    days = _days_since(commitment, reason, now=now)
 
     # Repeated follow-ups (count > 2) always use the escalation template.
     if commitment.follow_up_count > 2:
@@ -170,9 +170,10 @@ def _past_cooldown(commitment: Commitment, cutoff: datetime) -> bool:
     return commitment.updated_at <= cutoff
 
 
-def _days_since(commitment: Commitment, reason: str) -> int:
+def _days_since(commitment: Commitment, reason: str, *, now: datetime | None = None) -> int:
     """Return the number of days since the relevant anchor date."""
-    now = datetime.now(timezone.utc)
+    if now is None:
+        now = datetime.now(timezone.utc)
     if reason == "overdue" and commitment.deadline is not None:
         delta = now - commitment.deadline
     else:

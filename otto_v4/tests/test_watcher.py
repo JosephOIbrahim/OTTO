@@ -11,7 +11,10 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from otto.watcher import app, VERIFY_TOKEN
+from otto.watcher import app
+
+# Fixed token for verification tests (the real default is now "" for security)
+_TEST_VERIFY_TOKEN = "test_token_for_verification_tests"
 
 
 @pytest.fixture()
@@ -50,28 +53,31 @@ class TestHealthEndpoint:
 class TestWebhookVerification:
 
     def test_valid_verification(self, client):
-        resp = client.get("/webhook/whatsapp", params={
-            "hub.mode": "subscribe",
-            "hub.verify_token": VERIFY_TOKEN,
-            "hub.challenge": "test_challenge_123",
-        })
+        with patch("otto.watcher.VERIFY_TOKEN", _TEST_VERIFY_TOKEN):
+            resp = client.get("/webhook/whatsapp", params={
+                "hub.mode": "subscribe",
+                "hub.verify_token": _TEST_VERIFY_TOKEN,
+                "hub.challenge": "test_challenge_123",
+            })
         assert resp.status_code == 200
         assert resp.text == "test_challenge_123"
 
     def test_wrong_mode_rejected(self, client):
-        resp = client.get("/webhook/whatsapp", params={
-            "hub.mode": "unsubscribe",
-            "hub.verify_token": VERIFY_TOKEN,
-            "hub.challenge": "test",
-        })
+        with patch("otto.watcher.VERIFY_TOKEN", _TEST_VERIFY_TOKEN):
+            resp = client.get("/webhook/whatsapp", params={
+                "hub.mode": "unsubscribe",
+                "hub.verify_token": _TEST_VERIFY_TOKEN,
+                "hub.challenge": "test",
+            })
         assert resp.status_code == 400
 
     def test_wrong_token_rejected(self, client):
-        resp = client.get("/webhook/whatsapp", params={
-            "hub.mode": "subscribe",
-            "hub.verify_token": "wrong_token",
-            "hub.challenge": "test",
-        })
+        with patch("otto.watcher.VERIFY_TOKEN", _TEST_VERIFY_TOKEN):
+            resp = client.get("/webhook/whatsapp", params={
+                "hub.mode": "subscribe",
+                "hub.verify_token": "wrong_token",
+                "hub.challenge": "test",
+            })
         assert resp.status_code == 403
 
     def test_missing_params_rejected(self, client):

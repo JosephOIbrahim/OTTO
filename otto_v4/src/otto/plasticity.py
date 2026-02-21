@@ -124,15 +124,12 @@ class PlasticityWindow:
         persisted state exists.
         """
         state_store._ensure_table()
-        conn = state_store._connect()
-        try:
+        with state_store._db.connect() as conn:
             cur = conn.execute(
                 "SELECT key, value FROM cognitive_state "
                 "WHERE key IN ('plasticity_open', 'plasticity_stable_count')"
             )
             rows = {k: v for k, v in cur.fetchall()}
-        finally:
-            conn.close()
 
         return cls(
             is_open=rows.get("plasticity_open", "0") == "1",
