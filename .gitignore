@@ -51,3 +51,8 @@ nul
 # Encrypted data (user-specific)
 data/*.enc
 data/*.bak
+
+# Secrets
+*.pem
+*.key
+secrets/

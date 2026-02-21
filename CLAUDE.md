@@ -76,11 +76,6 @@ otto_v4/
 │   └── CLAUDE.md           # Agent personality prompt
 ├── tests/                  # 493+ tests
 └── pyproject.toml
-OTTO_Agents/                # Claude Agent SDK agents (separate package)
-├── otto_agents/            # 3 agents: NEXUS orchestrator, consistency auditor, builder
-│   ├── tools/              # 10 MCP tools wrapping OTTO modules
-│   └── hooks/              # Constitutional PreToolUse hooks
-└── tests/                  # 30 tests
 ```
 
 ## Architecture
