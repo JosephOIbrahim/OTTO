@@ -12,7 +12,7 @@ A cognitive commitment engine. Watches messages for commitments ("I'll send that
 cd otto_v4
 pip install -e ".[dev]"          # Install with dev deps (pytest, pytest-asyncio)
 
-# Run all core tests (493 tests)
+# Run all core tests (582 tests)
 python -m pytest tests/ -v -m "not integration"
 
 # Run agent tests (56 tests)
@@ -22,7 +22,7 @@ python -m pytest otto_agent/tests/ -v
 python -m pytest tests/test_store.py -v
 python -m pytest tests/test_cli.py::TestSnooze::test_snooze_valid -v
 
-# Run everything (549 tests, integration tests need ANTHROPIC_API_KEY)
+# Run everything (638 tests, integration tests need ANTHROPIC_API_KEY)
 python -m pytest tests/ otto_agent/tests/ -v
 ```
 
@@ -54,18 +54,18 @@ otto_v4/
 │   ├── router.py           # NEXUS: 5-phase deterministic routing + trail adjustments
 │   ├── trails.py           # Outcome trails: deposit/follow/decay with exponential half-life (168h)
 │   ├── sender.py           # NudgeSender: constitutional gate -> transport.send()
-│   ├── modes/              # 7 specialist modes (Mode protocol)
+│   ├── db.py               # Shared Database connection pool (WAL mode, tilde expansion)
+│   ├── crypto.py            # Fernet encryption for sensitive commitment data
+│   ├── modes/              # 4 specialist modes (Mode protocol)
 │   │   ├── base.py         # Mode protocol: responds_to, weight, execute, augment
 │   │   ├── executor.py     # Wraps v4.0 nudge.py (commitment tracking)
 │   │   ├── protector.py    # 10% safety floor (crisis, frustration)
-│   │   ├── restorer.py     # 5% safety floor (energy, rest permission)
-│   │   ├── decomposer.py   # 5% safety floor (task breakdown)
-│   │   ├── acknowledger.py # Validation, celebration
-│   │   ├── redirector.py   # Gentle refocus from tangents
-│   │   └── guide.py        # Socratic exploration
+│   │   ├── restorer.py     # 5% safety floor (energy, rest, exploration)
+│   │   └── decomposer.py   # 5% safety floor (breakdown, acknowledgment, redirect)
 │   ├── transport/          # Pluggable transport layer
 │   │   ├── base.py         # Transport protocol, Message, DeliveryResult
-│   │   └── cli_transport.py # CLI transport (stdout + capture mode)
+│   │   ├── cli_transport.py # CLI transport (stdout + capture mode)
+│   │   └── whatsapp_transport.py # WhatsApp Cloud API outbound transport
 │   ├── scheduler.py        # Background thread nudge scheduler
 │   ├── watcher.py          # FastAPI webhook for WhatsApp Cloud API
 │   └── log.py              # Structured logging (get_logger)
@@ -74,7 +74,7 @@ otto_v4/
 │   ├── otto_tools.py       # MCP tool definitions (8 tools mirror CLI)
 │   ├── otto_hooks.py       # Pre-tool-use constitutional hooks
 │   └── CLAUDE.md           # Agent personality prompt
-├── tests/                  # 493+ tests
+├── tests/                  # 582+ tests
 └── pyproject.toml
 ```
 
@@ -129,7 +129,7 @@ SQLite at `~/.otto/commitments.db` with WAL mode enabled. Five tables: `commitme
 
 ## Implementation Status
 
-**v5.0 is CLI-first.** WhatsApp outbound transport is deferred to v5.1. The webhook (watcher.py) receives messages; outbound delivery is via CLI only.
+**v5.0 is CLI-first.** WhatsApp inbound webhook (watcher.py) and outbound transport (whatsapp_transport.py) are code-complete. Outbound delivery requires Meta Business credentials (phone number ID + access token) and app review to go live.
 
 **Complete (Phases 0-8 + hardening):**
 - Phase 0-1: Structured logging, cognitive state, constitutional layer, snooze/WIP, scheduler, agent SDK
@@ -138,20 +138,22 @@ SQLite at `~/.otto/commitments.db` with WAL mode enabled. Five tables: `commitme
 - Phase 4: NEXUS deterministic router — 5-phase pipeline (ACTIVATE->WEIGHT->BOUND->SELECT->EXECUTE)
 - Phase 5: Outcome trails — SQLite deposit/follow/decay with exponential half-life, UCB1 learning, wired into router
 - Phase 6: Transport abstraction (pluggable protocol) + NudgeSender with constitutional gate before send
-- Phase 8: All 7 modes (Executor, Protector, Restorer, Decomposer, Acknowledger, Redirector, Guide)
+- Phase 8: 4 consolidated modes (Executor, Protector, Restorer, Decomposer)
 - Hardening: Message dedup, stable short IDs, DB indices, SQLite WAL mode, rate limiting, pinned deps, CI
+- Hardening: Database connection pool (db.py), Fernet encryption (crypto.py), watcher security
 
-**618+ tests passing** (562+ core + 56 agent).
+**638+ tests passing** (582+ core + 56 agent).
 
 **v5.0-beta complete (Phases 9-10):**
-- Phase 9: UCB1 mode weight learning (learner.py) — replaces heuristic trail adjustments
-- Phase 10: Plasticity layer — learning rate amplification during crisis, persisted in SQLite
+- Phase 9: UCB1 mode weight learning (learner.py) -- replaces heuristic trail adjustments
+- Phase 10: Plasticity layer -- learning rate amplification during crisis, persisted in SQLite
 - Honest naming: renamed _kahan_decay -> _exponential_decay, pheromone -> outcome trail
 - mode_outcomes table with 30-day rolling window pruning
 - `otto metrics` command for learning visibility
+- Mode consolidation: 7 modes -> 4 (Acknowledger/Redirector/Guide absorbed into Decomposer/Restorer)
 
 **Not yet implemented:**
-- WhatsApp outbound transport (v5.1)
+- WhatsApp outbound delivery (transport code exists, needs Meta credentials + app review)
 - Optional LLM-powered response generation (gated by env var)
 
 ## Conventions
