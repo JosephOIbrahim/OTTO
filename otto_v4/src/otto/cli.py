@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 import click
 
+from .db import Database
 from .models import Commitment, build_id_map, parse_duration
 from .plasticity import PlasticityWindow
 from .state import StateStore, _VALID_ENERGY, _VALID_BURNOUT, _VALID_MOMENTUM
@@ -46,25 +47,24 @@ def _format_deadline(dt: datetime | None) -> str:
 
 
 
+def _get_db() -> Database:
+    """Create the shared Database instance. Separated for testability."""
+    return Database("~/.otto/commitments.db")
+
+
 def _get_store() -> CommitmentStore:
     """Create the default store. Separated for testability."""
-    return CommitmentStore()
+    return CommitmentStore(db=_get_db())
 
 
 def _get_state_store() -> StateStore:
     """Create the default state store (same DB). Separated for testability."""
-    import os
-    from pathlib import Path
-    db_path = str(Path(os.path.expanduser("~/.otto/commitments.db")))
-    return StateStore(db_path=db_path)
+    return StateStore(db=_get_db())
 
 
 def _get_trail_store() -> TrailStore:
     """Create the default trail store (same DB). Separated for testability."""
-    import os
-    from pathlib import Path
-    db_path = str(Path(os.path.expanduser("~/.otto/commitments.db")))
-    return TrailStore(db_path=db_path)
+    return TrailStore(db=_get_db())
 
 
 @click.group()
@@ -281,12 +281,9 @@ def nudge() -> None:
     try:
         from .constitutional import should_suppress
         from .modes import (
-            AcknowledgerMode,
             DecomposerMode,
             ExecutorMode,
-            GuideMode,
             ProtectorMode,
-            RedirectorMode,
             RestorerMode,
         )
         from .learner import compute_ucb_adjustments
@@ -316,13 +313,10 @@ def nudge() -> None:
     adjustments = compute_ucb_adjustments(signals, trail_store)
 
     modes = [
+        DecomposerMode(),
         ExecutorMode(store=store),
         ProtectorMode(),
         RestorerMode(),
-        DecomposerMode(),
-        AcknowledgerMode(),
-        RedirectorMode(),
-        GuideMode(),
     ]
 
     response = route_and_execute(signals, state, modes, trail_adjustments=adjustments)

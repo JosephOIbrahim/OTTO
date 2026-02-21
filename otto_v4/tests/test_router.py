@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from otto.modes.decomposer import DecomposerMode
 from otto.modes.executor import ExecutorMode
 from otto.modes.protector import ProtectorMode
 from otto.modes.restorer import RestorerMode
@@ -18,8 +19,8 @@ def _signal(stype: SignalType, confidence: float = 0.8) -> Signal:
 
 @pytest.fixture()
 def all_modes():
-    """All three implemented modes."""
-    return [ExecutorMode(), ProtectorMode(), RestorerMode()]
+    """All four production modes."""
+    return [DecomposerMode(), ExecutorMode(), ProtectorMode(), RestorerMode()]
 
 
 class TestActivation:

@@ -26,9 +26,10 @@ class TestDecomposerProtocol:
         mode = DecomposerMode()
         assert mode.responds_to([_sig(SignalType.STUCK)])
 
-    def test_does_not_respond_to_focused(self):
+    def test_responds_to_focused(self):
+        """Decomposer now handles FOCUSED (absorbed from Acknowledger)."""
         mode = DecomposerMode()
-        assert not mode.responds_to([_sig(SignalType.FOCUSED)])
+        assert mode.responds_to([_sig(SignalType.FOCUSED)])
 
     def test_does_not_respond_to_commitment(self):
         mode = DecomposerMode()
@@ -54,11 +55,12 @@ class TestDecomposerWeight:
         w = mode.weight([_sig(SignalType.STUCK, 0.3)], state)
         assert w >= 0.6
 
-    def test_no_activation_returns_floor(self):
+    def test_focused_returns_moderate_weight(self):
+        """FOCUSED signal now activates Decomposer (absorbed from Acknowledger)."""
         mode = DecomposerMode()
         state = CognitiveState()
         w = mode.weight([_sig(SignalType.FOCUSED)], state)
-        assert w == mode.safety_floor
+        assert w >= 0.3
 
 
 class TestDecomposerExecute:
@@ -88,12 +90,13 @@ class TestDecomposerExecute:
         assert "1." in response.text  # numbered steps
         assert response.metadata["trigger"] == "stuck_commitment"
 
-    def test_no_activation_returns_empty(self):
+    def test_focused_returns_acknowledgment(self):
+        """FOCUSED now triggers acknowledgment (absorbed from Acknowledger)."""
         mode = DecomposerMode()
         state = CognitiveState()
         response = mode.execute([_sig(SignalType.FOCUSED)], state)
-        assert response.text == ""
-        assert response.metadata["action"] == "monitoring"
+        assert response.text != ""
+        assert response.metadata["action"] == "acknowledge"
 
 
 class TestDecomposerAugment:

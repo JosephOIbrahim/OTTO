@@ -19,7 +19,7 @@ from .state import CognitiveState
 _log = get_logger(__name__)
 
 # Actions that can be suppressed
-ActionType = Literal["nudge", "decompose", "redirect", "acknowledge", "guide"]
+ActionType = Literal["nudge", "decompose", "redirect", "acknowledge"]
 
 # The Protector is NEVER suppressed — this is constitutional
 _UNSUPPRESSABLE = frozenset({"protector"})

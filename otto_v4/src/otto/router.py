@@ -198,9 +198,9 @@ _SIGNAL_TO_MODE: dict[SignalType, str] = {
     SignalType.SPIRAL: "protector",
     SignalType.DEPLETED: "restorer",
     SignalType.STUCK: "decomposer",
-    SignalType.BURST_DETECTED: "redirector",
-    SignalType.EXPLORING: "guide",
-    SignalType.FOCUSED: "acknowledger",
+    SignalType.BURST_DETECTED: "decomposer",
+    SignalType.EXPLORING: "restorer",
+    SignalType.FOCUSED: "decomposer",
 }
 
 # Baseline strength: if a trail is stronger than this, it boosts;

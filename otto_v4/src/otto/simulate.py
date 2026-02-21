@@ -16,12 +16,9 @@ from datetime import datetime, timedelta, timezone
 from .learner import compute_ucb_adjustments
 from .models import Commitment
 from .modes import (
-    AcknowledgerMode,
     DecomposerMode,
     ExecutorMode,
-    GuideMode,
     ProtectorMode,
-    RedirectorMode,
     RestorerMode,
 )
 from .router import _SIGNAL_TO_MODE, route_and_execute
@@ -181,14 +178,11 @@ class SimulationEngine:
             # (d) Compute UCB adjustments from trail_store (this is the learning!)
             adjustments = compute_ucb_adjustments(signals, trail_store)
 
-            # (e) Create all 7 modes
+            # (e) Create all 4 modes
             modes = [
-                AcknowledgerMode(),
                 DecomposerMode(),
                 ExecutorMode(store=commitment_store),
-                GuideMode(),
                 ProtectorMode(),
-                RedirectorMode(),
                 RestorerMode(),
             ]
 

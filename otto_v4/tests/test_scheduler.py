@@ -132,9 +132,12 @@ class TestSchedulerExecution:
         store, state_store = db
         scheduler = NudgeScheduler(store, state_store, interval_seconds=60)
 
-        # Corrupt the store to cause an error
+        # Corrupt the store to cause an error by closing connections
+        # and removing the file (connection pool holds the file open on Windows)
         import os
-        os.remove(store._db_path)
+        store._db.close()
+        state_store._db.close()
+        os.remove(store._db.path)
 
         # Should not raise
         scheduler._run_check()

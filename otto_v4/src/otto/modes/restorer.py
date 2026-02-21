@@ -1,8 +1,12 @@
-"""Restorer mode — energy management and permission to rest.
+"""Restorer mode -- energy management, permission to rest, and exploration support.
 
 The Restorer has a constitutional 5% safety floor. When the user is
 depleted or in ORANGE burnout, the Restorer grants permission to stop,
 suggests easy wins, and suppresses demanding tasks.
+
+Also absorbs the Guide mode's Socratic exploration support: when the user
+is exploring with available energy, the Restorer encourages discovery
+through questions rather than answers.
 
 "Rest is productive" is a constitutional principle.
 """
@@ -16,9 +20,10 @@ from .base import ModeResponse
 
 _ACTIVATION_SIGNALS = frozenset({
     SignalType.DEPLETED,
+    SignalType.EXPLORING,
 })
 
-# Templates — warm, non-judgmental, permission-granting
+# Templates -- warm, non-judgmental, permission-granting
 _DEPLETED_RESPONSE = (
     "Permission granted: rest is productive. "
     "Your commitments are safe and will be here tomorrow."
@@ -34,12 +39,20 @@ _ORANGE_RESPONSE = (
     "Everything else can wait."
 )
 
+# Exploration templates (absorbed from Guide)
+_EXPLORE_PROMPTS = [
+    "What's drawing you to this? Sometimes the thread is worth following.",
+    "Interesting direction. What would it look like if you pursued it?",
+    "What's the smallest experiment that would test this idea?",
+]
+
 
 class RestorerMode:
-    """Energy management mode. 5% constitutional floor.
+    """Energy management and exploration mode. 5% constitutional floor.
 
     Grants permission to rest. Suppresses demanding nudges when
-    the user is depleted. "Rest is productive."
+    the user is depleted. Supports exploration with Socratic prompts
+    when energy allows. "Rest is productive."
     """
 
     @property
@@ -69,16 +82,27 @@ class RestorerMode:
             base = max(base, 0.6)
 
         # Depleted signal in input
-        relevant = [s for s in signals if s.type in _ACTIVATION_SIGNALS]
-        if relevant:
-            signal_weight = max(s.confidence for s in relevant)
+        depleted = [s for s in signals if s.type == SignalType.DEPLETED]
+        if depleted:
+            signal_weight = max(s.confidence for s in depleted)
             base = max(base, signal_weight)
+
+        # Exploring: support exploration (absorbed from Guide)
+        exploring = [s for s in signals if s.type == SignalType.EXPLORING]
+        if exploring:
+            explore_weight = max(s.confidence for s in exploring) * 0.6
+            # High energy + exploring = Socratic mode
+            if state.energy == "high":
+                explore_weight = max(explore_weight, 0.5)
+            base = max(base, explore_weight)
 
         return min(1.0, base)
 
     def execute(
         self, signals: list[Signal], state: CognitiveState
     ) -> ModeResponse:
+        signal_types = {s.type for s in signals}
+
         # Depleted energy: full rest permission
         if state.energy == "depleted":
             return ModeResponse(
@@ -100,6 +124,15 @@ class RestorerMode:
                 },
             )
 
+        # Exploring: Socratic prompt (absorbed from Guide)
+        if SignalType.EXPLORING in signal_types:
+            exploring = [s for s in signals if s.type == SignalType.EXPLORING]
+            confidence_bucket = int(exploring[0].confidence * 10) % len(_EXPLORE_PROMPTS)
+            return ModeResponse(
+                text=_EXPLORE_PROMPTS[confidence_bucket],
+                metadata={"action": "socratic_prompt"},
+            )
+
         # Low energy: offer choice
         if state.energy == "low":
             return ModeResponse(
@@ -110,7 +143,6 @@ class RestorerMode:
             )
 
         # Depleted signal detected but state not yet updated
-        signal_types = {s.type for s in signals}
         if SignalType.DEPLETED in signal_types:
             return ModeResponse(
                 text=_LOW_ENERGY_RESPONSE,
@@ -129,4 +161,6 @@ class RestorerMode:
         """As a supporting mode, can soften other modes' demands."""
         if state.energy in ("low", "depleted") and not response.suppress_others:
             response.metadata["restorer_note"] = "low_energy_context"
+        if any(s.type == SignalType.EXPLORING for s in signals):
+            response.metadata["restorer_note"] = "curiosity_supported"
         return response

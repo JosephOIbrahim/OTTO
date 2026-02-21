@@ -19,12 +19,9 @@ from .constitutional import should_suppress
 from .log import get_logger
 from .transport.base import Transport
 from .modes import (
-    AcknowledgerMode,
     DecomposerMode,
     ExecutorMode,
-    GuideMode,
     ProtectorMode,
-    RedirectorMode,
     RestorerMode,
 )
 from .learner import compute_ucb_adjustments
@@ -108,17 +105,14 @@ class NudgeScheduler:
                 signals = [Signal(type=SignalType.COMMITMENT_DETECTED, confidence=0.8)]
 
                 # UCB1-based learning adjustments from outcome history
-                trail_store = TrailStore(self._state_store._db_path)
+                trail_store = TrailStore(db=self._state_store._db)
                 adjustments = compute_ucb_adjustments(signals, trail_store)
 
                 modes = [
+                    DecomposerMode(),
                     ExecutorMode(store=self._store),
                     ProtectorMode(),
                     RestorerMode(),
-                    DecomposerMode(),
-                    AcknowledgerMode(),
-                    RedirectorMode(),
-                    GuideMode(),
                 ]
                 response = route_and_execute(signals, state, modes, trail_adjustments=adjustments)
 

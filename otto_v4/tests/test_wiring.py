@@ -375,19 +375,18 @@ class TestPlasticityWiring:
 # ------------------------------------------------------------------
 
 class TestSignalToModeMapping:
-    def test_redirector_has_signal_mapping(self):
-        """Redirector must have a signal mapping so UCB1 can learn from it."""
+    def test_burst_has_signal_mapping(self):
+        """BURST_DETECTED must have a signal mapping."""
         from otto.router import _SIGNAL_TO_MODE
         from otto.signals import SignalType
 
         assert SignalType.BURST_DETECTED in _SIGNAL_TO_MODE
-        assert _SIGNAL_TO_MODE[SignalType.BURST_DETECTED] == "redirector"
+        assert _SIGNAL_TO_MODE[SignalType.BURST_DETECTED] == "decomposer"
 
-    def test_all_seven_modes_reachable(self):
+    def test_all_four_modes_reachable(self):
         """Every production mode should be reachable via at least one signal."""
         from otto.router import _SIGNAL_TO_MODE
 
         reachable_modes = set(_SIGNAL_TO_MODE.values())
-        expected = {"executor", "protector", "restorer", "decomposer",
-                    "acknowledger", "redirector", "guide"}
+        expected = {"executor", "protector", "restorer", "decomposer"}
         assert expected == reachable_modes
