@@ -20,6 +20,13 @@ from pathlib import Path
 
 from anthropic import Anthropic
 
+# Ensure otto source is importable at module load (for model_config import below).
+_otto_src = str(Path(__file__).resolve().parent.parent / "src")
+if _otto_src not in sys.path:
+    sys.path.insert(0, _otto_src)
+
+from otto.model_config import AGENT_MODEL, TEMPERATURE
+
 # Setup logging
 _log_dir = Path(__file__).parent / "logs"
 _log_dir.mkdir(exist_ok=True)
@@ -36,8 +43,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("otto.agent")
 
-# Model configuration
-MODEL = "claude-sonnet-4-5-20250929"
+# Model configuration (model + temperature imported from otto.model_config)
 MAX_TOKENS = 4096
 MAX_AGENT_TURNS = 15
 
@@ -56,11 +62,6 @@ def _load_system_prompt() -> str:
 
 def _init_default_stores():
     """Create default store instances pointing at ~/.otto/commitments.db."""
-    # Ensure otto source is importable
-    otto_src = str(Path(__file__).resolve().parent.parent / "src")
-    if otto_src not in sys.path:
-        sys.path.insert(0, otto_src)
-
     from otto.state import StateStore
     from otto.store import CommitmentStore
     from otto_agent.otto_tools import init_stores
@@ -105,9 +106,16 @@ def run_agent(goal: str) -> list[dict]:
         logger.info("Agent turn %d/%d", turn + 1, MAX_AGENT_TURNS)
 
         response = client.messages.create(
-            model=MODEL,
+            model=AGENT_MODEL,
             max_tokens=MAX_TOKENS,
-            system=system_prompt,
+            temperature=TEMPERATURE,
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             tools=TOOL_DEFINITIONS,
             messages=messages,
         )

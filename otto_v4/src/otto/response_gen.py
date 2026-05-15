@@ -21,6 +21,7 @@ import os
 import anthropic
 
 from .log import get_logger
+from .model_config import RESPONSE_GEN_MODEL, TEMPERATURE
 
 _log = get_logger(__name__)
 
@@ -76,9 +77,16 @@ async def maybe_rephrase(
     try:
         client = anthropic.AsyncAnthropic()
         response = await client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model=RESPONSE_GEN_MODEL,
             max_tokens=200,
-            system=_REPHRASE_SYSTEM,
+            temperature=TEMPERATURE,
+            system=[
+                {
+                    "type": "text",
+                    "text": _REPHRASE_SYSTEM,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             messages=[{
                 "role": "user",
                 "content": f"Rephrase this OTTO {mode} message ({action}):\n\n{text}",

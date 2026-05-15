@@ -237,6 +237,7 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
             },
             "required": ["short_id", "note"],
         },
+        "cache_control": {"type": "ephemeral"},
     },
 ]
 

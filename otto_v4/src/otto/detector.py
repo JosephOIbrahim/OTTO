@@ -12,6 +12,7 @@ from .log import get_logger
 _log = get_logger(__name__)
 
 from .models import Commitment
+from .model_config import DETECTOR_MODEL, TEMPERATURE
 
 _SYSTEM_PROMPT = """\
 You are a commitment detector. Given a WhatsApp message, determine if the sender is making a commitment — a promise to do something for someone.
@@ -52,9 +53,16 @@ async def detect_commitment(message: str, chat_name: str) -> Commitment | None:
     try:
         client = anthropic.AsyncAnthropic()
         response = await client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model=DETECTOR_MODEL,
             max_tokens=256,
-            system=_SYSTEM_PROMPT,
+            temperature=TEMPERATURE,
+            system=[
+                {
+                    "type": "text",
+                    "text": _SYSTEM_PROMPT,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             messages=[
                 {"role": "user", "content": f"Chat: {chat_name}\nMessage: {message}"}
             ],
