@@ -6,13 +6,82 @@ When you haven't followed through, OTTO asks — without judgment.
 
 **"Manage the noise without falling into it."**
 
-## Quick Start
+## Install — ADHD friendly
+
+**Where you're going:** OTTO running locally, ready to remember commitments.
+**How far:** about 5 minutes if nothing fights you.
+**Permission granted:** stop at any mile. Come back tomorrow. The code waits.
+
+---
+
+### Mile 1 of 5 — Grab the code
 
 ```bash
-cd otto_v4
+git clone https://github.com/JosephOIbrahim/OTTO.git
+cd OTTO/otto_v4
+```
+
+Done when: your prompt ends in `otto_v4`.
+
+---
+
+### Mile 2 of 5 — Check Python (need 3.11 or newer)
+
+```bash
+python --version
+```
+
+Done when: you see `Python 3.11.x` or higher.
+If older: install Python 3.11+ from python.org first. If that itself feels like a lot — stop here today. Come back when you're up for it.
+
+---
+
+### Mile 3 of 5 — Install OTTO and its dependencies (~30 seconds)
+
+```bash
 pip install -e ".[dev]"
+```
+
+Done when: the last line says `Successfully installed otto-...`
+
+If pip complains: run `python -m pip install --upgrade pip` and try again.
+
+---
+
+### Mile 4 of 5 — Give OTTO your Claude API key (one time)
+
+Get a key at https://console.anthropic.com/settings/keys
+
+Then store it where OTTO will read it:
+
+```bash
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
+```
+
+(Paste your real key in place of `sk-ant-...`.)
+
+Done when: a file called `.env` exists in `otto_v4/` and has your key inside.
+
+---
+
+### Mile 5 of 5 — First run
+
+```bash
 otto list
 ```
+
+Done when: you see `No active commitments yet.`
+
+That empty list is the finish line. Everything is wired up.
+
+---
+
+### If something didn't work
+
+That's fine. Two paths, your choice:
+
+1. **Stop for today.** Come back tomorrow. None of this has rotted.
+2. **Open an issue** at https://github.com/JosephOIbrahim/OTTO/issues — paste what you ran and what you saw. No judgment, bugs happen.
 
 ## Commands
 
